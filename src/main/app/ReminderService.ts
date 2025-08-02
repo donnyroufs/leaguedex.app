@@ -6,12 +6,12 @@ export class ReminderService {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async addReminder(reminder: Reminder): Promise<void> {
+  public async addReminder(_reminder: Reminder): Promise<void> {
     return
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async removeReminder(id: string): Promise<void> {
+  public async removeReminder(_id: string): Promise<void> {
     return
   }
 }
