@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+body {
+  @apply bg-slate-900;
+  @apply text-slate-100;
+}

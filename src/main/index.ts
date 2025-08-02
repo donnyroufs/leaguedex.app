@@ -3,6 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+import { compositionRoot } from './app'
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -74,6 +76,10 @@ app.whenReady().then(() => {
   ipcMain.on('window-close', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow()
     if (focusedWindow) focusedWindow.close()
+  })
+
+  ipcMain.handle('game-detector-detect', async () => {
+    return await compositionRoot.gameDetector.detect()
   })
 
   createWindow()

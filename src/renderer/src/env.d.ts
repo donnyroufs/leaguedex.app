@@ -6,6 +6,9 @@ declare global {
       minimizeWindow: () => void
       maximizeWindow: () => void
       closeWindow: () => void
+      gameDetector: {
+        detect: () => Promise<number | null>
+      }
     }
   }
 }
