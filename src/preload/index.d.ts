@@ -3,6 +3,11 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 declare global {
   interface Window {
     electron: ElectronAPI
-    api: unknown
+
+    api: {
+      minimizeWindow: () => void
+      maximizeWindow: () => void
+      closeWindow: () => void
+    }
   }
 }
