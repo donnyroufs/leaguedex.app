@@ -7,6 +7,10 @@ import { FakeRiotClient } from './FakeRiotClient'
 import { GameDetector } from './GameDetector'
 import { RiotClient } from './RiotClient'
 import { IRiotClient } from './IRiotClient'
+import { ReminderService } from './ReminderService'
+import { GameAssistant } from './GameAssistant'
+import { Dispatcher } from './Dispatcher'
+import EventEmitter from 'events'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -25,7 +29,9 @@ function createRiotClient(): IRiotClient {
 }
 
 const riotClient = createRiotClient()
+const gameDetector = new GameDetector(riotClient)
+const reminderService = new ReminderService()
+const emitter = new EventEmitter()
+const dispatcher = new Dispatcher(emitter)
 
-export const compositionRoot = {
-  gameDetector: new GameDetector(riotClient)
-}
+export const gameAssistant = new GameAssistant(gameDetector, reminderService, dispatcher)

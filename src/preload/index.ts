@@ -5,8 +5,16 @@ const api = {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
   maximizeWindow: () => ipcRenderer.send('window-maximize'),
   closeWindow: () => ipcRenderer.send('window-close'),
-  gameDetector: {
-    detect: () => ipcRenderer.invoke('game-detector-detect')
+  gameAssistant: {
+    onGameData: (callback: (data: { playing: boolean; gameTime: number | null }) => void) => {
+      ipcRenderer.on('game-data', (_, data) => {
+        callback(data)
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('game-data')
+      }
+    }
   }
 }
 

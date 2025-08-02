@@ -6,12 +6,11 @@ function App(): React.JSX.Element {
   const [gameTime, setGameTime] = useState<number | null>(null)
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      const result = await window.api.gameDetector.detect()
-      setGameTime(result)
-    }, 1_000)
+    const unsubscribe = window.api.gameAssistant.onGameData((data) => {
+      setGameTime(data.gameTime)
+    })
 
-    return () => clearInterval(interval)
+    return () => unsubscribe()
   }, [])
 
   return (

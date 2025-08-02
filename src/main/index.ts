@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-import { compositionRoot } from './app'
+import { gameAssistant } from './app'
 
 function createWindow(): void {
   // Create the browser window.
@@ -85,11 +85,15 @@ app.whenReady().then(() => {
     if (focusedWindow) focusedWindow.close()
   })
 
-  ipcMain.handle('game-detector-detect', async () => {
-    return await compositionRoot.gameDetector.detect()
-  })
-
   createWindow()
+
+  gameAssistant
+    .on('game-data', (data) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('game-data', data)
+      })
+    })
+    .start()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
