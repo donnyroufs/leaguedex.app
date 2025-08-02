@@ -91,6 +91,18 @@ export class ReminderScheduler {
       }
     }
 
+    const turretPlateReminderTimes = [90, 60, 30]
+    for (const reminderTime of turretPlateReminderTimes) {
+      reminders.push(
+        new OneTimeReminder(
+          crypto.randomUUID(),
+          `Turret plates falling in ${reminderTime} seconds`,
+          false,
+          840 - reminderTime
+        )
+      )
+    }
+
     // Return all reminders (user reminders first, then objective reminders)
     return [...userReminders, ...reminders]
   }
