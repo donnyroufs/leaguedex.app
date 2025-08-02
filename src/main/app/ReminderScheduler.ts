@@ -5,7 +5,8 @@ export class ReminderScheduler {
   public static schedule(gameEvents: NormalizedGameEvent[], userReminders: Reminder[]): Reminder[] {
     const reminders: Reminder[] = []
 
-    // TODO: move to centralized location that we can change
+    // TODO: move to some kind of config file so that we do not needto alter source code
+    // This should also come with enable/disable functionality not everyone wants all of these
     const objectiveTimers = {
       DragonKill: {
         name: 'Dragon',
@@ -21,9 +22,9 @@ export class ReminderScheduler {
       },
       HeraldKill: {
         name: 'Herald',
-        respawnTimer: 360, // 6 minutes for second herald
-        firstSpawnTime: 480, // 8 minutes
-        doesRespawn: true // First herald only respawns once
+        respawnTimer: null,
+        firstSpawnTime: 900, // 15 minutes
+        doesRespawn: false
       },
       VoidGrubs: {
         name: 'Void Grubs',
