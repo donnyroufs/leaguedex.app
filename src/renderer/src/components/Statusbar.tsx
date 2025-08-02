@@ -17,17 +17,21 @@ export function Statusbar({ gameTime }: Props): JSX.Element {
   const ingame = gameTime != null
 
   return (
-    <div className="flex items-center justify-between p-2 bg-gray-900">
-      <div className="w-full flex items-center justify-between text-sm text-gray-400">
+    <div className="flex items-center justify-between p-2 bg-status-in-game border-2 border-[#14232A]">
+      <div className="w-full flex items-center text-sm text-gray-400">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${ingame ? 'bg-green-500' : 'bg-gray-500'}`} />
-          <span>{ingame ? 'Match in progress' : 'Waiting for match to start'}</span>
+          <div
+            className={`w-2 h-2 rounded-full ${ingame ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}
+          />
+          <span className="font-bold text-green-500">
+            {ingame ? 'IN-GAME' : 'You are not in a game'}
+          </span>
         </div>
 
+        <span className="mx-2 text-text-secondary">•</span>
+
         {ingame && (
-          <span className="px-3 py-1 text-xs bg-gray-800 text-gray-300 rounded-md font-medium">
-            {formatGameTime(gameTime!)}
-          </span>
+          <span className="py-1 text-md rounded-md font-medium">{formatGameTime(gameTime!)}</span>
         )}
       </div>
     </div>

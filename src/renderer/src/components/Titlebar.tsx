@@ -19,7 +19,7 @@ export const Titlebar: React.FC<TitlebarProps> = ({ title }) => {
 
   return (
     <div
-      className="titlebar bg-gray-800 text-white h-8 flex items-center justify-between select-none"
+      className="titlebar bg-background-secondary text-text-primary h-8 flex items-center justify-between select-none"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <div className="flex-1 flex items-center px-4 cursor-default">

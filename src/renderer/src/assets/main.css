@@ -1,6 +1,33 @@
 @import 'tailwindcss';
 
-body {
-  @apply bg-slate-900;
-  @apply text-slate-100;
+/* Extend Tailwind's theme with our design tokens */
+@theme {
+  --color-background-primary: hsl(230 40% 8%);
+  --color-background-secondary: hsl(220 43% 10%);
+  --color-background-tertiary: hsl(210 59% 11%);
+  --color-background-elevated: hsl(240 20% 13%);
+
+  --color-text-primary: hsl(0 0% 88%);
+  --color-text-secondary: hsl(220 9% 65%);
+  --color-text-muted: hsl(220 9% 46%);
+  --color-text-inverse: hsl(230 40% 8%);
+
+  --color-accent-blue: hsl(207 89% 61%);
+  --color-accent-green: hsl(120 39% 49%);
+  --color-accent-yellow: hsl(51 100% 50%);
+  --color-accent-red: hsl(4 90% 58%);
+
+  --color-status-in-game: hsl(180 58% 7%);
+  --color-status-success: hsl(120 39% 49%);
+  --color-status-warning: hsl(51 100% 50%);
+  --color-status-danger: hsl(4 90% 58%);
+
+  --color-border-primary: hsl(220 13% 33%);
+  --color-border-secondary: hsl(220 13% 43%);
+  --color-border-accent: hsl(200 54% 11%);
 }
+
+body {
+  @apply bg-background-primary text-text-primary;
+}
+
