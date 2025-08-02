@@ -13,6 +13,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: leaguedex-app
+  icon: build/icon.png
 nsis:
   artifactName: ${name}-setup.${ext}
   shortcutName: ${productName}
