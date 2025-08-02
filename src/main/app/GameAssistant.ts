@@ -24,7 +24,6 @@ export class GameAssistant {
     setInterval(async () => {
       const gameTime = await this._gameDetector.detect()
       this._isPlaying = gameTime !== null
-      console.log('Game time', gameTime)
 
       if (this._isPlaying && !this._assistantActive) {
         this.activate()
@@ -85,7 +84,6 @@ export class GameAssistant {
   }
 
   private triggerReminder(reminder: Reminder): void {
-    console.log(`TTS: ${reminder.message}`)
     this._textToSpeech.speak(reminder.message)
 
     this._dispatcher.dispatch('reminder-triggered', {
