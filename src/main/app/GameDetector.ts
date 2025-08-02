@@ -11,7 +11,7 @@ export class GameDetector {
   public async detect(): Promise<Seconds | null> {
     const response = await this._riotClient.getGameData()
 
-    if (response?.gameData == null) {
+    if (response === null) {
       return null
     }
 

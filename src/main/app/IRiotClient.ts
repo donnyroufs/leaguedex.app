@@ -2,7 +2,7 @@ export interface IRiotClient {
   /**
    * GET https://127.0.0.1:2999/liveclientdata/allgamedata
    */
-  getGameData(): Promise<AllGameData>
+  getGameData(): Promise<AllGameData | null>
 }
 
 export type AllGameData = {

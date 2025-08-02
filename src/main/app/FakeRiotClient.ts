@@ -1,7 +1,7 @@
 import { AllGameData, IRiotClient } from './IRiotClient'
 
 export class FakeRiotClient implements IRiotClient {
-  public async getGameData(): Promise<AllGameData> {
+  public async getGameData(): Promise<AllGameData | null> {
     return {
       activePlayer: {
         abilities: {
