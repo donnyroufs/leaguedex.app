@@ -11,6 +11,7 @@ import { ReminderService } from './ReminderService'
 import { GameAssistant } from './GameAssistant'
 import { Dispatcher } from './Dispatcher'
 import EventEmitter from 'events'
+import { SayTextToSpeech } from './SayTextToSpeech'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -33,5 +34,12 @@ const gameDetector = new GameDetector(riotClient)
 const reminderService = new ReminderService()
 const emitter = new EventEmitter()
 const dispatcher = new Dispatcher(emitter)
+const textToSpeech = new SayTextToSpeech()
 
-export const gameAssistant = new GameAssistant(gameDetector, reminderService, dispatcher)
+export const gameAssistant = new GameAssistant(
+  gameDetector,
+  dispatcher,
+  reminderService,
+  riotClient,
+  textToSpeech
+)

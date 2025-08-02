@@ -1,7 +1,15 @@
-import { AllGameData, IRiotClient } from './IRiotClient'
+import { AllGameData, IRiotClient, NormalizedGameEvent } from './IRiotClient'
 
 export class FakeRiotClient implements IRiotClient {
+  private _gameTime = 0
+
+  public async getGameEvents(): Promise<NormalizedGameEvent[]> {
+    return []
+  }
+
   public async getGameData(): Promise<AllGameData | null> {
+    this._gameTime += 1
+
     return {
       activePlayer: {
         abilities: {
@@ -173,7 +181,7 @@ export class FakeRiotClient implements IRiotClient {
       },
       gameData: {
         gameMode: 'CLASSIC',
-        gameTime: 12.1232134213921,
+        gameTime: this._gameTime,
         mapName: "Summoner's Rift",
         mapNumber: 11,
         mapTerrain: 'Default'

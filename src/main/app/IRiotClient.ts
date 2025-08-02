@@ -3,6 +3,26 @@ export interface IRiotClient {
    * GET https://127.0.0.1:2999/liveclientdata/allgamedata
    */
   getGameData(): Promise<AllGameData | null>
+
+  /**
+   * GET https://127.0.0.1:2999/liveclientdata/eventdata
+   */
+  getGameEvents(): Promise<NormalizedGameEvent[]>
+}
+
+export type GameEvent = {
+  readonly EventID: 0
+  readonly EventName: 'DragonKill' | 'HeraldKill' | 'BaronKill'
+  readonly EventTime: 0
+}
+
+/**
+ * This is the normalized game event. Coming from {@link GameEvent}
+ */
+export type NormalizedGameEvent = {
+  readonly id: number
+  readonly name: 'DragonKill' | 'HeraldKill' | 'BaronKill'
+  readonly timeInSeconds: number
 }
 
 export type AllGameData = {
