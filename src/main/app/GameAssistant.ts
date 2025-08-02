@@ -10,7 +10,6 @@ export class GameAssistant {
   private _isPlaying = false
   private _assistantActive = false
   private _scheduledReminders: Reminder[] = []
-  private _gameStartTime: number | null = null
 
   public constructor(
     private readonly _gameDetector: GameDetector,
@@ -65,7 +64,6 @@ export class GameAssistant {
     console.log('Game Assistant deactivated')
     this._assistantActive = false
     this._scheduledReminders = []
-    this._gameStartTime = null
   }
 
   private processScheduledReminders(currentGameTime: number): void {
