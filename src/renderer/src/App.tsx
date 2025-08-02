@@ -19,9 +19,7 @@ function App(): React.JSX.Element {
       <Titlebar title="Leaguedex" />
       <Statusbar gameTime={gameTime} />
 
-      <div className="flex-1 p-4">
-        <h1 className="text-3xl font-bold underline">Hello world!</h1>
-      </div>
+      <div className="flex-1 p-4"></div>
     </div>
   )
 }
