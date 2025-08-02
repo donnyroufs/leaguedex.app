@@ -173,7 +173,7 @@ export class FakeRiotClient implements IRiotClient {
       },
       gameData: {
         gameMode: 'CLASSIC',
-        gameTime: 0,
+        gameTime: 12,
         mapName: "Summoner's Rift",
         mapNumber: 11,
         mapTerrain: 'Default'

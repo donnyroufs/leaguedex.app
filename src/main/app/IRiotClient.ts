@@ -136,6 +136,9 @@ export type Event = {
 
 export type GameData = {
   readonly gameMode: string
+  /**
+   * The time in seconds since the game started
+   */
   readonly gameTime: number
   readonly mapName: string
   readonly mapNumber: number

@@ -1,7 +1,16 @@
 import { type JSX } from 'react'
 
 type Props = {
+  /**
+   * Game time in seconds
+   */
   gameTime: number | null
+}
+
+function formatGameTime(gameTime: number): string {
+  const minutes = Math.floor(gameTime / 60)
+  const seconds = gameTime % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
 export function Statusbar({ gameTime }: Props): JSX.Element {
@@ -17,7 +26,7 @@ export function Statusbar({ gameTime }: Props): JSX.Element {
 
         {ingame && (
           <span className="px-3 py-1 text-xs bg-gray-800 text-gray-300 rounded-md font-medium">
-            {Math.floor(gameTime / 60)}:{(gameTime % 60).toString().padStart(2, '0')}
+            {formatGameTime(gameTime!)}
           </span>
         )}
       </div>
