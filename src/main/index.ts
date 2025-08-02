@@ -8,13 +8,18 @@ import { compositionRoot } from './app'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1600,
+    height: 1200,
+    minWidth: 1024,
+    minHeight: 768,
+    maxWidth: 1600,
+    maxHeight: 1200,
     show: false,
     frame: false, // Remove the default titlebar
     titleBarStyle: 'hidden',
     icon,
     autoHideMenuBar: true,
+    center: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

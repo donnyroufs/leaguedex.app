@@ -16,10 +16,16 @@ function App(): React.JSX.Element {
 
   return (
     <div className="h-screen flex flex-col">
-      <Titlebar title="Leaguedex" />
-      <Statusbar gameTime={gameTime} />
+      <header>
+        <Titlebar title="Leaguedex" />
+        <Statusbar gameTime={gameTime} />
+      </header>
 
-      <div className="flex-1 p-4"></div>
+      <div className="flex-1 flex">
+        <aside className="bg-background-secondary flex-1">nav</aside>
+        <main className="bg-background-primary flex-3">main content</main>
+        <aside className="bg-background-secondary flex-1">sidebar</aside>
+      </div>
     </div>
   )
 }
