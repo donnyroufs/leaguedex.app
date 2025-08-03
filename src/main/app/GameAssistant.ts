@@ -76,17 +76,8 @@ export class GameAssistant {
     })
 
     remindersToTrigger.forEach((reminder) => {
-      this.triggerReminder(reminder)
+      this._textToSpeech.speak(reminder.message)
       this._scheduledReminders = this._scheduledReminders.filter((r) => r.id !== reminder.id)
-    })
-  }
-
-  private triggerReminder(reminder: Reminder): void {
-    this._textToSpeech.speak(reminder.message)
-
-    this._dispatcher.dispatch('reminder-triggered', {
-      id: reminder.id,
-      message: reminder.message
     })
   }
 }
