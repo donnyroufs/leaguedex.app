@@ -69,7 +69,7 @@ export class GameAssistant {
   private processScheduledReminders(currentGameTime: number): void {
     const remindersToTrigger = this._scheduledReminders.filter((reminder) => {
       if (reminder instanceof OneTimeReminder) {
-        return reminder.triggerTime <= currentGameTime
+        return reminder.triggerTime === currentGameTime
       }
 
       return false
