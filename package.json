@@ -25,6 +25,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.11.0",
+    "lucide-react": "^0.536.0",
     "say": "^0.16.0",
     "tailwindcss": "^4.1.11"
   },

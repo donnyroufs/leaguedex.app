@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState, type JSX } from 'react'
+import { Eye, MapPin, Plus } from 'lucide-react'
 
 type Reminder = {
   id: string
@@ -16,42 +17,52 @@ export function Reminders(): JSX.Element {
   const [reminders, setReminders] = useState<Reminder[]>([])
 
   useEffect(() => {
-    window.api.gameAssistant.getReminders().then((x) => {
-      console.log(x)
-      setReminders(x)
-    })
+    window.api.gameAssistant.getReminders().then(setReminders)
   }, [])
 
-  const getReminderFrequency = (reminder: Reminder): string => {
-    if (reminder.interval) {
-      return `Every ${reminder.interval}s`
+  const sortedReminders = reminders.toSorted((a, b) => {
+    if (a.triggerTime || b.triggerTime) {
+      return (a.triggerTime ?? 0) - (b.triggerTime ?? 0)
     }
-    if (reminder.triggerTime) {
-      const minutes = Math.floor(reminder.triggerTime / 60)
-      const seconds = reminder.triggerTime % 60
-      return `${minutes}:${seconds.toString().padStart(2, '0')}`
-    }
-    return 'One time'
-  }
+
+    return (a.interval ?? 0) - (b.interval ?? 0)
+  })
 
   return (
-    <div className="p-6">
-      <div className="max-w-md mx-auto space-y-4">
-        {/* Reminder Cards */}
-        {reminders.map((reminder) => (
-          <div
-            key={reminder.id}
-            className="bg-slate-700 rounded-lg p-4 flex items-center space-x-3"
-          >
-            {/* Message */}
-            <div className="flex-1">
-              <p className="text-white font-medium">{reminder.message}</p>
+    <div className="flex flex-col h-full">
+      {/* Panel Content */}
+      <div className="flex-1 p-6 overflow-y-auto">
+        {/* Reminder Items */}
+        <div className="space-y-3">
+          {sortedReminders.map((reminder) => (
+            <div
+              key={reminder.id}
+              className="flex items-center gap-4 p-4 bg-[rgba(0,255,136,0.05)] border border-[rgba(0,255,136,0.2)] rounded-md"
+            >
+              <div className="w-8 h-8 bg-[rgba(0,255,136,0.1)] rounded-sm flex items-center justify-center">
+                {reminder.interval ? (
+                  <Eye size={16} className="text-success" />
+                ) : (
+                  <MapPin size={16} className="text-success" />
+                )}
+              </div>
+              <div className="flex-1 text-sm text-text-primary">{reminder.message}</div>
+              <div className="text-xs text-text-tertiary">
+                {reminder.interval
+                  ? `Every ${reminder.interval}s`
+                  : `At ${Math.floor(reminder.triggerTime! / 60)}:${String(reminder.triggerTime! % 60).padStart(2, '0')}`}
+              </div>
             </div>
+          ))}
+        </div>
 
-            {/* Frequency/Time */}
-            <div className="text-white text-sm">{getReminderFrequency(reminder)}</div>
-          </div>
-        ))}
+        <button
+          disabled
+          className="w-full p-4 mt-6 bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)] rounded-md text-success text-sm cursor-pointer transition-all duration-200 hover:bg-[rgba(0,255,136,0.15)] flex items-center justify-center gap-2"
+        >
+          <Plus size={16} />
+          Add Reminder
+        </button>
       </div>
     </div>
   )

@@ -15,16 +15,20 @@ function App(): React.JSX.Element {
   }, [])
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-bg-primary">
       <header>
         <Titlebar title="Leaguedex" />
         <Statusbar gameTime={gameTime} />
       </header>
 
-      <div className="flex-1 flex">
-        <aside className="bg-background-secondary flex-1 min-w-[330px]"></aside>
-        <main className="bg-background-primary flex-3"></main>
-        <aside className="bg-background-secondary flex-1 min-w-[330px]">
+      <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary">
+        <aside className="w-60 bg-bg-tertiary backdrop-blur-md border-r border-border-primary flex flex-col pt-6">
+          {/* Sidebar content will go here */}
+        </aside>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Main content will go here */}
+        </main>
+        <aside className="w-80 bg-[rgba(255,255,255,0.02)] border-l border-border-primary relative">
           <Reminders />
         </aside>
       </div>
