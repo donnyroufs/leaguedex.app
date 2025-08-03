@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
+import { Reminders } from './components/Reminders'
 
 function App(): React.JSX.Element {
   const [gameTime, setGameTime] = useState<number | null>(null)
@@ -21,9 +22,11 @@ function App(): React.JSX.Element {
       </header>
 
       <div className="flex-1 flex">
-        <aside className="bg-background-secondary flex-1">nav</aside>
-        <main className="bg-background-primary flex-3">main content</main>
-        <aside className="bg-background-secondary flex-1">sidebar</aside>
+        <aside className="bg-background-secondary flex-1 min-w-[330px]"></aside>
+        <main className="bg-background-primary flex-3"></main>
+        <aside className="bg-background-secondary flex-1 min-w-[330px]">
+          <Reminders />
+        </aside>
       </div>
     </div>
   )

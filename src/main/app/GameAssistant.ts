@@ -1,7 +1,9 @@
 import { GameDetector } from './GameDetector'
 import { Contract, IDispatcher } from './IDispatcher'
 import { IRiotClient } from './IRiotClient'
+import { Reminder } from './Reminder'
 import { ReminderOrchestrator } from './ReminderOrchestrator'
+import { ReminderService } from './ReminderService'
 import { Seconds } from './types'
 
 export class GameAssistant {
@@ -12,8 +14,13 @@ export class GameAssistant {
     private readonly _gameDetector: GameDetector,
     private readonly _dispatcher: IDispatcher,
     private readonly _riotClient: IRiotClient,
-    private readonly _reminderOrchestrator: ReminderOrchestrator
+    private readonly _reminderOrchestrator: ReminderOrchestrator,
+    private readonly _reminderService: ReminderService
   ) {}
+
+  public getReminders(): Promise<Reminder[]> {
+    return this._reminderService.getReminders()
+  }
 
   public start(): void {
     setInterval(async () => {

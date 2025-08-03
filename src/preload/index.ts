@@ -14,7 +14,8 @@ const api = {
       return () => {
         ipcRenderer.removeAllListeners('game-data')
       }
-    }
+    },
+    getReminders: () => ipcRenderer.invoke('get-reminders')
   }
 }
 

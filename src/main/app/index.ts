@@ -50,5 +50,6 @@ export const gameAssistant = new GameAssistant(
   gameDetector,
   dispatcher,
   riotClient,
-  reminderOrchestrator
+  reminderOrchestrator,
+  reminderService
 )
