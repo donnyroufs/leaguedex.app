@@ -1,6 +1,6 @@
 import { NormalizedGameEvent } from './IRiotClient'
 import { objectivesConfig } from './ObjectivesConfig'
-import { Reminder } from './Reminder'
+import { OneTimeReminder, Reminder } from './Reminder'
 import { Seconds } from './types'
 
 export class ObjectiveTracker {
@@ -70,11 +70,10 @@ export class ObjectiveTracker {
 
     return offsets.map(
       (offset) =>
-        new Reminder(
+        new OneTimeReminder(
           id,
           `${name} will spawn in ${offset} seconds`,
-          gameTime + (triggerTime - offset),
-          true
+          gameTime + (triggerTime - offset)
         )
     )
   }

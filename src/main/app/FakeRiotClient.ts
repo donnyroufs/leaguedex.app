@@ -1,7 +1,7 @@
 import { AllGameData, IRiotClient, NormalizedGameEvent } from './IRiotClient'
 
 export class FakeRiotClient implements IRiotClient {
-  private _gameTime = 120
+  private _gameTime = 60
 
   public async getGameEvents(): Promise<NormalizedGameEvent[]> {
     return []

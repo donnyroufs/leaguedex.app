@@ -1,6 +1,5 @@
-import { NormalizedGameEvent } from './IRiotClient'
 import { objectivesConfig } from './ObjectivesConfig'
-import { Reminder } from './Reminder'
+import { OneTimeReminder, Reminder } from './Reminder'
 import { Seconds } from './types'
 
 export class ReminderScheduler {
@@ -16,11 +15,10 @@ export class ReminderScheduler {
 
         for (const reminderTime of validOffsets) {
           reminders.push(
-            new Reminder(
+            new OneTimeReminder(
               crypto.randomUUID(),
               `${objective.name} spawning in ${reminderTime} seconds`,
-              objective.firstSpawnTime - reminderTime,
-              true
+              objective.firstSpawnTime - reminderTime
             )
           )
         }
@@ -30,11 +28,10 @@ export class ReminderScheduler {
     if (gameTime < 840) {
       for (const reminderTime of offsets) {
         reminders.push(
-          new Reminder(
+          new OneTimeReminder(
             crypto.randomUUID(),
             `Turret plates falling in ${reminderTime} seconds`,
-            840 - reminderTime,
-            true
+            840 - reminderTime
           )
         )
       }

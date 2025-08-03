@@ -1,6 +1,6 @@
 import { NormalizedGameEvent } from './IRiotClient'
 import { ObjectiveTracker } from './ObjectiveTracker'
-import { Reminder } from './Reminder'
+import { OneTimeReminder, Reminder, RepeatingReminder } from './Reminder'
 import { ReminderProcessor } from './ReminderProcessor'
 import { ReminderScheduler } from './ReminderScheduler'
 import { ReminderService } from './ReminderService'
@@ -25,13 +25,22 @@ export class ReminderOrchestrator {
     const objectiveReminders = this._objectiveTracker.track(gameEvents, gameTime)
     this._reminders.push(...objectiveReminders)
 
-    const remindersToTrigger = this._reminders.filter((x) => x.triggerTime === gameTime)
+    const oneTimeReminders = this._reminders.filter(
+      (x) => x instanceof OneTimeReminder && x.triggerTime === gameTime
+    )
 
-    if (remindersToTrigger.length > 0) {
-      this._reminderProcessor.process(remindersToTrigger)
+    if (oneTimeReminders.length > 0) {
+      this._reminderProcessor.process(oneTimeReminders)
+      this._reminders = this._reminders.filter((x) => !oneTimeReminders.some((r) => r.id === x.id))
     }
 
-    this._reminders = this._reminders.filter((x) => x.triggerTime !== gameTime)
+    const repeatingReminders = this._reminders.filter(
+      (x) => x instanceof RepeatingReminder && gameTime % x.interval === 0
+    )
+
+    if (repeatingReminders.length > 0) {
+      this._reminderProcessor.process(repeatingReminders)
+    }
   }
 
   public reset(): void {
