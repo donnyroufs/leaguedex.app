@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { gameAssistant, textToSpeech } from './app'
+import { DebugLogger } from './app/DebugLogger'
 
 function createWindow(): void {
   // Create the browser window.
@@ -67,6 +68,24 @@ app.whenReady().then(() => {
 
   ipcMain.on('test-tts', (_, text: string) => {
     textToSpeech.speak(text)
+  })
+
+  // Debug logger IPC handlers
+  ipcMain.handle('debug-get-logs', () => {
+    return DebugLogger.getLogs()
+  })
+
+  ipcMain.handle('debug-get-recent-logs', (_, count: number = 50) => {
+    return DebugLogger.getRecentLogs(count)
+  })
+
+  ipcMain.handle('debug-clear-logs', () => {
+    DebugLogger.clearLogs()
+    return true
+  })
+
+  ipcMain.handle('debug-get-log-count', () => {
+    return DebugLogger.getLogCount()
   })
 
   // Window control handlers

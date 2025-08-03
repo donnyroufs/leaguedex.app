@@ -18,6 +18,12 @@ const api = {
     testTTS: (text: string) => {
       ipcRenderer.send('test-tts', text)
     }
+  },
+  debug: {
+    getLogs: () => ipcRenderer.invoke('debug-get-logs'),
+    getRecentLogs: (count: number = 50) => ipcRenderer.invoke('debug-get-recent-logs', count),
+    clearLogs: () => ipcRenderer.invoke('debug-clear-logs'),
+    getLogCount: () => ipcRenderer.invoke('debug-get-log-count')
   }
 }
 

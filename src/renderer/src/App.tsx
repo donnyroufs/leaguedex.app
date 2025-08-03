@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
+import { DebugPanel } from './components/DebugPanel'
 
 function App(): React.JSX.Element {
   const [gameTime, setGameTime] = useState<number | null>(null)
@@ -27,6 +28,8 @@ function App(): React.JSX.Element {
         </main>
         <aside className="bg-background-secondary flex-1">sidebar</aside>
       </div>
+
+      <DebugPanel />
     </div>
   )
 }
