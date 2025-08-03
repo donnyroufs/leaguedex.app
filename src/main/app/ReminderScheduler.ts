@@ -25,18 +25,6 @@ export class ReminderScheduler {
       }
     }
 
-    if (gameTime < 840) {
-      for (const reminderTime of offsets) {
-        reminders.push(
-          new OneTimeReminder(
-            crypto.randomUUID(),
-            `Turret plates falling in ${reminderTime} seconds`,
-            840 - reminderTime
-          )
-        )
-      }
-    }
-
     return [...userReminders, ...reminders]
   }
 }
