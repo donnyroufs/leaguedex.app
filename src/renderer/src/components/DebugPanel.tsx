@@ -28,6 +28,8 @@ export const DebugPanel: React.FC = () => {
       const interval = setInterval(pollLogs, 1000) // Poll every second
       return () => clearInterval(interval)
     }
+
+    return () => {}
   }, [isVisible])
 
   const clearLogs = async (): Promise<void> => {
