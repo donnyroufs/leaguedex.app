@@ -28,10 +28,11 @@ export function Statusbar({ gameTime }: Props): JSX.Element {
           </span>
         </div>
 
-        <span className="mx-2 text-text-secondary">•</span>
-
         {ingame && (
-          <span className="py-1 text-md rounded-md font-medium">{formatGameTime(gameTime!)}</span>
+          <>
+            <span className="mx-2 text-text-secondary">•</span>
+            <span className="py-1 text-md rounded-md font-medium">{formatGameTime(gameTime!)}</span>
+          </>
         )}
       </div>
     </div>
