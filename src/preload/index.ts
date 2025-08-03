@@ -14,6 +14,9 @@ const api = {
       return () => {
         ipcRenderer.removeAllListeners('game-data')
       }
+    },
+    testTTS: (text: string) => {
+      ipcRenderer.send('test-tts', text)
     }
   }
 }

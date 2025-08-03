@@ -10,6 +10,7 @@ declare global {
         onGameData: (
           callback: (data: { playing: boolean; gameTime: number | null }) => void
         ) => () => void
+        testTTS: (text: string) => void
       }
     }
   }

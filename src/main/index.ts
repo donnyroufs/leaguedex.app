@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-import { gameAssistant } from './app'
+import { gameAssistant, textToSpeech } from './app'
 
 function createWindow(): void {
   // Create the browser window.
@@ -23,7 +23,9 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      // TODO: remove this
+      devTools: true
     }
   })
 
@@ -62,6 +64,10 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  ipcMain.on('test-tts', (_, text: string) => {
+    textToSpeech.speak(text)
+  })
 
   // Window control handlers
   ipcMain.on('window-minimize', () => {

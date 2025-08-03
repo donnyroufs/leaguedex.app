@@ -22,7 +22,9 @@ function App(): React.JSX.Element {
 
       <div className="flex-1 flex">
         <aside className="bg-background-secondary flex-1">nav</aside>
-        <main className="bg-background-primary flex-3">main content</main>
+        <main className="bg-background-primary flex-3">
+          <button onClick={() => window.api.gameAssistant.testTTS('Test TTS')}>Test TTS</button>
+        </main>
         <aside className="bg-background-secondary flex-1">sidebar</aside>
       </div>
     </div>

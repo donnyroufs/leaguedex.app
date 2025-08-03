@@ -34,7 +34,7 @@ const gameDetector = new GameDetector(riotClient)
 const reminderService = new ReminderService()
 const emitter = new EventEmitter()
 const dispatcher = new Dispatcher(emitter)
-const textToSpeech = new SayTextToSpeech()
+export const textToSpeech = new SayTextToSpeech()
 
 export const gameAssistant = new GameAssistant(
   gameDetector,
