@@ -1,6 +1,5 @@
 import { IRiotClient } from './IRiotClient'
-
-type Seconds = number
+import { Seconds } from './types'
 
 export class GameDetector {
   public constructor(private readonly _riotClient: IRiotClient) {}
@@ -15,6 +14,6 @@ export class GameDetector {
       return null
     }
 
-    return response.gameData.gameTime
+    return Math.floor(response.gameData.gameTime)
   }
 }

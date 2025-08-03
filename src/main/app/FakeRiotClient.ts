@@ -8,7 +8,7 @@ export class FakeRiotClient implements IRiotClient {
   }
 
   public async getGameData(): Promise<AllGameData | null> {
-    this._gameTime += 1
+    this._gameTime += 1 + Math.random() * 0.01
 
     return {
       activePlayer: {
