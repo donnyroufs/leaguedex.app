@@ -26,9 +26,10 @@ export class ReminderProcessor {
 
     this._textToSpeech.speak(reminder.message)
 
-    const duration = reminder.message.length * 100
+    const duration = Math.ceil(reminder.message.length * 60)
     await new Promise((resolve) => setTimeout(resolve, duration))
 
     this.processQueue()
   }
 }
+

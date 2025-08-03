@@ -1,15 +1,15 @@
-import { OneTimeReminder, Reminder, RepeatingReminder } from './Reminder'
+import { Reminder } from './Reminder'
 
 export class ReminderService {
   // TODO: implement this
+  // TODO: What about repeatable remidners?
   public async getReminders(): Promise<Reminder[]> {
     return [
-      new OneTimeReminder(crypto.randomUUID(), 'Time to ward', false, 135),
-      new OneTimeReminder(crypto.randomUUID(), 'Scuttle Crab', false, 210),
-      new OneTimeReminder(crypto.randomUUID(), 'Gank Window', false, 160),
-      new OneTimeReminder(crypto.randomUUID(), 'Gank Window', false, 225),
-      new OneTimeReminder(crypto.randomUUID(), 'Next Jungle Rotation', false, 260),
-      new RepeatingReminder(crypto.randomUUID(), 'Check Map', false, 60)
+      new Reminder(crypto.randomUUID(), 'Time to ward', 135, false),
+      new Reminder(crypto.randomUUID(), 'Scuttle Crab', 210, false),
+      new Reminder(crypto.randomUUID(), 'Gank Window', 160, false),
+      new Reminder(crypto.randomUUID(), 'Gank Window', 225, false),
+      new Reminder(crypto.randomUUID(), 'Next Jungle Rotation', 260, false)
     ]
   }
 

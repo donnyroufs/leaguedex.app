@@ -1,110 +1,45 @@
 import { NormalizedGameEvent } from './IRiotClient'
-import { OneTimeReminder, Reminder } from './Reminder'
+import { objectivesConfig } from './ObjectivesConfig'
+import { Reminder } from './Reminder'
+import { Seconds } from './types'
 
 export class ReminderScheduler {
-  public static schedule(gameEvents: NormalizedGameEvent[], userReminders: Reminder[]): Reminder[] {
+  public static schedule(userReminders: Reminder[], gameTime: Seconds): Reminder[] {
     const reminders: Reminder[] = []
+    const offsets = [90, 60, 30]
 
-    // TODO: move to some kind of config file so that we do not needto alter source code
-    // This should also come with enable/disable functionality not everyone wants all of these
-    const objectiveTimers = {
-      DragonKill: {
-        name: 'Dragon',
-        respawnTimer: 300, // 5 minutes
-        firstSpawnTime: 300, // 5 minutes
-        doesRespawn: true
-      },
-      BaronKill: {
-        name: 'Baron',
-        respawnTimer: 360, // 6 minutes
-        firstSpawnTime: 1500, // 25 minutes
-        doesRespawn: true
-      },
-      HeraldKill: {
-        name: 'Herald',
-        respawnTimer: null,
-        firstSpawnTime: 900, // 15 minutes
-        doesRespawn: false
-      },
-      VoidGrubs: {
-        name: 'Void Grubs',
-        respawnTimer: null,
-        firstSpawnTime: 480, // 8 minutes
-        doesRespawn: false
-      },
-      Atakhan: {
-        name: 'Atakhan',
-        respawnTimer: null,
-        firstSpawnTime: 1200, // 20 minutes
-        doesRespawn: false
-      }
-    }
+    for (const objective of Object.values(objectivesConfig)) {
+      const timeUntilSpawn = objective.firstSpawnTime - gameTime
 
-    if (gameEvents.length === 0) {
-      // Add initial spawn reminders when no events have occurred yet
-      for (const objective of Object.values(objectiveTimers)) {
-        const reminderTimes = [90, 60, 30]
+      if (timeUntilSpawn > 0) {
+        const validOffsets = offsets.filter((offset) => offset < timeUntilSpawn)
 
-        for (const reminderTime of reminderTimes) {
-          if (objective.firstSpawnTime > reminderTime) {
-            reminders.push(
-              new OneTimeReminder(
-                crypto.randomUUID(),
-                `${objective.name} spawning in ${reminderTime} seconds`,
-                false,
-                objective.firstSpawnTime - reminderTime
-              )
+        for (const reminderTime of validOffsets) {
+          reminders.push(
+            new Reminder(
+              crypto.randomUUID(),
+              `${objective.name} spawning in ${reminderTime} seconds`,
+              objective.firstSpawnTime - reminderTime,
+              true
             )
-          }
+          )
         }
       }
     }
 
-    if (gameEvents.length > 0) {
-      for (const gameEvent of gameEvents) {
-        const currentTime = gameEvent.timeInSeconds
-        const objectiveTimer = objectiveTimers[gameEvent.name]
-
-        if (objectiveTimer) {
-          let nextSpawnTime = currentTime
-
-          if (currentTime < objectiveTimer.firstSpawnTime) {
-            nextSpawnTime = objectiveTimer.firstSpawnTime
-          } else if (objectiveTimer.doesRespawn && objectiveTimer.respawnTimer) {
-            nextSpawnTime = currentTime + objectiveTimer.respawnTimer
-          }
-
-          const reminderTimes = [90, 60, 30]
-
-          for (const reminderTime of reminderTimes) {
-            if (nextSpawnTime - currentTime > reminderTime) {
-              reminders.push(
-                new OneTimeReminder(
-                  crypto.randomUUID(),
-                  `${objectiveTimer.name} spawning in ${reminderTime} seconds`,
-                  false,
-                  nextSpawnTime - reminderTime
-                )
-              )
-            }
-          }
-        }
-      }
-    }
-
-    const turretPlateReminderTimes = [90, 60, 30]
-    for (const reminderTime of turretPlateReminderTimes) {
-      reminders.push(
-        new OneTimeReminder(
-          crypto.randomUUID(),
-          `Turret plates falling in ${reminderTime} seconds`,
-          false,
-          840 - reminderTime
+    if (gameTime < 840) {
+      for (const reminderTime of offsets) {
+        reminders.push(
+          new Reminder(
+            crypto.randomUUID(),
+            `Turret plates falling in ${reminderTime} seconds`,
+            840 - reminderTime,
+            true
+          )
         )
-      )
+      }
     }
 
-    // Return all reminders (user reminders first, then objective reminders)
     return [...userReminders, ...reminders]
   }
 }

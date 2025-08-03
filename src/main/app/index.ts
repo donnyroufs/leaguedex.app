@@ -13,6 +13,8 @@ import { Dispatcher } from './Dispatcher'
 import EventEmitter from 'events'
 import { SayTextToSpeech } from './SayTextToSpeech'
 import { ReminderProcessor } from './ReminderProcessor'
+import { ObjectiveTracker } from './ObjectiveTracker'
+import { ReminderOrchestrator } from './ReminderOrchestrator'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -37,11 +39,16 @@ const emitter = new EventEmitter()
 const dispatcher = new Dispatcher(emitter)
 const textToSpeech = new SayTextToSpeech()
 const reminderProcessor = new ReminderProcessor(textToSpeech)
+const objectiveTracker = new ObjectiveTracker()
+const reminderOrchestrator = new ReminderOrchestrator(
+  reminderService,
+  reminderProcessor,
+  objectiveTracker
+)
 
 export const gameAssistant = new GameAssistant(
   gameDetector,
   dispatcher,
-  reminderService,
   riotClient,
-  reminderProcessor
+  reminderOrchestrator
 )
