@@ -1,8 +1,8 @@
 import { GameDetector } from './GameDetector'
 import { Contract, IDispatcher } from './IDispatcher'
 import { IRiotClient } from './IRiotClient'
-import { ITextToSpeech } from './ITextToSpeech'
 import { OneTimeReminder, Reminder } from './Reminder'
+import { ReminderProcessor } from './ReminderProcessor'
 import { ReminderScheduler } from './ReminderScheduler'
 import { ReminderService } from './ReminderService'
 
@@ -16,7 +16,7 @@ export class GameAssistant {
     private readonly _dispatcher: IDispatcher,
     private readonly _reminderService: ReminderService,
     private readonly _riotClient: IRiotClient,
-    private readonly _textToSpeech: ITextToSpeech
+    private readonly _reminderProcessor: ReminderProcessor
   ) {}
 
   public start(): void {
@@ -71,13 +71,17 @@ export class GameAssistant {
       if (reminder instanceof OneTimeReminder) {
         return reminder.triggerTime === currentGameTime
       }
-
       return false
     })
 
-    remindersToTrigger.forEach((reminder) => {
-      this._textToSpeech.speak(reminder.message)
-      this._scheduledReminders = this._scheduledReminders.filter((r) => r.id !== reminder.id)
-    })
+    if (remindersToTrigger.length === 0) {
+      return
+    }
+
+    this._reminderProcessor.process(remindersToTrigger)
+
+    this._scheduledReminders = this._scheduledReminders.filter(
+      (r) => !remindersToTrigger.some((triggered) => triggered.id === r.id)
+    )
   }
 }
