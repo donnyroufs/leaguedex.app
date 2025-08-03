@@ -17,7 +17,7 @@ export function Statusbar({ gameTime }: Props): JSX.Element {
   const ingame = gameTime != null
 
   return (
-    <div className="flex items-center justify-between p-2 bg-status-in-game border-2 border-[#14232A]">
+    <div className="flex items-center justify-between p-2 bg-status-in-game border-2 border-[#14232A] h-10">
       <div className="w-full flex items-center text-sm text-gray-400">
         <div className="flex items-center gap-2">
           <div
