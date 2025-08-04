@@ -24,23 +24,23 @@ export class GameAssistant {
 
   public start(): void {
     setInterval(async () => {
-      const gameTime = await this._gameDetector.detect()
-      this._isPlaying = gameTime !== null
+      const gameState = await this._gameDetector.detect()
+      this._isPlaying = gameState.type === 'in-game'
 
       if (this._isPlaying && !this._assistantActive) {
-        await this.activate(gameTime!)
+        await this.activate(gameState.time!)
       } else if (!this._isPlaying && this._assistantActive) {
         this.deactivate()
       }
 
-      if (this._assistantActive && gameTime !== null) {
+      if (this._assistantActive && gameState.time !== null) {
         const gameEvents = await this._riotClient.getGameEvents()
-        this._reminderOrchestrator.processTick(gameTime, gameEvents)
+        this._reminderOrchestrator.processTick(gameState.time, gameEvents)
       }
 
       this._dispatcher.dispatch('game-data', {
         playing: this._isPlaying,
-        gameTime: gameTime
+        gameTime: gameState.time
       })
     }, 1000)
   }
