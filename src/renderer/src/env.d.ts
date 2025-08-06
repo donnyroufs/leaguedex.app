@@ -11,6 +11,7 @@ declare global {
           callback: (data: { playing: boolean; gameTime: number | null }) => void
         ) => () => void
         getReminders: () => Promise<Reminder[]>
+        addReminder: (reminder: Reminder) => Promise<void>
       }
     }
   }

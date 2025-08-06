@@ -4,7 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { gameAssistant } from './app'
-import { Reminder } from './app/Reminder'
+import { OneTimeReminder, RepeatingReminder } from './app/Reminder'
 
 function createWindow(): void {
   // Create the browser window.
@@ -96,7 +96,7 @@ app.whenReady().then(() => {
     })
     .start()
 
-  ipcMain.handle('add-reminder', async (_, reminder: Reminder) => {
+  ipcMain.handle('add-reminder', async (_, reminder: OneTimeReminder | RepeatingReminder) => {
     return gameAssistant.addReminder(reminder)
   })
 

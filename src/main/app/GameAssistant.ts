@@ -1,7 +1,7 @@
 import { GameDetector } from './GameDetector'
 import { Contract, IDispatcher } from './IDispatcher'
 import { IRiotClient } from './IRiotClient'
-import { Reminder } from './Reminder'
+import { OneTimeReminder, Reminder, RepeatingReminder } from './Reminder'
 import { ReminderOrchestrator } from './ReminderOrchestrator'
 import { ReminderService } from './ReminderService'
 import { Seconds } from './types'
@@ -27,8 +27,25 @@ export class GameAssistant {
     return this._reminderService.removeReminder(id)
   }
 
-  public addReminder(reminder: Reminder): Promise<void> {
-    return this._reminderService.addReminder(reminder)
+  public async addReminder(
+    reminder: Omit<OneTimeReminder, 'id'> | Omit<RepeatingReminder, 'id'>
+  ): Promise<void> {
+    const id = crypto.randomUUID()
+
+    try {
+      if ('triggerTime' in reminder) {
+        await this._reminderService.addReminder(
+          new OneTimeReminder(id, reminder.message, reminder.triggerTime)
+        )
+      } else if ('interval' in reminder) {
+        await this._reminderService.addReminder(
+          new RepeatingReminder(id, reminder.message, reminder.interval)
+        )
+      }
+    } catch (err) {
+      console.error(err)
+      throw new Error('Failed to add reminder')
+    }
   }
   /* end */
 

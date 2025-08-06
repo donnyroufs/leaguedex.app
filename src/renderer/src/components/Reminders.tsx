@@ -4,7 +4,9 @@
  */
 
 import { useEffect, useState, type JSX } from 'react'
-import { Eye, MapPin, Plus } from 'lucide-react'
+import { Eye, MapPin } from 'lucide-react'
+import { AddReminderModal } from './AddReminderModal'
+import { useModal } from '../hooks'
 
 type Reminder = {
   id: string
@@ -15,10 +17,15 @@ type Reminder = {
 
 export function Reminders(): JSX.Element {
   const [reminders, setReminders] = useState<Reminder[]>([])
+  const modal = useModal()
 
   useEffect(() => {
     window.api.gameAssistant.getReminders().then(setReminders)
   }, [])
+
+  function onCreate(): void {
+    window.api.gameAssistant.getReminders().then(setReminders)
+  }
 
   const sortedReminders = reminders.toSorted((a, b) => {
     if (a.triggerTime || b.triggerTime) {
@@ -30,9 +37,7 @@ export function Reminders(): JSX.Element {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Panel Content */}
       <div className="flex-1 p-6 overflow-y-auto">
-        {/* Reminder Items */}
         <div className="space-y-3">
           {sortedReminders.map((reminder) => (
             <div
@@ -56,13 +61,7 @@ export function Reminders(): JSX.Element {
           ))}
         </div>
 
-        <button
-          disabled
-          className="w-full p-4 mt-6 bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)] rounded-md text-success text-sm cursor-pointer transition-all duration-200 hover:bg-[rgba(0,255,136,0.15)] flex items-center justify-center gap-2"
-        >
-          <Plus size={16} />
-          Add Reminder
-        </button>
+        <AddReminderModal {...modal} onCreate={onCreate} />
       </div>
     </div>
   )
