@@ -13,8 +13,4 @@ export type Contract = {
     playing: boolean
     gameTime: Seconds | null
   }
-  'reminder-triggered': {
-    id: string
-    message: string
-  }
 }
