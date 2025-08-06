@@ -58,13 +58,19 @@ export function Reminders(): JSX.Element {
             <div
               key={reminder.id}
               onClick={() => onDelete(reminder.id)}
-              className="flex items-center gap-4 p-4 bg-[rgba(0,255,136,0.05)] border border-[rgba(0,255,136,0.2)] rounded-md"
+              className="group flex items-center gap-4 p-4 bg-[rgba(0,255,136,0.05)] border border-[rgba(0,255,136,0.2)] rounded-md hover:bg-[rgba(255,71,87,0.05)] hover:border-[rgba(255,71,87,0.2)] transition-all duration-200 cursor-pointer"
             >
-              <div className="w-8 h-8 bg-[rgba(0,255,136,0.1)] rounded-sm flex items-center justify-center">
+              <div className="w-8 h-8 bg-[rgba(0,255,136,0.1)] group-hover:bg-[rgba(255,71,87,0.1)] rounded-sm flex items-center justify-center transition-colors duration-200">
                 {reminder.interval ? (
-                  <Eye size={16} className="text-success" />
+                  <Eye
+                    size={16}
+                    className="text-success group-hover:text-urgent transition-colors duration-200"
+                  />
                 ) : (
-                  <MapPin size={16} className="text-success" />
+                  <MapPin
+                    size={16}
+                    className="text-success group-hover:text-urgent transition-colors duration-200"
+                  />
                 )}
               </div>
               <div className="flex-1 text-sm text-text-primary">{reminder.message}</div>
