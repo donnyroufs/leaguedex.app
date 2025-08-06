@@ -9,8 +9,8 @@ import { OneTimeReminder, RepeatingReminder } from './app/Reminder'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1600,
-    height: 1200,
+    width: 1200,
+    height: 800,
     minWidth: 1024,
     minHeight: 768,
     maxWidth: 1600,
