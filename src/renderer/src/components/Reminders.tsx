@@ -27,6 +27,16 @@ export function Reminders(): JSX.Element {
     window.api.gameAssistant.getReminders().then(setReminders)
   }
 
+  async function onDelete(id: string): Promise<void> {
+    try {
+      await window.api.gameAssistant.removeReminder(id)
+      await window.api.gameAssistant.getReminders().then(setReminders)
+    } catch (err) {
+      console.error('Error deleting reminder:', err)
+      return
+    }
+  }
+
   const sortedReminders = reminders.toSorted((a, b) => {
     if (a.triggerTime || b.triggerTime) {
       return (a.triggerTime ?? 0) - (b.triggerTime ?? 0)
@@ -38,10 +48,16 @@ export function Reminders(): JSX.Element {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 p-6 overflow-y-auto">
+        {sortedReminders.length <= 0 && (
+          <div className="p-4 border border-[rgba(0,255,136,0.2)] rounded-md text-text-tertiary">
+            <p>You have not yet configured any reminders!</p>
+          </div>
+        )}
         <div className="space-y-3">
           {sortedReminders.map((reminder) => (
             <div
               key={reminder.id}
+              onClick={() => onDelete(reminder.id)}
               className="flex items-center gap-4 p-4 bg-[rgba(0,255,136,0.05)] border border-[rgba(0,255,136,0.2)] rounded-md"
             >
               <div className="w-8 h-8 bg-[rgba(0,255,136,0.1)] rounded-sm flex items-center justify-center">

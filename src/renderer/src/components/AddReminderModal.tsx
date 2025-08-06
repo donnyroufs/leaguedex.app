@@ -10,7 +10,6 @@ type Props = {
 
 type FormState = {
   message: string
-  minutes: number
   seconds: number
   isRepeating: boolean
 }
@@ -19,39 +18,29 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
   const [state, setState] = useState<FormState>({
     isRepeating: false,
     message: '',
-    minutes: 2,
-    seconds: 30
+    seconds: 0
   })
 
   async function onAdd(event: React.MouseEvent): Promise<void> {
     event.preventDefault()
 
-    const totalSeconds = state.minutes * 60 + state.seconds
-    if (totalSeconds <= 0) return
-
     try {
       await window.api.gameAssistant.addReminder({
         message: state.message,
-        triggerTime: state.isRepeating ? undefined : totalSeconds,
-        interval: state.isRepeating ? totalSeconds : undefined
+        triggerTime: state.isRepeating ? undefined : state.seconds,
+        interval: state.isRepeating ? state.seconds : undefined
       })
       onCreate()
 
       setState({
         isRepeating: false,
         message: '',
-        minutes: 2,
-        seconds: 30
+        seconds: 0
       })
       onClose()
     } catch (err) {
       console.error(err)
     }
-  }
-
-  function handleMinutesChange(value: string): void {
-    const minutes = parseInt(value) || 0
-    setState({ ...state, minutes })
   }
 
   function handleSecondsChange(value: string): void {
@@ -113,34 +102,20 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
                 <label className="block mb-2 text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Time
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={state.minutes}
-                      onChange={(e) => handleMinutesChange(e.target.value)}
-                      placeholder="2"
-                      className="w-full px-4 py-3 bg-bg-primary border border-border-secondary rounded-lg text-text-primary text-sm transition-all duration-200 focus:outline-none focus:border-success focus:bg-bg-primary focus:shadow-[0_0_0_3px_rgba(0,255,136,0.1)]"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary text-xs pointer-events-none">
-                      min
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={state.seconds}
-                      onChange={(e) => handleSecondsChange(e.target.value)}
-                      placeholder="30"
-                      className="w-full px-4 py-3 bg-bg-primary border border-border-secondary rounded-lg text-text-primary text-sm transition-all duration-200 focus:outline-none focus:border-success focus:bg-bg-primary focus:shadow-[0_0_0_3px_rgba(0,255,136,0.1)]"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary text-xs pointer-events-none">
-                      sec
-                    </span>
-                  </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={state.seconds}
+                    onChange={(e) => handleSecondsChange(e.target.value)}
+                    placeholder="Seconds"
+                    className="w-full px-4 py-3 bg-bg-primary border border-border-secondary rounded-lg text-text-primary text-sm transition-all duration-200 focus:outline-none focus:border-success focus:bg-bg-primary focus:shadow-[0_0_0_3px_rgba(0,255,136,0.1)]"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary text-xs pointer-events-none">
+                    seconds
+                  </span>
                 </div>
                 <p className="text-xs text-text-tertiary mt-1.5">
-                  Set when this reminder should trigger
+                  The reminder will trigger based on this time.
                 </p>
               </div>
 
@@ -170,7 +145,7 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
               </button>
               <button
                 onClick={onAdd}
-                disabled={!state.message.trim() || (state.minutes === 0 && state.seconds === 0)}
+                disabled={!state.message.trim()}
                 className="flex-1 py-3 px-6 bg-success hover:bg-[#00cc70] border border-success hover:border-[#00cc70] rounded-lg text-text-inverse text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-success"
               >
                 Add Reminder

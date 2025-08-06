@@ -12,6 +12,7 @@ declare global {
         ) => () => void
         getReminders: () => Promise<Reminder[]>
         addReminder: (reminder: Reminder) => Promise<void>
+        removeReminder(id: string): Promise<void>
       }
     }
   }
