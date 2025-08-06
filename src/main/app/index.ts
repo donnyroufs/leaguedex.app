@@ -2,6 +2,7 @@ import 'dotenv/config'
 
 import axios from 'axios'
 import https from 'https'
+import { join } from 'node:path'
 
 import { FakeRiotClient } from './FakeRiotClient'
 import { GameDetector } from './GameDetector'
@@ -15,6 +16,7 @@ import { SayTextToSpeech } from './SayTextToSpeech'
 import { ReminderProcessor } from './ReminderProcessor'
 import { ObjectiveTracker } from './ObjectiveTracker'
 import { ReminderOrchestrator } from './ReminderOrchestrator'
+import { app } from 'electron'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -32,9 +34,21 @@ function createRiotClient(): IRiotClient {
   return new RiotClient(httpClient)
 }
 
+function createReminderService(): ReminderService {
+  const path = app.isPackaged
+    ? join(app.getPath('userData'), 'reminders.json')
+    : join(__dirname, '../../dev-reminders.json')
+
+  const service = new ReminderService(path)
+
+  service.configure()
+
+  return service
+}
+
 const riotClient = createRiotClient()
+const reminderService = createReminderService()
 const gameDetector = new GameDetector(riotClient)
-const reminderService = new ReminderService()
 const emitter = new EventEmitter()
 const dispatcher = new Dispatcher(emitter)
 const textToSpeech = new SayTextToSpeech()

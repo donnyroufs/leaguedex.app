@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { Reminder } from '../main/app/Reminder'
 
 const api = {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
@@ -15,7 +16,9 @@ const api = {
         ipcRenderer.removeAllListeners('game-data')
       }
     },
-    getReminders: () => ipcRenderer.invoke('get-reminders')
+    getReminders: () => ipcRenderer.invoke('get-reminders'),
+    addReminder: (reminder: Reminder) => ipcRenderer.invoke('add-reminder', reminder),
+    removeReminder: (id: string) => ipcRenderer.invoke('remove-reminder', id)
   }
 }
 

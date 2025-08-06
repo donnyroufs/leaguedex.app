@@ -18,9 +18,19 @@ export class GameAssistant {
     private readonly _reminderService: ReminderService
   ) {}
 
+  /* I think these methods shouldn't be exposed like this. */
   public getReminders(): Promise<Reminder[]> {
     return this._reminderService.getReminders()
   }
+
+  public removeReminder(id: string): Promise<void> {
+    return this._reminderService.removeReminder(id)
+  }
+
+  public addReminder(reminder: Reminder): Promise<void> {
+    return this._reminderService.addReminder(reminder)
+  }
+  /* end */
 
   public start(): void {
     setInterval(async () => {
