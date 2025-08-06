@@ -6,6 +6,12 @@ import { ReminderOrchestrator } from './ReminderOrchestrator'
 import { ReminderService } from './ReminderService'
 import { Seconds } from './types'
 
+export type CreateReminder = {
+  message: string
+  time: number
+  type: 'one-time' | 'repeating'
+}
+
 export class GameAssistant {
   private _isPlaying = false
   private _assistantActive = false
@@ -27,24 +33,21 @@ export class GameAssistant {
     return this._reminderService.removeReminder(id)
   }
 
-  public async addReminder(
-    reminder: Omit<OneTimeReminder, 'id'> | Omit<RepeatingReminder, 'id'>
-  ): Promise<void> {
+  public async addReminder(data: CreateReminder): Promise<void> {
     const id = crypto.randomUUID()
 
     try {
-      if ('triggerTime' in reminder) {
-        await this._reminderService.addReminder(
-          new OneTimeReminder(id, reminder.message, reminder.triggerTime)
-        )
-      } else if ('interval' in reminder) {
-        await this._reminderService.addReminder(
-          new RepeatingReminder(id, reminder.message, reminder.interval)
-        )
+      // TODO: I think that we can use just 1 Reminder class and use a type field? These classes dont have any logic anyway.
+      if (data.type === 'one-time') {
+        await this._reminderService.addReminder(new OneTimeReminder(id, data.message, data.time))
+      } else if (data.type === 'repeating') {
+        await this._reminderService.addReminder(new RepeatingReminder(id, data.message, data.time))
+      } else {
+        throw new Error('Invalid reminder type')
       }
     } catch (err) {
       console.error(err)
-      throw new Error('Failed to add reminder')
+      throw err
     }
   }
   /* end */

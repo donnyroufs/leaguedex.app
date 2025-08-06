@@ -41,6 +41,7 @@ export class ReminderService {
   }
 
   private deserializeReminder(reminder: Reminder): Reminder {
+    console.log(reminder)
     if (RepeatingReminder.is(reminder)) {
       return new RepeatingReminder(reminder.id, reminder.message, reminder.interval)
     }

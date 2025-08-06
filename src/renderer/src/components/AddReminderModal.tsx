@@ -26,9 +26,9 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
 
     try {
       await window.api.gameAssistant.addReminder({
-        message: state.message,
-        triggerTime: state.isRepeating ? undefined : state.seconds,
-        interval: state.isRepeating ? state.seconds : undefined
+        time: state.seconds,
+        type: state.isRepeating ? 'repeating' : 'one-time',
+        message: state.message
       })
       onCreate()
 

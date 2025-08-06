@@ -17,7 +17,9 @@ export class RepeatingReminder extends Reminder {
   }
 
   public static is(reminder: Reminder): reminder is RepeatingReminder {
-    return 'interval' in reminder || reminder instanceof RepeatingReminder
+    return (
+      ('interval' in reminder || reminder instanceof RepeatingReminder) && reminder.interval != null
+    )
   }
 }
 
@@ -31,6 +33,9 @@ export class OneTimeReminder extends Reminder {
   }
 
   public static is(reminder: Reminder): reminder is OneTimeReminder {
-    return 'triggerTime' in reminder || reminder instanceof OneTimeReminder
+    return (
+      ('triggerTime' in reminder || reminder instanceof OneTimeReminder) &&
+      reminder.triggerTime != null
+    )
   }
 }

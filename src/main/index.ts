@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 
 import { gameAssistant } from './app'
 import { OneTimeReminder, RepeatingReminder } from './app/Reminder'
+import { CreateReminder } from './app/GameAssistant'
 
 function createWindow(): void {
   // Create the browser window.
@@ -96,7 +97,7 @@ app.whenReady().then(() => {
     })
     .start()
 
-  ipcMain.handle('add-reminder', async (_, reminder: OneTimeReminder | RepeatingReminder) => {
+  ipcMain.handle('add-reminder', async (_, reminder: CreateReminder) => {
     return gameAssistant.addReminder(reminder)
   })
 
