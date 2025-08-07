@@ -31,7 +31,7 @@ function App(): React.JSX.Element {
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Main content will go here */}
         </main>
-        <aside className="w-80 bg-[rgba(255,255,255,0.02)] border-l border-border-primary relative">
+        <aside className="w-80 bg-[rgba(255,255,255,0.02)] relative">
           <Reminders />
         </aside>
       </div>

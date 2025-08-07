@@ -10,7 +10,7 @@ type Props = {
 
 type FormState = {
   message: string
-  seconds: number
+  timeInput: string
   isRepeating: boolean
 }
 
@@ -18,15 +18,49 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
   const [state, setState] = useState<FormState>({
     isRepeating: false,
     message: '',
-    seconds: 0
+    timeInput: ''
   })
+
+  function parseTimeToSeconds(timeInput: string): number {
+    if (!timeInput.trim()) return 0
+
+    if (timeInput.includes(':')) {
+      const parts = timeInput.split(':')
+      if (parts.length === 2) {
+        const minutes = parseInt(parts[0]) || 0
+        const seconds = parseInt(parts[1]) || 0
+        return minutes * 60 + seconds
+      }
+    }
+
+    const totalSeconds = parseInt(timeInput) || 0
+    return totalSeconds
+  }
+
+  function formatSecondsToTime(seconds: number): string {
+    if (seconds === 0) return ''
+
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+
+    if (minutes === 0) {
+      return seconds.toString() + 's'
+    } else if (remainingSeconds === 0) {
+      return minutes.toString() + 'm'
+    } else {
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+    }
+  }
 
   async function onAdd(event: React.MouseEvent): Promise<void> {
     event.preventDefault()
 
+    const seconds = parseTimeToSeconds(state.timeInput)
+    if (seconds === 0) return
+
     try {
       await window.api.gameAssistant.addReminder({
-        time: state.seconds,
+        time: seconds,
         type: state.isRepeating ? 'repeating' : 'one-time',
         message: state.message
       })
@@ -35,7 +69,7 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
       setState({
         isRepeating: false,
         message: '',
-        seconds: 0
+        timeInput: ''
       })
       onClose()
     } catch (err) {
@@ -43,9 +77,22 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
     }
   }
 
-  function handleSecondsChange(value: string): void {
-    const seconds = parseInt(value) || 0
-    setState({ ...state, seconds })
+  function handleTimeChange(value: string): void {
+    const sanitizedValue = value.replace(/[^0-9:]/g, '')
+
+    const colonCount = (sanitizedValue.match(/:/g) || []).length
+    if (colonCount > 1) return
+
+    if (sanitizedValue.includes(':')) {
+      const parts = sanitizedValue.split(':')
+      if (parts.length === 2) {
+        const seconds = parts[1]
+
+        if (seconds.length > 2 || parseInt(seconds) > 59) return
+      }
+    }
+
+    setState({ ...state, timeInput: sanitizedValue })
   }
 
   return (
@@ -104,18 +151,20 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
                 </label>
                 <div className="relative">
                   <input
-                    type="number"
-                    value={state.seconds}
-                    onChange={(e) => handleSecondsChange(e.target.value)}
-                    placeholder="Seconds"
+                    type="text"
+                    value={state.timeInput}
+                    onChange={(e) => handleTimeChange(e.target.value)}
+                    placeholder="e.g. 120, 2:30, 90"
                     className="w-full px-4 py-3 bg-bg-primary border border-border-secondary rounded-lg text-text-primary text-sm transition-all duration-200 focus:outline-none focus:border-success focus:bg-bg-primary focus:shadow-[0_0_0_3px_rgba(0,255,136,0.1)]"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary text-xs pointer-events-none">
-                    seconds
+                    {state.timeInput
+                      ? formatSecondsToTime(parseTimeToSeconds(state.timeInput))
+                      : 'time'}
                   </span>
                 </div>
                 <p className="text-xs text-text-tertiary mt-1.5">
-                  The reminder will trigger based on this time.
+                  Enter time as seconds (120) or MM:SS format (2:30). 120 = 2 minutes, 90 = 1:30.
                 </p>
               </div>
 
@@ -145,7 +194,7 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
               </button>
               <button
                 onClick={onAdd}
-                disabled={!state.message.trim()}
+                disabled={!state.message.trim() || !state.timeInput.trim()}
                 className="flex-1 py-3 px-6 bg-success hover:bg-[#00cc70] border border-success hover:border-[#00cc70] rounded-lg text-text-inverse text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-success"
               >
                 Add Reminder

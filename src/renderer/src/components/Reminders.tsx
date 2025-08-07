@@ -22,7 +22,7 @@ export function Reminders(): JSX.Element {
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const modal = useModal()
 
-  const HOLD_DURATION = 1000 // 1 second to hold
+  const HOLD_DURATION = 1000
 
   useEffect(() => {
     window.api.gameAssistant.getReminders().then(setReminders)
@@ -46,7 +46,6 @@ export function Reminders(): JSX.Element {
     setHeldReminder(id)
     setHoldProgress(0)
 
-    // Start progress animation
     const startTime = Date.now()
     progressIntervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime
@@ -59,7 +58,7 @@ export function Reminders(): JSX.Element {
         setHeldReminder(null)
         setHoldProgress(0)
       }
-    }, 16) // ~60fps
+    }, 16)
   }
 
   function handleMouseUp(): void {
@@ -119,11 +118,9 @@ export function Reminders(): JSX.Element {
                     />
                   )}
 
-                  {/* Progress Spinner */}
                   {isHeld && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <svg className="w-8 h-8 transform -rotate-90" viewBox="0 0 32 32">
-                        {/* Background circle */}
                         <circle
                           cx="16"
                           cy="16"
@@ -132,7 +129,6 @@ export function Reminders(): JSX.Element {
                           strokeWidth="2"
                           fill="none"
                         />
-                        {/* Progress circle */}
                         <circle
                           cx="16"
                           cy="16"
