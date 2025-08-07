@@ -14,6 +14,7 @@ declare global {
         addReminder: (reminder: Reminder) => Promise<void>
         removeReminder(id: string): Promise<void>
       }
+      getVersion: () => Promise<string>
     }
   }
 }

@@ -61,7 +61,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-
   // Window control handlers
   ipcMain.on('window-minimize', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow()
@@ -98,6 +97,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('add-reminder', async (_, reminder: CreateReminder) => {
     return gameAssistant.addReminder(reminder)
+  })
+
+  ipcMain.handle('get-version', async () => {
+    return app.getVersion()
   })
 
   ipcMain.handle('remove-reminder', async (_, id: string) => {

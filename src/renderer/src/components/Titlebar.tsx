@@ -1,10 +1,16 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 type TitlebarProps = {
   title?: string
 }
 
 export const Titlebar: React.FC<TitlebarProps> = ({ title }) => {
+  const [version, setVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    window.api?.getVersion?.().then((version) => setVersion(version))
+  }, [])
+
   const handleMinimize = (): void => {
     window.api?.minimizeWindow?.()
   }
@@ -24,6 +30,7 @@ export const Titlebar: React.FC<TitlebarProps> = ({ title }) => {
     >
       <div className="flex-1 flex items-center px-4 cursor-default">
         <span className="text-sm font-medium">{title}</span>
+        <span className="text-xs text-text-tertiary ml-2 mt-0.5">v{version}</span>
       </div>
 
       <div

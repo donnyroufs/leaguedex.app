@@ -19,7 +19,8 @@ const api = {
     getReminders: () => ipcRenderer.invoke('get-reminders'),
     addReminder: (reminder: Reminder) => ipcRenderer.invoke('add-reminder', reminder),
     removeReminder: (id: string) => ipcRenderer.invoke('remove-reminder', id)
-  }
+  },
+  getVersion: () => ipcRenderer.invoke('get-version')
 }
 
 if (process.contextIsolated) {
