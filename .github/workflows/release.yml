@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for version bumping
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,6 +28,33 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      # NEW: Extract version from git tag
+      - name: Extract version from tag
+        id: version
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace '^v', ''
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      # NEW: Update package.json version
+      - name: Update package.json version
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $packageJson = Get-Content "package.json" | ConvertFrom-Json
+          $packageJson.version = $version
+          $packageJson | ConvertTo-Json -Depth 10 | Set-Content "package.json"
+
+      # NEW: Commit the version change
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "Bump version to ${{ steps.version.outputs.version }}"
+          git tag -d "${{ github.ref_name }}"
+          git tag "${{ github.ref_name }}"
+          git push origin "${{ github.ref_name }}" --force
 
       - name: Run type checking
         run: yarn typecheck
