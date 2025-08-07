@@ -61,8 +61,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
 
   // Window control handlers
   ipcMain.on('window-minimize', () => {

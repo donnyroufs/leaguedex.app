@@ -28,12 +28,12 @@ export class ReminderService {
    */
   public configure(): void {
     access(this._storagePath, constants.F_OK, (err) => {
-      console.log(err)
       if (!err) {
         console.info(`Reminder storage file already exists at ${this._storagePath}.`)
         return
       }
 
+      console.error(err)
       console.info(`Reminder storage file does not exist at ${this._storagePath}. Creating it...`)
       writeFileSync(this._storagePath, JSON.stringify([]))
       console.info(`Reminder storage file created at ${this._storagePath}.`)
