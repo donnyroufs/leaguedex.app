@@ -4,7 +4,6 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { gameAssistant } from './app'
-import { OneTimeReminder, RepeatingReminder } from './app/Reminder'
 import { CreateReminder } from './app/GameAssistant'
 
 function createWindow(): void {

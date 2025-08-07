@@ -23,6 +23,9 @@ function App(): React.JSX.Element {
 
       <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary">
         <aside className="w-60 bg-bg-tertiary backdrop-blur-md border-r border-border-primary flex flex-col pt-6">
+          <div className="flex flex-col">
+            <div className="mt-auto"></div>
+          </div>
           {/* Sidebar content will go here */}
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">
