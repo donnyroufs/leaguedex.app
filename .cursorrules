@@ -22,3 +22,6 @@ This is an electron app that uses React & Typescript and its purpose is to help 
   everytime then we will check if we have a button component, if not, we create one and start building our own design system. So we can use our own button component
   with default styles and variant option for example. But if something looks like its only used once or twice, we don't really bother. BUT, we should always
   be aware.
+
+- We as engineers really value boundaries over anything. As long as the app shows us the domains we are working on then we are good. How we architect the inside
+  isn't something we are too concered about. Again, we are pragmatic but we understand and know all the patterns!
