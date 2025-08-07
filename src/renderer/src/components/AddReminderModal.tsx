@@ -73,6 +73,8 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
       })
       onClose()
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error creating reminder'
+      window.alert(message)
       console.error(err)
     }
   }
