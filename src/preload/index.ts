@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { Reminder } from '../main/app/Reminder'
+import { Reminder } from '../main/app/game-assistance/Reminder'
 
 const api = {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),

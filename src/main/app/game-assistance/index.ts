@@ -46,24 +46,26 @@ function createReminderService(): ReminderService {
   return service
 }
 
-const riotClient = createRiotClient()
-const reminderService = createReminderService()
-const gameDetector = new GameDetector(riotClient)
-const emitter = new EventEmitter()
-const dispatcher = new Dispatcher(emitter)
-const textToSpeech = new SayTextToSpeech()
-const reminderProcessor = new ReminderProcessor(textToSpeech)
-const objectiveTracker = new ObjectiveTracker()
-const reminderOrchestrator = new ReminderOrchestrator(
-  reminderService,
-  reminderProcessor,
-  objectiveTracker
-)
+export function createGameAssistant(): GameAssistant {
+  const riotClient = createRiotClient()
+  const reminderService = createReminderService()
+  const gameDetector = new GameDetector(riotClient)
+  const emitter = new EventEmitter()
+  const dispatcher = new Dispatcher(emitter)
+  const textToSpeech = new SayTextToSpeech()
+  const reminderProcessor = new ReminderProcessor(textToSpeech)
+  const objectiveTracker = new ObjectiveTracker()
+  const reminderOrchestrator = new ReminderOrchestrator(
+    reminderService,
+    reminderProcessor,
+    objectiveTracker
+  )
 
-export const gameAssistant = new GameAssistant(
-  gameDetector,
-  dispatcher,
-  riotClient,
-  reminderOrchestrator,
-  reminderService
-)
+  return new GameAssistant(
+    gameDetector,
+    dispatcher,
+    riotClient,
+    reminderOrchestrator,
+    reminderService
+  )
+}

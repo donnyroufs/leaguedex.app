@@ -3,8 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-import { gameAssistant } from './app'
-import { CreateReminder } from './app/GameAssistant'
+import * as GameAssistance from './app/game-assistance'
+import { CreateReminder } from './app/game-assistance/GameAssistant'
 
 function createWindow(): void {
   // Create the browser window.
@@ -87,6 +87,8 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+
+  const gameAssistant = GameAssistance.createGameAssistant()
 
   gameAssistant
     .on('game-data', (data) => {
