@@ -1,5 +1,6 @@
 import 'dotenv/config'
 
+import { app } from 'electron'
 import axios from 'axios'
 import https from 'https'
 import { join } from 'node:path'
@@ -16,7 +17,7 @@ import { SayTextToSpeech } from './SayTextToSpeech'
 import { ReminderProcessor } from './ReminderProcessor'
 import { ObjectiveTracker } from './ObjectiveTracker'
 import { ReminderOrchestrator } from './ReminderOrchestrator'
-import { app } from 'electron'
+import { UserConfigRepository } from '../UserConfig'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -46,7 +47,7 @@ function createReminderService(): ReminderService {
   return service
 }
 
-export function createGameAssistant(): GameAssistant {
+export function createGameAssistant(configRepository: UserConfigRepository): GameAssistant {
   const riotClient = createRiotClient()
   const reminderService = createReminderService()
   const gameDetector = new GameDetector(riotClient)
@@ -66,6 +67,7 @@ export function createGameAssistant(): GameAssistant {
     dispatcher,
     riotClient,
     reminderOrchestrator,
-    reminderService
+    reminderService,
+    configRepository
   )
 }

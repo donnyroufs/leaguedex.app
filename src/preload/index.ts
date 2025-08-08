@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { Reminder } from '../main/app/game-assistance/Reminder'
+import { UserConfig } from '../main/app/UserConfig'
 
 const api = {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
@@ -20,7 +21,9 @@ const api = {
     addReminder: (reminder: Reminder) => ipcRenderer.invoke('add-reminder', reminder),
     removeReminder: (id: string) => ipcRenderer.invoke('remove-reminder', id)
   },
-  getVersion: () => ipcRenderer.invoke('get-version')
+  getVersion: () => ipcRenderer.invoke('get-version'),
+  updateConfig: (config: UserConfig) => ipcRenderer.invoke('update-config', config),
+  getConfig: () => ipcRenderer.invoke('get-config')
 }
 
 if (process.contextIsolated) {

@@ -15,15 +15,27 @@ export class ReminderOrchestrator {
     private readonly _objectiveTracker: ObjectiveTracker
   ) {}
 
-  public async initialize(gameTime: Seconds): Promise<void> {
+  public async initialize(gameTime: Seconds, enableNeutralObjectiveTimers: boolean): Promise<void> {
     const userReminders = await this._reminderService.getReminders()
+
+    if (!enableNeutralObjectiveTimers) {
+      this._reminders = userReminders
+      return
+    }
+
     const initialReminders = ReminderScheduler.schedule(userReminders, gameTime)
     this._reminders.push(...initialReminders)
   }
 
-  public processTick(gameTime: Seconds, gameEvents: NormalizedGameEvent[]): void {
-    const objectiveReminders = this._objectiveTracker.track(gameEvents, gameTime)
-    this._reminders.push(...objectiveReminders)
+  public processTick(
+    gameTime: Seconds,
+    gameEvents: NormalizedGameEvent[],
+    enableNeutralObjectiveTimers: boolean
+  ): void {
+    if (enableNeutralObjectiveTimers) {
+      const objectiveReminders = this._objectiveTracker.track(gameEvents, gameTime)
+      this._reminders.push(...objectiveReminders)
+    }
 
     const oneTimeReminders = this._reminders.filter(
       (x) => x instanceof OneTimeReminder && x.triggerTime === gameTime

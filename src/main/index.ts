@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 
 import * as GameAssistance from './app/game-assistance'
 import { CreateReminder } from './app/game-assistance/GameAssistant'
+import { UserConfig, UserConfigRepository } from './app/UserConfig'
 
 function createWindow(): void {
   // Create the browser window.
@@ -85,7 +86,8 @@ app.whenReady().then(() => {
 
   createWindow()
 
-  const gameAssistant = GameAssistance.createGameAssistant()
+  const configRepository = UserConfigRepository.create()
+  const gameAssistant = GameAssistance.createGameAssistant(configRepository)
 
   gameAssistant
     .on('game-data', (data) => {
@@ -94,6 +96,15 @@ app.whenReady().then(() => {
       })
     })
     .start()
+
+  ipcMain.handle('update-config', async (_, config: UserConfig) => {
+    await configRepository.update(config)
+    return configRepository.getConfig()
+  })
+
+  ipcMain.handle('get-config', async () => {
+    return configRepository.getConfig()
+  })
 
   ipcMain.handle('add-reminder', async (_, reminder: CreateReminder) => {
     return gameAssistant.addReminder(reminder)

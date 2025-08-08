@@ -1,3 +1,4 @@
+import { UserConfig, UserConfigRepository } from '../UserConfig'
 import { GameDetector } from './GameDetector'
 import { Contract, IDispatcher } from './IDispatcher'
 import { IRiotClient } from './IRiotClient'
@@ -21,7 +22,8 @@ export class GameAssistant {
     private readonly _dispatcher: IDispatcher,
     private readonly _riotClient: IRiotClient,
     private readonly _reminderOrchestrator: ReminderOrchestrator,
-    private readonly _reminderService: ReminderService
+    private readonly _reminderService: ReminderService,
+    private readonly _configRepository: UserConfigRepository
   ) {}
 
   /* I think these methods shouldn't be exposed like this. */
@@ -53,11 +55,15 @@ export class GameAssistant {
   /* end */
 
   public start(): void {
+    let config: UserConfig
+
     setInterval(async () => {
       const gameState = await this._gameDetector.detect()
+
       this._isPlaying = gameState.type === 'in-game'
 
       if (this._isPlaying && !this._assistantActive) {
+        config = this._configRepository.getConfig()
         await this.activate(gameState.time!)
       } else if (!this._isPlaying && this._assistantActive) {
         this.deactivate()
@@ -65,7 +71,11 @@ export class GameAssistant {
 
       if (this._assistantActive && gameState.time !== null) {
         const gameEvents = await this._riotClient.getGameEvents()
-        this._reminderOrchestrator.processTick(gameState.time, gameEvents)
+        this._reminderOrchestrator.processTick(
+          gameState.time,
+          gameEvents,
+          config.gameAssistance.enableNeutralObjectiveTimers
+        )
       }
 
       this._dispatcher.dispatch('game-data', {
@@ -85,7 +95,11 @@ export class GameAssistant {
 
   private async activate(gameTime: Seconds): Promise<void> {
     console.log('Game Assistant activated')
-    await this._reminderOrchestrator.initialize(gameTime)
+    const config = this._configRepository.getConfig()
+    await this._reminderOrchestrator.initialize(
+      gameTime,
+      config.gameAssistance.enableNeutralObjectiveTimers
+    )
     this._assistantActive = true
   }
 

@@ -15,6 +15,8 @@ declare global {
         removeReminder(id: string): Promise<void>
       }
       getVersion: () => Promise<string>
+      updateConfig: (config: UserConfig) => Promise<UserConfig>
+      getConfig: () => Promise<UserConfig>
     }
   }
 }

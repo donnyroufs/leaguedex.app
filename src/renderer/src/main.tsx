@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 
 import { Matchups } from './pages/Matchups'
 import { Layout } from './Layout'
+import { Settings } from './pages/Settings'
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,10 @@ const router = createBrowserRouter([
       {
         path: '/',
         element: <Matchups />
+      },
+      {
+        path: '/settings',
+        element: <Settings />
       }
     ]
   }
