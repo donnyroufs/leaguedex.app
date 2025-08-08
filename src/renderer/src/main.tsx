@@ -2,14 +2,14 @@ import './assets/main.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createHashRouter, RouterProvider } from 'react-router'
 
 import { Matchups } from './pages/Matchups'
 import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
 import { Titlebar } from './components/Titlebar'
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     element: <Layout />,
     errorElement: (
