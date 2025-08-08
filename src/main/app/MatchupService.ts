@@ -3,7 +3,7 @@ import { AllGameData } from './game-assistance/IRiotClient'
 type Champion = {
   team: 'blue' | 'red' | 'unknown'
   championName: string
-  role: 'top' | 'jungle' | 'mid' | 'bot' | 'support' | 'unknown'
+  role: 'top' | 'jungle' | 'middle' | 'bottom' | 'support' | 'unknown'
 }
 
 export type Matchup = {
@@ -54,16 +54,20 @@ export class MatchupService {
     }
   }
 
-  private static getRole(role: string): 'top' | 'jungle' | 'mid' | 'bot' | 'support' | 'unknown' {
+  private static getRole(
+    role: string
+  ): 'top' | 'jungle' | 'middle' | 'bottom' | 'support' | 'unknown' {
     switch (role.toLowerCase()) {
       case 'top':
         return 'top'
       case 'jungle':
         return 'jungle'
-      case 'mid':
-        return 'mid'
-      case 'bot':
-        return 'bot'
+      case 'middle':
+        return 'middle'
+      case 'bottom':
+        return 'bottom'
+      case 'support':
+        return 'support'
       default:
         return 'unknown'
     }
