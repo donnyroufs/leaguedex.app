@@ -1,9 +1,10 @@
-import { IRiotClient } from './IRiotClient'
+import { AllGameData, IRiotClient } from './IRiotClient'
 import { Seconds } from './types'
 
 type GameDetected = {
   type: 'pre-game' | 'in-game' | 'none'
   time: Seconds | null
+  data: AllGameData | null
 }
 
 export class GameDetector {
@@ -18,7 +19,8 @@ export class GameDetector {
     if (response === null) {
       return {
         type: 'none',
-        time: null
+        time: null,
+        data: null
       }
     }
 
@@ -27,13 +29,15 @@ export class GameDetector {
     if (gameTime > 0) {
       return {
         type: 'in-game',
-        time: gameTime
+        time: gameTime,
+        data: response
       }
     }
 
     return {
       type: 'pre-game',
-      time: gameTime
+      time: gameTime,
+      data: response
     }
   }
 }

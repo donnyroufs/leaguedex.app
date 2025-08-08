@@ -1,3 +1,4 @@
+import { Matchup } from '../MatchupService'
 import { Seconds } from './types'
 
 export interface IDispatcher {
@@ -12,5 +13,6 @@ export type Contract = {
   'game-data': {
     playing: boolean
     gameTime: Seconds | null
+    matchup: Matchup | null
   }
 }

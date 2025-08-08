@@ -10,12 +10,12 @@ import { UserConfig, UserConfigRepository } from './app/UserConfig'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1400,
     height: 800,
-    minWidth: 1024,
-    minHeight: 768,
+    minWidth: 1200,
+    minHeight: 800,
     maxWidth: 1600,
-    maxHeight: 1200,
+    maxHeight: 1000,
     show: false,
     frame: false, // Remove the default titlebar
     titleBarStyle: 'hidden',

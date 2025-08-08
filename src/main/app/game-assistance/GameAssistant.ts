@@ -1,3 +1,4 @@
+import { MatchupService } from '../MatchupService'
 import { UserConfig, UserConfigRepository } from '../UserConfig'
 import { GameDetector } from './GameDetector'
 import { Contract, IDispatcher } from './IDispatcher'
@@ -80,7 +81,8 @@ export class GameAssistant {
 
       this._dispatcher.dispatch('game-data', {
         playing: this._isPlaying,
-        gameTime: gameState.time
+        gameTime: gameState.time,
+        matchup: gameState.data != null ? MatchupService.getMatchup(gameState.data) : null
       })
     }, 1000)
   }

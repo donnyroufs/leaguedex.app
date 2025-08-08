@@ -8,7 +8,11 @@ declare global {
       closeWindow: () => void
       gameAssistant: {
         onGameData: (
-          callback: (data: { playing: boolean; gameTime: number | null }) => void
+          callback: (data: {
+            playing: boolean
+            gameTime: number | null
+            matchup: Matchup | null
+          }) => void
         ) => () => void
         getReminders: () => Promise<Reminder[]>
         addReminder: (reminder: Reminder) => Promise<void>

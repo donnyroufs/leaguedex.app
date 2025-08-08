@@ -4,7 +4,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createHashRouter, RouterProvider } from 'react-router'
 
-import { Matchups } from './pages/Matchups'
+import { CurrentMatch } from './pages/CurrentMatch'
 import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
 import { Titlebar } from './components/Titlebar'
@@ -27,7 +27,7 @@ const router = createHashRouter([
       {
         index: true,
         path: '/',
-        element: <Matchups />
+        element: <CurrentMatch />
       },
       {
         path: '/settings',
