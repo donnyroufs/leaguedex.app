@@ -10,7 +10,7 @@ import { UserConfig, UserConfigRepository } from './app/UserConfig'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1400,
+    width: 1200,
     height: 800,
     minWidth: 1200,
     minHeight: 800,

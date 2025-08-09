@@ -15,14 +15,21 @@ export function ToggleSwitch({
       </div>
       <button
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-info focus:ring-offset-2 focus:ring-offset-bg-secondary ${checked ? 'bg-info shadow-lg shadow-info/25' : 'bg-border-secondary'}`}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 ${
+          checked
+            ? 'bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)]'
+            : 'bg-border-secondary border border-transparent'
+        }`}
         role="switch"
         aria-checked={checked}
       >
         <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-all duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+          className={`inline-block h-4 w-4 transform rounded-full transition-all duration-200 ${
+            checked ? 'translate-x-6 bg-[rgb(0,255,136)]' : 'translate-x-1 bg-white'
+          }`}
         />
       </button>
     </div>
   )
 }
+
