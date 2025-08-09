@@ -22,6 +22,11 @@ type Matchup = {
 export function Layout(): JSX.Element {
   const [gameTime, setGameTime] = useState<number | null>(null)
   const [matchup, setMatchup] = useState<Matchup | null>(null)
+  const [version, setVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    window.api?.getVersion?.().then((version) => setVersion(version))
+  }, [])
 
   useEffect(() => {
     const unsubscribe = window.api.gameAssistant.onGameData((data) => {
@@ -54,6 +59,9 @@ export function Layout(): JSX.Element {
               </li>
             </ul>
           </nav>
+          <div className="mt-auto p-4 border-t border-border-primary bg-bg-primary">
+            <p className="text-xs text-text-tertiary text-center">v{version}</p>
+          </div>
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">
           <Outlet context={{ matchup }} />
