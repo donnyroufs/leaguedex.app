@@ -47,32 +47,32 @@ function ReminderCard({ reminder, onDelete }: ReminderCardProps): JSX.Element {
 
   return (
     <div className="group bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-[10px] p-4 transition-all duration-200 relative hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.15)] hover:-translate-y-0.5">
-      <div
-        className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold transition-opacity duration-200 group-hover:opacity-0 ${
-          isRecurring
-            ? 'bg-[rgba(0,255,136,0.15)] text-success'
-            : 'bg-[rgba(0,212,255,0.15)] text-info'
-        }`}
-      >
-        {isRecurring ? `Every ${formatTime(timeValue)}` : formatTimeForDisplay(timeValue)}
-      </div>
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="text-sm text-text-primary">{reminder.message}</h3>
 
-      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete(reminder.id)
-          }}
-          className="w-6 h-6 flex items-center justify-center bg-[rgba(255,255,255,0.1)] rounded-[6px] text-text-secondary hover:bg-[rgba(255,71,87,0.2)] hover:text-urgent transition-all duration-200"
-        >
-          <X size={12} />
-        </button>
-      </div>
+        <div className="flex items-center gap-2">
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-opacity duration-200 group-hover:opacity-0 ${
+              isRecurring
+                ? 'bg-[rgba(0,255,136,0.15)] text-success'
+                : 'bg-[rgba(0,212,255,0.15)] text-info'
+            }`}
+          >
+            {isRecurring ? `Every ${formatTime(timeValue)}` : formatTimeForDisplay(timeValue)}
+          </div>
 
-      <div className="pr-16">
-        <h3 className="text-base font-semibold text-text-primary leading-tight">
-          {reminder.message}
-        </h3>
+          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(reminder.id)
+              }}
+              className="w-6 h-6 flex items-center justify-center bg-[rgba(255,255,255,0.1)] rounded-[6px] text-text-secondary hover:bg-[rgba(255,71,87,0.2)] hover:text-urgent transition-all duration-200"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
