@@ -1,11 +1,10 @@
-import { JSX, useEffect, useMemo, useState } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import { JSX, useEffect, useState } from 'react'
+import { Outlet } from 'react-router'
 
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
-import { Reminders } from './components/Reminders'
 import { SidebarNavItem } from './components/SidebarNavItem'
-import { Layers, Settings as SettingsIcon } from 'lucide-react'
+import { Layers, Settings as SettingsIcon, Bell } from 'lucide-react'
 
 type Matchup = {
   you: {
@@ -23,7 +22,6 @@ type Matchup = {
 export function Layout(): JSX.Element {
   const [gameTime, setGameTime] = useState<number | null>(null)
   const [matchup, setMatchup] = useState<Matchup | null>(null)
-  const location = useLocation()
 
   useEffect(() => {
     const unsubscribe = window.api.gameAssistant.onGameData((data) => {
@@ -33,15 +31,6 @@ export function Layout(): JSX.Element {
 
     return () => unsubscribe()
   }, [])
-
-  const sidebar = useMemo(() => {
-    if (location.pathname === '/settings') {
-      return null
-    }
-
-    return <Reminders />
-  }, [location.pathname])
-
   return (
     <div className="h-screen flex flex-col bg-bg-primary">
       <header>
@@ -58,6 +47,9 @@ export function Layout(): JSX.Element {
                 <SidebarNavItem to="/" label="Match" icon={Layers} />
               </li>
               <li>
+                <SidebarNavItem to="/reminders" label="Reminders" icon={Bell} />
+              </li>
+              <li>
                 <SidebarNavItem to="/settings" label="Settings" icon={SettingsIcon} />
               </li>
             </ul>
@@ -66,7 +58,6 @@ export function Layout(): JSX.Element {
         <main className="flex-1 flex flex-col overflow-hidden">
           <Outlet context={{ matchup }} />
         </main>
-        {sidebar && <aside className="w-80 bg-[rgba(255,255,255,0.02)] relative">{sidebar}</aside>}
       </div>
     </div>
   )

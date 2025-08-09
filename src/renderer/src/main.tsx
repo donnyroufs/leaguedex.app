@@ -7,6 +7,7 @@ import { createHashRouter, RouterProvider } from 'react-router'
 import { CurrentMatch } from './pages/CurrentMatch'
 import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
+import { RemindersPage } from './pages/Reminders'
 import { Titlebar } from './components/Titlebar'
 
 const router = createHashRouter([
@@ -32,6 +33,10 @@ const router = createHashRouter([
       {
         path: '/settings',
         element: <Settings />
+      },
+      {
+        path: '/reminders',
+        element: <RemindersPage />
       }
     ]
   }

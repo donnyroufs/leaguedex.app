@@ -1,10 +1,9 @@
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useState, type JSX } from 'react'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
-  onOpen(): void
   onCreate(): void
 }
 
@@ -14,7 +13,7 @@ type FormState = {
   isRepeating: boolean
 }
 
-export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): JSX.Element {
+export function AddReminderModal({ isOpen, onClose, onCreate }: Props): JSX.Element {
   const [state, setState] = useState<FormState>({
     isRepeating: false,
     message: '',
@@ -99,14 +98,6 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
 
   return (
     <div>
-      <button
-        onClick={onOpen}
-        className="w-full p-4 mt-6 bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)] rounded-md text-success text-sm cursor-pointer transition-all duration-200 hover:bg-[rgba(0,255,136,0.15)] flex items-center justify-center gap-2"
-      >
-        <Plus size={16} />
-        Add Reminder
-      </button>
-
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-secondary/65 backdrop-blur-md" onClick={onClose} />
@@ -189,17 +180,17 @@ export function AddReminderModal({ isOpen, onClose, onOpen, onCreate }: Props): 
 
             <div className="flex gap-3 p-6 border-t border-border-primary">
               <button
+                onClick={onAdd}
+                disabled={!state.message.trim() || !state.timeInput.trim()}
+                className="flex-1 py-3 px-6 bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)] rounded-lg text-success text-sm font-medium transition-all duration-200 hover:bg-[rgba(0,255,136,0.15)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[rgba(0,255,136,0.1)]"
+              >
+                Add Reminder
+              </button>
+              <button
                 onClick={onClose}
                 className="flex-1 py-3 px-6 bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.08)] border border-border-secondary hover:border-border-primary rounded-lg text-text-secondary hover:text-text-primary text-sm font-semibold transition-all duration-200"
               >
                 Cancel
-              </button>
-              <button
-                onClick={onAdd}
-                disabled={!state.message.trim() || !state.timeInput.trim()}
-                className="flex-1 py-3 px-6 bg-success hover:bg-[#00cc70] border border-success hover:border-[#00cc70] rounded-lg text-text-inverse text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-success"
-              >
-                Add Reminder
               </button>
             </div>
           </div>

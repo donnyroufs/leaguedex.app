@@ -57,8 +57,11 @@ export function Settings(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-col gap-8 p-8 w-full">
-      <div className="space-y-8">
+    <div className="flex flex-col w-full">
+      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)]">
+        <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
+      </div>
+      <div className="p-8">
         <SettingsSection title="Game Assistance" icon={Timer}>
           <div className="space-y-2">
             <ToggleSwitch
