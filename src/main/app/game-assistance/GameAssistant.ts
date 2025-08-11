@@ -24,7 +24,6 @@ export class GameAssistant {
   private _currentGameId: string | null = null
   private _insightsService: InsightsService | null = null
   private _generatedInsights: string | null = null
-  private _generalInsights: string | null = null
   private _processingInsights = false
 
   public constructor(
