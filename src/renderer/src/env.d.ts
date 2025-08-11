@@ -14,6 +14,7 @@ type MatchupNote = {
   matchupId: string
   gameId: string
   createdAt: string
+  type: 'matchup' | 'general'
 }
 
 declare global {
@@ -29,6 +30,7 @@ declare global {
             gameTime: number | null
             matchup: Matchup | null
             insights: string | null
+            generalInsights: string | null
           }) => void
         ) => () => void
         getReminders: () => Promise<Reminder[]>
@@ -39,7 +41,10 @@ declare global {
       updateConfig: (config: UserConfig) => Promise<UserConfig>
       getConfig: () => Promise<UserConfig>
       getGames: () => Promise<Game[]>
-      reviewGame: (gameId: string, notes: string) => Promise<void>
+      reviewGame: (
+        gameId: string,
+        notes: { matchupNotes: string; generalNotes: string }
+      ) => Promise<void>
     }
   }
 }

@@ -1,4 +1,5 @@
 import { JSX } from 'react'
+import Markdown, { Components } from 'react-markdown'
 import { useOutletContext } from 'react-router'
 
 type Matchup = {
@@ -15,8 +16,37 @@ type Matchup = {
   }
 }
 
+const markdownComponents = {
+  h1: ({ children }: { children: React.ReactNode }) => (
+    <h1 className="text-xl font-bold text-accent-green mb-3 mt-5">{children}</h1>
+  ),
+  h2: ({ children }: { children: React.ReactNode }) => (
+    <h2 className="text-lg font-semibold text-accent-green mb-2 mt-4">{children}</h2>
+  ),
+  h3: ({ children }: { children: React.ReactNode }) => (
+    <h3 className="text-base font-medium text-accent-green mb-2 mt-3">{children}</h3>
+  ),
+  h4: ({ children }: { children: React.ReactNode }) => (
+    <h4 className="text-sm font-medium text-accent-green mb-1 mt-2">{children}</h4>
+  ),
+  h5: ({ children }: { children: React.ReactNode }) => (
+    <h5 className="text-xs font-medium text-accent-green mb-1 mt-2">{children}</h5>
+  ),
+  h6: ({ children }: { children: React.ReactNode }) => (
+    <h6 className="text-xs font-medium text-accent-green mb-1 mt-2">{children}</h6>
+  ),
+  li: ({ children }: { children: React.ReactNode }) => (
+    <li className="text-text-secondary list-disc list-inside">{children}</li>
+  )
+}
+
 export function CurrentMatch(): JSX.Element {
-  const ctx = useOutletContext<{ matchup: Matchup | null; insights: string | null }>()
+  const ctx = useOutletContext<{
+    matchup: Matchup | null
+    insights: string | null
+  }>()
+
+  console.log(ctx.insights)
 
   if (ctx.matchup === null) {
     return (
@@ -98,13 +128,18 @@ export function CurrentMatch(): JSX.Element {
           <div className="text-text-primary"></div>
         </div>
       </div>
-      <section className="p-4">
-        <div className="text-text-primary">Insights</div>
-        <div
-          className="text-text-secondary"
-          dangerouslySetInnerHTML={{ __html: ctx.insights ?? 'No insights available' }}
-        />
-      </section>
+      <div className="space-y-4 p-4">
+        <div className="rounded-lg border border-border-primary bg-bg-secondary p-4">
+          <div className="text-text-primary font-semibold text-lg border-b border-border-primary pb-2 mb-3">
+            Insights
+          </div>
+          <div className="text-text-secondary">
+            <Markdown components={markdownComponents as Components}>
+              {ctx.insights ?? 'No insights available'}
+            </Markdown>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

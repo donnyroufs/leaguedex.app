@@ -24,7 +24,11 @@ export class GameService {
     return game.id
   }
 
-  public async getNotes(matchupId: MatchupId): Promise<MatchupNote[]> {
+  public async getGeneralNotes(): Promise<MatchupNote[]> {
+    return this._gameRepository.getAllGeneralNotes()
+  }
+
+  public async getMatchupNotes(matchupId: MatchupId): Promise<MatchupNote[]> {
     const notes = await this._gameRepository.getNotesByMatchupId(matchupId)
 
     if (!notes) {
@@ -49,14 +53,24 @@ export class GameService {
     await this._gameRepository.update(game)
   }
 
-  public async review(gameId: string, notes: string): Promise<void> {
+  public async review(gameId: string, matchupNotes: string, generalNotes: string): Promise<void> {
     const game = await this._gameRepository.get(gameId)
 
     if (!game) {
       throw new Error('Game not found')
     }
 
-    game.review([new MatchupNote(crypto.randomUUID(), notes, game.matchupId, gameId, new Date())])
+    game.review([
+      new MatchupNote(crypto.randomUUID(), matchupNotes, game.matchupId, gameId, new Date()),
+      new MatchupNote(
+        crypto.randomUUID(),
+        generalNotes,
+        game.matchupId,
+        gameId,
+        new Date(),
+        'general'
+      )
+    ])
 
     await this._gameRepository.update(game)
   }

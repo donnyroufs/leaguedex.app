@@ -102,9 +102,12 @@ app.whenReady().then(() => {
     return configRepository.getConfig()
   })
 
-  ipcMain.handle('review-game', async (_, gameId: string, notes: string) => {
-    return gameAssistant.reviewGame(gameId, notes)
-  })
+  ipcMain.handle(
+    'review-game',
+    async (_, gameId: string, data: { matchupNotes: string; generalNotes: string }) => {
+      return gameAssistant.reviewGame(gameId, data.matchupNotes, data.generalNotes)
+    }
+  )
 
   ipcMain.handle('get-config', async () => {
     return configRepository.getConfig()

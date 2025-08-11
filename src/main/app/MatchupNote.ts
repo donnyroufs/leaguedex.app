@@ -8,6 +8,7 @@ export class MatchupNote {
      */
     public readonly matchupId: string,
     public readonly gameId: string,
-    public readonly createdAt: Date
+    public readonly createdAt: Date,
+    public readonly type: 'matchup' | 'general' = 'matchup'
   ) {}
 }

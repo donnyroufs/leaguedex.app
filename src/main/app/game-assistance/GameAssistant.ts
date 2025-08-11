@@ -23,6 +23,7 @@ export class GameAssistant {
   private _currentGameId: string | null = null
   private _insightsService: InsightsService | null = null
   private _generatedInsights: string | null = null
+  private _generalInsights: string | null = null
   private _processingInsights = false
 
   public constructor(
@@ -49,8 +50,12 @@ export class GameAssistant {
     return this._gameService.getAllGames()
   }
 
-  public async reviewGame(gameId: string, notes: string): Promise<void> {
-    return this._gameService.review(gameId, notes)
+  public async reviewGame(
+    gameId: string,
+    matchupNotes: string,
+    generalNotes: string
+  ): Promise<void> {
+    return this._gameService.review(gameId, matchupNotes, generalNotes)
   }
 
   public async addReminder(data: CreateReminder): Promise<void> {
@@ -98,16 +103,11 @@ export class GameAssistant {
 
       const matchup = gameState.data != null ? MatchupService.getMatchup(gameState.data) : null
 
-      let insights: string | null = null
-
       if (matchup != null && !this._processingInsights) {
         this._processingInsights = true
 
-        insights =
-          (await this._insightsService?.generateInsights(
-            MatchupService.getMatchup(gameState.data!)!.id
-          )) ?? null
-        this._generatedInsights = insights
+        this._generatedInsights =
+          (await this._insightsService?.generateInsights(matchup.id)) ?? null
       }
 
       this._dispatcher.dispatch('game-data', {
@@ -154,5 +154,6 @@ export class GameAssistant {
     this._insightsService = null
     this._processingInsights = false
     this._generatedInsights = null
+    this._generalInsights = null
   }
 }

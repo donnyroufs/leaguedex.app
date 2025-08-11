@@ -24,6 +24,7 @@ export function Layout(): JSX.Element {
   const [matchup, setMatchup] = useState<Matchup | null>(null)
   const [version, setVersion] = useState<string | null>(null)
   const [insights, setInsights] = useState<string | null>(null)
+  const [generalInsights, setGeneralInsights] = useState<string | null>(null)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
@@ -34,6 +35,7 @@ export function Layout(): JSX.Element {
       setGameTime(data.gameTime)
       setInsights(data.insights)
       setMatchup(data.matchup)
+      setGeneralInsights(data.generalInsights)
     })
 
     return () => unsubscribe()
@@ -69,7 +71,7 @@ export function Layout(): JSX.Element {
           </div>
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">
-          <Outlet context={{ matchup, insights }} />
+          <Outlet context={{ matchup, insights, generalInsights }} />
         </main>
       </div>
     </div>

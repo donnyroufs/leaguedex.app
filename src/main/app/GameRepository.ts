@@ -21,6 +21,14 @@ export class GameRepository {
     })
   }
 
+  public async getAllGeneralNotes(): Promise<MatchupNote[]> {
+    const content = await fs.readFile(this._path, 'utf-8')
+    const parsedData: GameObject[] = JSON.parse(content)
+    const games: Game[] = parsedData.map(Game.fromObject)
+
+    return games.flatMap((game) => game.notes.filter((note) => note.type === 'general'))
+  }
+
   public async getNotesByMatchupId(matchupId: MatchupId): Promise<MatchupNote[]> {
     const content = await fs.readFile(this._path, 'utf-8')
     const parsedData = JSON.parse(content)
@@ -31,7 +39,7 @@ export class GameRepository {
       return []
     }
 
-    return matchupGames.flatMap((game) => game.notes.slice())
+    return matchupGames.flatMap((game) => game.notes.filter((note) => note.type === 'matchup'))
   }
 
   public async get(gameId: string): Promise<Game | null> {

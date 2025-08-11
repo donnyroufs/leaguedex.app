@@ -142,6 +142,58 @@ function EmptyState({ title, subtitle }: EmptyStateProps): JSX.Element {
   )
 }
 
+type GroupedMatches = {
+  today: MatchHistoryItem[]
+  earlier: MatchHistoryItem[]
+}
+
+function isToday(date: Date): boolean {
+  const today = new Date()
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  )
+}
+
+function groupAndSortMatches(matches: MatchHistoryItem[]): GroupedMatches {
+  const sortedMatches = [...matches].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
+  return sortedMatches.reduce(
+    (groups, match) => {
+      if (isToday(match.createdAt)) {
+        groups.today.push(match)
+      } else {
+        groups.earlier.push(match)
+      }
+      return groups
+    },
+    { today: [], earlier: [] } as GroupedMatches
+  )
+}
+
+type MatchGroupProps = {
+  title: string
+  matches: MatchHistoryItem[]
+}
+
+function MatchGroup({ title, matches }: MatchGroupProps): JSX.Element {
+  if (matches.length === 0) return <></>
+
+  return (
+    <div className="space-y-3">
+      <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wider px-1">
+        {title}
+      </h2>
+      <div className="space-y-3">
+        {matches.map((match) => (
+          <MatchRow key={match.id} match={match} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function MatchHistory(): JSX.Element {
   const [matches, setMatches] = useState<MatchHistoryItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -163,6 +215,7 @@ export function MatchHistory(): JSX.Element {
   }, [])
 
   const hasMatches = matches.length > 0
+  const groupedMatches = groupAndSortMatches(matches)
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -189,10 +242,9 @@ export function MatchHistory(): JSX.Element {
               />
             </div>
           ) : (
-            <div className="p-8 space-y-3">
-              {matches.map((match) => (
-                <MatchRow key={match.id} match={match} />
-              ))}
+            <div className="p-8 space-y-8">
+              <MatchGroup title="Today" matches={groupedMatches.today} />
+              <MatchGroup title="Earlier" matches={groupedMatches.earlier} />
             </div>
           )}
         </div>
