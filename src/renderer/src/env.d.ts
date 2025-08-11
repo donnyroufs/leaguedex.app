@@ -39,6 +39,7 @@ declare global {
       updateConfig: (config: UserConfig) => Promise<UserConfig>
       getConfig: () => Promise<UserConfig>
       getGames: () => Promise<Game[]>
+      reviewGame: (gameId: string, notes: string) => Promise<void>
     }
   }
 }

@@ -102,6 +102,10 @@ app.whenReady().then(() => {
     return configRepository.getConfig()
   })
 
+  ipcMain.handle('review-game', async (_, gameId: string, notes: string) => {
+    return gameAssistant.reviewGame(gameId, notes)
+  })
+
   ipcMain.handle('get-config', async () => {
     return configRepository.getConfig()
   })

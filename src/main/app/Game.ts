@@ -40,20 +40,32 @@ export class Game {
     this._status = 'completed'
   }
 
-  public toJSON(): string {
-    return JSON.stringify({
+  public toObject(): GameObject {
+    return {
       id: this.id,
       matchupId: this.matchupId,
       createdAt: this.createdAt.toISOString(),
       status: this.status,
       notes: this.notes
-    })
+    }
   }
 
-  public static fromJSON(json: string): Game {
-    const data = JSON.parse(json)
-    return new Game(data.id, data.matchupId, new Date(data.createdAt), data.status, data.notes)
+  public static fromObject(object: GameObject): Game {
+    return new Game(
+      object.id,
+      object.matchupId,
+      new Date(object.createdAt),
+      object.status,
+      object.notes.map((note) => ({
+        ...note,
+        createdAt: new Date(note.createdAt)
+      }))
+    )
   }
 }
 // public readonly riotGameId: string,
 // public readonly riotGameVersion: string,
+
+export type GameObject = Pick<Game, 'id' | 'matchupId' | 'status' | 'notes'> & {
+  createdAt: string
+}

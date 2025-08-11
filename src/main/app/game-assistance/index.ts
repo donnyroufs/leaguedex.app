@@ -55,6 +55,8 @@ function createGameService(): GameService {
     : join(__dirname, '../../dev-games.json')
 
   const gameRepository = new GameRepository(path)
+  gameRepository.configure()
+
   return new GameService(gameRepository)
 }
 

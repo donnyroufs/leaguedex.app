@@ -1,5 +1,5 @@
 import { createInsightsService } from '..'
-import { Game } from '../Game'
+import { GameObject } from '../Game'
 import { GameService } from '../GameService'
 import { InsightsService } from '../InsightsService'
 import { MatchupService } from '../MatchupService'
@@ -45,8 +45,12 @@ export class GameAssistant {
   }
 
   // shouldnt be part of game assistant
-  public getAllGames(): Promise<Game[]> {
+  public getAllGames(): Promise<GameObject[]> {
     return this._gameService.getAllGames()
+  }
+
+  public async reviewGame(gameId: string, notes: string): Promise<void> {
+    return this._gameService.review(gameId, notes)
   }
 
   public async addReminder(data: CreateReminder): Promise<void> {

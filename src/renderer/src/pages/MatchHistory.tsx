@@ -1,4 +1,6 @@
+import { BarChartIcon } from 'lucide-react'
 import { JSX, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 
 type GameData = {
   id: string
@@ -81,8 +83,17 @@ type MatchRowProps = {
 }
 
 function MatchRow({ match }: MatchRowProps): JSX.Element {
+  const navigate = useNavigate()
+
+  function onNavigate(): void {
+    navigate(`/game/${match.id}`)
+  }
+
   return (
-    <div className="group bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-[10px] p-4 transition-all duration-200 hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.15)] hover:-translate-y-0.5">
+    <div
+      className="group bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-[10px] p-4 transition-all duration-200 hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.15)] hover:-translate-y-0.5 cursor-pointer"
+      onClick={onNavigate}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -123,7 +134,7 @@ function EmptyState({ title, subtitle }: EmptyStateProps): JSX.Element {
   return (
     <div className="flex flex-col items-center text-center">
       <div className="w-12 h-12 bg-[rgba(255,255,255,0.05)] rounded-[10px] flex items-center justify-center mb-4">
-        <span className="text-text-tertiary text-xl">📊</span>
+        <BarChartIcon className="text-text-tertiary text-xl" />
       </div>
       <h3 className="text-lg font-semibold text-text-primary mb-2">{title}</h3>
       <p className="text-sm text-text-secondary max-w-[300px]">{subtitle}</p>

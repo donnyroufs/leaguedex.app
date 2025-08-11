@@ -1,4 +1,4 @@
-import { Game } from './Game'
+import { Game, GameObject } from './Game'
 import { AllGameData } from './game-assistance/IRiotClient'
 import { GameRepository } from './GameRepository'
 import { MatchupId } from './Matchup'
@@ -49,19 +49,19 @@ export class GameService {
     await this._gameRepository.update(game)
   }
 
-  public async review(gameId: string, notes: MatchupNote[]): Promise<void> {
+  public async review(gameId: string, notes: string): Promise<void> {
     const game = await this._gameRepository.get(gameId)
 
     if (!game) {
       throw new Error('Game not found')
     }
 
-    game.review(notes)
+    game.review([new MatchupNote(crypto.randomUUID(), notes, game.matchupId, gameId, new Date())])
 
     await this._gameRepository.update(game)
   }
 
-  public async getAllGames(): Promise<Game[]> {
+  public async getAllGames(): Promise<GameObject[]> {
     return this._gameRepository.getAllCompletedGames()
   }
 

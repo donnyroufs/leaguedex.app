@@ -10,13 +10,14 @@ import { Settings } from './pages/Settings'
 import { RemindersPage } from './pages/Reminders'
 import { Titlebar } from './components/Titlebar'
 import { MatchHistory } from './pages/MatchHistory'
+import { Game } from './pages/Game'
 
 const router = createHashRouter([
   {
     element: <Layout />,
     errorElement: (
       <div className="flex flex-col h-screen w-screen">
-        <Titlebar title="Leaguedex" />
+        <Titlebar title="Leaguedx" />
         <div className="flex-1 flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold">Something went wrong</h1>
           <p className="mt-4">
@@ -42,6 +43,10 @@ const router = createHashRouter([
       {
         path: '/match-history',
         element: <MatchHistory />
+      },
+      {
+        path: '/game/:gameId',
+        element: <Game />
       }
     ]
   }

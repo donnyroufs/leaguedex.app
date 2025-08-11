@@ -1,19 +1,30 @@
 import fs from 'fs/promises'
-import { Game } from './Game'
+import { access, constants, writeFileSync } from 'fs'
+import { Game, GameObject } from './Game'
 import { MatchupNote } from './MatchupNote'
 import { MatchupId } from './Matchup'
 
 export class GameRepository {
   public constructor(private readonly _path: string) {}
 
+  public configure(): void {
+    access(this._path, constants.F_OK, (err) => {
+      if (!err) {
+        console.info(`Game storage file already exists at ${this._path}.`)
+        return
+      }
+
+      console.error(err)
+      console.info(`Game storage file does not exist at ${this._path}. Creating it...`)
+      writeFileSync(this._path, '[]')
+      console.info(`Game storage file created at ${this._path}.`)
+    })
+  }
+
   public async getNotesByMatchupId(matchupId: MatchupId): Promise<MatchupNote[]> {
     const content = await fs.readFile(this._path, 'utf-8')
     const parsedData = JSON.parse(content)
-    const games: Game[] = parsedData.map((g) =>
-      typeof g === 'string'
-        ? Game.fromJSON(g)
-        : new Game(g.id, g.matchupId, new Date(g.createdAt), g.status, g.notes)
-    )
+    const games: Game[] = parsedData.map(Game.fromObject)
     const matchupGames = games.filter((g) => g.matchupId === matchupId)
 
     if (matchupGames.length === 0) {
@@ -25,27 +36,15 @@ export class GameRepository {
 
   public async get(gameId: string): Promise<Game | null> {
     const content = await fs.readFile(this._path, 'utf-8')
-    const parsedData = JSON.parse(content)
-    const games = parsedData.map((g) =>
-      typeof g === 'string'
-        ? Game.fromJSON(g)
-        : new Game(g.id, g.matchupId, new Date(g.createdAt), g.status, g.notes)
-    )
-    const game = games.find((g) => g.id === gameId)
+    const parsedData: GameObject[] = JSON.parse(content)
 
-    if (!game) return null
-
-    return game
+    return parsedData.map(Game.fromObject).find((x) => x.id === gameId) ?? null
   }
 
   public async update(game: Game): Promise<void> {
     const content = await fs.readFile(this._path, 'utf-8')
-    const parsedData = JSON.parse(content)
-    const games = parsedData.map((g) =>
-      typeof g === 'string'
-        ? Game.fromJSON(g)
-        : new Game(g.id, g.matchupId, new Date(g.createdAt), g.status, g.notes)
-    )
+    const parsedData: GameObject[] = JSON.parse(content)
+    const games = parsedData.map(Game.fromObject)
     const index = games.findIndex((g) => g.id === game.id)
 
     if (index === -1) {
@@ -53,7 +52,7 @@ export class GameRepository {
     }
 
     games[index] = game
-    await fs.writeFile(this._path, `[${games.map((g) => g.toJSON()).join(',')}]`)
+    await fs.writeFile(this._path, JSON.stringify(games.map((g) => g.toObject())))
   }
 
   public async create(game: Game): Promise<void> {
@@ -61,33 +60,40 @@ export class GameRepository {
 
     try {
       const content = await fs.readFile(this._path, 'utf-8')
-      const parsed = JSON.parse(content)
-      games = Array.isArray(parsed) ? parsed : []
-    } catch {
-      console.error('Could not read games file')
+      const parsedData: GameObject[] = JSON.parse(content)
+      if (Array.isArray(parsedData)) {
+        games = parsedData.map(Game.fromObject)
+      } else {
+        games = []
+      }
+    } catch (err) {
+      console.error(err)
     }
 
     if (!games.some((g) => g.id === game.id)) {
       games.push(game)
-      await fs.writeFile(this._path, `[${games.map((g) => g.toJSON()).join(',')}]`)
+
+      // TODO: this is a quick hack that we need to move outside of the repository.
+      const existingInProgressGame = games.find(
+        (g) => g.status === 'in-progress' && g.id !== game.id
+      )
+
+      if (existingInProgressGame) {
+        existingInProgressGame.complete()
+      }
+      // end
+
+      await fs.writeFile(this._path, JSON.stringify(games.map((g) => g.toObject())))
     }
   }
 
-  public async getAllCompletedGames(): Promise<Game[]> {
+  public async getAllCompletedGames(): Promise<GameObject[]> {
     try {
       const content = await fs.readFile(this._path, 'utf-8')
-      const parsedData = JSON.parse(content)
-      const games = parsedData.map((g) =>
-        typeof g === 'string'
-          ? Game.fromJSON(g)
-          : new Game(g.id, g.matchupId, new Date(g.createdAt), g.status, g.notes)
-      )
-
-      return games
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .filter((g) => g.status === 'completed' || g.status === 'reviewed')
-    } catch {
-      console.error('Could not read games file')
+      const parsedData: GameObject[] = JSON.parse(content)
+      return parsedData.filter((x) => x.status !== 'in-progress')
+    } catch (err) {
+      console.error(err)
       return []
     }
   }

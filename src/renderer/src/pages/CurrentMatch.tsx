@@ -102,7 +102,7 @@ export function CurrentMatch(): JSX.Element {
         <div className="text-text-primary">Insights</div>
         <div
           className="text-text-secondary"
-          dangerouslySetInnerHTML={{ __html: ctx.insights ?? '' }}
+          dangerouslySetInnerHTML={{ __html: ctx.insights ?? 'No insights available' }}
         />
       </section>
     </div>
