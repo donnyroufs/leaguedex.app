@@ -28,10 +28,13 @@ export class GameService {
     const notes = await this._gameRepository.getNotesByMatchupId(matchupId)
 
     if (!notes) {
-      return
+      return []
     }
 
-    return notes
+    return notes.map((note) => ({
+      ...note,
+      createdAt: new Date(note.createdAt)
+    }))
   }
 
   public async complete(gameId: string): Promise<void> {
@@ -56,6 +59,10 @@ export class GameService {
     game.review(notes)
 
     await this._gameRepository.update(game)
+  }
+
+  public async getAllGames(): Promise<Game[]> {
+    return this._gameRepository.getAllCompletedGames()
   }
 
   private createGameId(data: AllGameData): string {

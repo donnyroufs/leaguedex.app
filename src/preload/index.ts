@@ -23,7 +23,8 @@ const api = {
   },
   getVersion: () => ipcRenderer.invoke('get-version'),
   updateConfig: (config: UserConfig) => ipcRenderer.invoke('update-config', config),
-  getConfig: () => ipcRenderer.invoke('get-config')
+  getConfig: () => ipcRenderer.invoke('get-config'),
+  getGames: () => ipcRenderer.invoke('get-games')
 }
 
 if (process.contextIsolated) {

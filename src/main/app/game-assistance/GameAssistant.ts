@@ -1,4 +1,5 @@
 import { createInsightsService } from '..'
+import { Game } from '../Game'
 import { GameService } from '../GameService'
 import { InsightsService } from '../InsightsService'
 import { MatchupService } from '../MatchupService'
@@ -21,7 +22,8 @@ export class GameAssistant {
   private _assistantActive = false
   private _currentGameId: string | null = null
   private _insightsService: InsightsService | null = null
-  private _generatedInsights: boolean = false
+  private _generatedInsights: string | null = null
+  private _processingInsights = false
 
   public constructor(
     private readonly _gameDetector: GameDetector,
@@ -40,6 +42,11 @@ export class GameAssistant {
 
   public removeReminder(id: string): Promise<void> {
     return this._reminderService.removeReminder(id)
+  }
+
+  // shouldnt be part of game assistant
+  public getAllGames(): Promise<Game[]> {
+    return this._gameService.getAllGames()
   }
 
   public async addReminder(data: CreateReminder): Promise<void> {
@@ -89,19 +96,21 @@ export class GameAssistant {
 
       let insights: string | null = null
 
-      if (!this._generatedInsights && matchup != null) {
+      if (matchup != null && !this._processingInsights) {
+        this._processingInsights = true
+
         insights =
           (await this._insightsService?.generateInsights(
             MatchupService.getMatchup(gameState.data!)!.id
           )) ?? null
-        this._generatedInsights = true
+        this._generatedInsights = insights
       }
 
       this._dispatcher.dispatch('game-data', {
         playing: this._isPlaying,
         gameTime: gameState.time,
         matchup,
-        insights
+        insights: this._generatedInsights
       })
     }, 1000)
   }
@@ -139,6 +148,7 @@ export class GameAssistant {
     this._assistantActive = false
     this._currentGameId = null
     this._insightsService = null
-    this._generatedInsights = false
+    this._processingInsights = false
+    this._generatedInsights = null
   }
 }

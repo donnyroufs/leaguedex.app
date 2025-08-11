@@ -4,7 +4,7 @@ import { Outlet } from 'react-router'
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
-import { Layers, Settings as SettingsIcon, Bell } from 'lucide-react'
+import { Layers, Settings as SettingsIcon, Bell, Clock } from 'lucide-react'
 
 type Matchup = {
   you: {
@@ -55,6 +55,9 @@ export function Layout(): JSX.Element {
               </li>
               <li>
                 <SidebarNavItem to="/reminders" label="Reminders" icon={Bell} />
+              </li>
+              <li>
+                <SidebarNavItem to="/match-history" label="Match History" icon={Clock} />
               </li>
               <li>
                 <SidebarNavItem to="/settings" label="Settings" icon={SettingsIcon} />

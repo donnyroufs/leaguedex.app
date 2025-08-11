@@ -1,5 +1,21 @@
 /// <reference types="vite/client" />
 
+type Game = {
+  id: string
+  matchupId: string
+  createdAt: string
+  status: 'in-progress' | 'completed' | 'reviewed'
+  notes: MatchupNote[]
+}
+
+type MatchupNote = {
+  id: string
+  content: string
+  matchupId: string
+  gameId: string
+  createdAt: string
+}
+
 declare global {
   interface Window {
     api: {
@@ -22,6 +38,7 @@ declare global {
       getVersion: () => Promise<string>
       updateConfig: (config: UserConfig) => Promise<UserConfig>
       getConfig: () => Promise<UserConfig>
+      getGames: () => Promise<Game[]>
     }
   }
 }

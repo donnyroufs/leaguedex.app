@@ -72,4 +72,23 @@ export class GameRepository {
       await fs.writeFile(this._path, `[${games.map((g) => g.toJSON()).join(',')}]`)
     }
   }
+
+  public async getAllCompletedGames(): Promise<Game[]> {
+    try {
+      const content = await fs.readFile(this._path, 'utf-8')
+      const parsedData = JSON.parse(content)
+      const games = parsedData.map((g) =>
+        typeof g === 'string'
+          ? Game.fromJSON(g)
+          : new Game(g.id, g.matchupId, new Date(g.createdAt), g.status, g.notes)
+      )
+
+      return games
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .filter((g) => g.status === 'completed' || g.status === 'reviewed')
+    } catch {
+      console.error('Could not read games file')
+      return []
+    }
+  }
 }

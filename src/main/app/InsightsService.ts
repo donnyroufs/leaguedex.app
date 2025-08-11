@@ -19,13 +19,13 @@ export class InsightsService {
     if (!this._openai) {
       return [...notes]
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .map((note) => `${note.createdAt.toLocaleDateString()}:\n${note.content}`)
-        .join('\n\n')
+        .map((note) => `<p>${note.createdAt.toLocaleDateString()}: ${note.content}</p>`)
+        .join('\n')
     }
 
     try {
       const response = await this._openai!.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

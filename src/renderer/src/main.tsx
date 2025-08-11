@@ -9,6 +9,7 @@ import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
 import { RemindersPage } from './pages/Reminders'
 import { Titlebar } from './components/Titlebar'
+import { MatchHistory } from './pages/MatchHistory'
 
 const router = createHashRouter([
   {
@@ -37,6 +38,10 @@ const router = createHashRouter([
       {
         path: '/reminders',
         element: <RemindersPage />
+      },
+      {
+        path: '/match-history',
+        element: <MatchHistory />
       }
     ]
   }
