@@ -1,7 +1,7 @@
 import { AllGameData, IRiotClient } from './IRiotClient'
 import { Seconds } from './types'
 
-type GameDetected = {
+export type GameDetected = {
   type: 'pre-game' | 'in-game' | 'none'
   time: Seconds | null
   data: AllGameData | null

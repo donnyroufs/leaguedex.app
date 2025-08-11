@@ -16,7 +16,7 @@ type Matchup = {
 }
 
 export function CurrentMatch(): JSX.Element {
-  const ctx = useOutletContext<{ matchup: Matchup | null }>()
+  const ctx = useOutletContext<{ matchup: Matchup | null; insights: string | null }>()
 
   if (ctx.matchup === null) {
     return (
@@ -93,7 +93,15 @@ export function CurrentMatch(): JSX.Element {
           </div>
         </div>
       </header>
-      {/* <div className="bg-bg-secondary py-4 border-b border-border-primary"></div> */}
+      <div className="bg-bg-secondary py-4 border-b border-border-primary">
+        <div className="p-4">
+          <div className="text-text-primary"></div>
+        </div>
+      </div>
+      <section className="p-4">
+        <div className="text-text-primary">Insights</div>
+        <div className="text-text-secondary">{ctx.insights ?? 'No insights yet'}</div>
+      </section>
     </div>
   )
 }

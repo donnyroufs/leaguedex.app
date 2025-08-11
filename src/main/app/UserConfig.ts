@@ -7,12 +7,24 @@ export type UserConfig = {
   gameAssistance: {
     enableNeutralObjectiveTimers: boolean
   }
+  insights: {
+    ai: {
+      enabled: boolean
+      apiKey: string | null
+    }
+  }
 }
 
 function createDefaultConfig(): UserConfig {
   return {
     gameAssistance: {
       enableNeutralObjectiveTimers: true
+    },
+    insights: {
+      ai: {
+        enabled: false,
+        apiKey: null
+      }
     }
   }
 }

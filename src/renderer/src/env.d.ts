@@ -12,6 +12,7 @@ declare global {
             playing: boolean
             gameTime: number | null
             matchup: Matchup | null
+            insights: string | null
           }) => void
         ) => () => void
         getReminders: () => Promise<Reminder[]>

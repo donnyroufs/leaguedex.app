@@ -18,6 +18,8 @@ import { ReminderProcessor } from './ReminderProcessor'
 import { ObjectiveTracker } from './ObjectiveTracker'
 import { ReminderOrchestrator } from './ReminderOrchestrator'
 import { UserConfigRepository } from '../UserConfig'
+import { GameService } from '../GameService'
+import { GameRepository } from '../GameRepository'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -47,6 +49,15 @@ function createReminderService(): ReminderService {
   return service
 }
 
+function createGameService(): GameService {
+  const path = app.isPackaged
+    ? join(app.getPath('userData'), 'games.json')
+    : join(__dirname, '../../dev-games.json')
+
+  const gameRepository = new GameRepository(path)
+  return new GameService(gameRepository)
+}
+
 export function createGameAssistant(configRepository: UserConfigRepository): GameAssistant {
   const riotClient = createRiotClient()
   const reminderService = createReminderService()
@@ -62,12 +73,15 @@ export function createGameAssistant(configRepository: UserConfigRepository): Gam
     objectiveTracker
   )
 
+  const gameService = createGameService()
+
   return new GameAssistant(
     gameDetector,
     dispatcher,
     riotClient,
     reminderOrchestrator,
     reminderService,
-    configRepository
+    configRepository,
+    gameService
   )
 }

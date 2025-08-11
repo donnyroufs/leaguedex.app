@@ -14,5 +14,6 @@ export type Contract = {
     playing: boolean
     gameTime: Seconds | null
     matchup: Matchup | null
+    insights: string | null
   }
 }

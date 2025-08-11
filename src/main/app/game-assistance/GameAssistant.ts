@@ -1,12 +1,14 @@
+import { createInsightsService } from '..'
+import { GameService } from '../GameService'
+import { InsightsService } from '../InsightsService'
 import { MatchupService } from '../MatchupService'
 import { UserConfig, UserConfigRepository } from '../UserConfig'
-import { GameDetector } from './GameDetector'
+import { GameDetected, GameDetector } from './GameDetector'
 import { Contract, IDispatcher } from './IDispatcher'
 import { IRiotClient } from './IRiotClient'
 import { OneTimeReminder, Reminder, RepeatingReminder } from './Reminder'
 import { ReminderOrchestrator } from './ReminderOrchestrator'
 import { ReminderService } from './ReminderService'
-import { Seconds } from './types'
 
 export type CreateReminder = {
   message: string
@@ -17,6 +19,9 @@ export type CreateReminder = {
 export class GameAssistant {
   private _isPlaying = false
   private _assistantActive = false
+  private _currentGameId: string | null = null
+  private _insightsService: InsightsService | null = null
+  private _generatedInsights: boolean = false
 
   public constructor(
     private readonly _gameDetector: GameDetector,
@@ -24,7 +29,8 @@ export class GameAssistant {
     private readonly _riotClient: IRiotClient,
     private readonly _reminderOrchestrator: ReminderOrchestrator,
     private readonly _reminderService: ReminderService,
-    private readonly _configRepository: UserConfigRepository
+    private readonly _configRepository: UserConfigRepository,
+    private readonly _gameService: GameService
   ) {}
 
   /* I think these methods shouldn't be exposed like this. */
@@ -65,7 +71,7 @@ export class GameAssistant {
 
       if (this._isPlaying && !this._assistantActive) {
         config = this._configRepository.getConfig()
-        await this.activate(gameState.time!)
+        await this.activate(gameState)
       } else if (!this._isPlaying && this._assistantActive) {
         this.deactivate()
       }
@@ -79,10 +85,23 @@ export class GameAssistant {
         )
       }
 
+      const matchup = gameState.data != null ? MatchupService.getMatchup(gameState.data) : null
+
+      let insights: string | null = null
+
+      if (!this._generatedInsights && matchup != null) {
+        insights =
+          (await this._insightsService?.generateInsights(
+            MatchupService.getMatchup(gameState.data!)!.id
+          )) ?? null
+        this._generatedInsights = true
+      }
+
       this._dispatcher.dispatch('game-data', {
         playing: this._isPlaying,
         gameTime: gameState.time,
-        matchup: gameState.data != null ? MatchupService.getMatchup(gameState.data) : null
+        matchup,
+        insights
       })
     }, 1000)
   }
@@ -95,19 +114,31 @@ export class GameAssistant {
     return this
   }
 
-  private async activate(gameTime: Seconds): Promise<void> {
+  private async activate(gameState: GameDetected): Promise<void> {
     console.log('Game Assistant activated')
     const config = this._configRepository.getConfig()
     await this._reminderOrchestrator.initialize(
-      gameTime,
+      gameState.time!,
       config.gameAssistance.enableNeutralObjectiveTimers
+    )
+    this._currentGameId = await this._gameService.createGame(gameState.data!)
+    this._insightsService = createInsightsService(
+      config.insights.ai.enabled,
+      config.insights.ai.apiKey,
+      this._gameService
     )
     this._assistantActive = true
   }
 
   private deactivate(): void {
     console.log('Game Assistant deactivated')
+    if (this._currentGameId) {
+      this._gameService.complete(this._currentGameId)
+    }
     this._reminderOrchestrator.reset()
     this._assistantActive = false
+    this._currentGameId = null
+    this._insightsService = null
+    this._generatedInsights = false
   }
 }

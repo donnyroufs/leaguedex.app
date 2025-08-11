@@ -26,6 +26,7 @@
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.11.0",
     "lucide-react": "^0.536.0",
+    "openai": "^5.12.2",
     "react-router": "^7.7.1",
     "say": "^0.16.0",
     "tailwindcss": "^4.1.11"

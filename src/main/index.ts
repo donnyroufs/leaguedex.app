@@ -90,9 +90,9 @@ app.whenReady().then(() => {
   const gameAssistant = GameAssistance.createGameAssistant(configRepository)
 
   gameAssistant
-    .on('game-data', (data) => {
+    .on('game-data', async (data) => {
       BrowserWindow.getAllWindows().forEach((window) => {
-        window.webContents.send('game-data', data)
+        window.webContents.send('game-data', { ...data })
       })
     })
     .start()

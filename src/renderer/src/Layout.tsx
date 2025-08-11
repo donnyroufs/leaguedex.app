@@ -23,6 +23,7 @@ export function Layout(): JSX.Element {
   const [gameTime, setGameTime] = useState<number | null>(null)
   const [matchup, setMatchup] = useState<Matchup | null>(null)
   const [version, setVersion] = useState<string | null>(null)
+  const [insights, setInsights] = useState<string | null>(null)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
@@ -31,6 +32,7 @@ export function Layout(): JSX.Element {
   useEffect(() => {
     const unsubscribe = window.api.gameAssistant.onGameData((data) => {
       setGameTime(data.gameTime)
+      setInsights(data.insights)
       setMatchup(data.matchup)
     })
 
@@ -64,7 +66,7 @@ export function Layout(): JSX.Element {
           </div>
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">
-          <Outlet context={{ matchup }} />
+          <Outlet context={{ matchup, insights }} />
         </main>
       </div>
     </div>

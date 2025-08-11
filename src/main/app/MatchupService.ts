@@ -32,7 +32,8 @@ export class MatchupService {
     return {
       id: createMatchupId(a, b),
       you: a,
-      enemy: b
+      enemy: b,
+      notes: []
     }
   }
 
