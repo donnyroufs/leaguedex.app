@@ -1,4 +1,4 @@
-import { Matchup } from '../MatchupService'
+import { Matchup } from '../Matchup'
 import { Seconds } from './types'
 
 export interface IDispatcher {

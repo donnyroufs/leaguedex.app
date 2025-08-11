@@ -1,15 +1,6 @@
+import { Champion } from './Champion'
 import { AllGameData } from './game-assistance/IRiotClient'
-
-type Champion = {
-  team: 'blue' | 'red' | 'unknown'
-  championName: string
-  role: 'top' | 'jungle' | 'middle' | 'bottom' | 'utility' | 'unknown'
-}
-
-export type Matchup = {
-  you: Champion
-  enemy: Champion
-}
+import { createMatchupId, Matchup } from './Matchup'
 
 export class MatchupService {
   public static getMatchup(data: AllGameData): Matchup {
@@ -26,17 +17,22 @@ export class MatchupService {
       throw new Error('No enemy found')
     }
 
+    const a: Champion = {
+      team: this.getTeam(you.team),
+      name: you.championName,
+      role: this.getRole(you.position)
+    }
+
+    const b: Champion = {
+      team: this.getTeam(enemy.team),
+      name: enemy.championName,
+      role: this.getRole(enemy.position)
+    }
+
     return {
-      you: {
-        team: this.getTeam(you.team),
-        championName: you.championName,
-        role: this.getRole(you.position)
-      },
-      enemy: {
-        team: this.getTeam(enemy.team),
-        championName: enemy.championName,
-        role: this.getRole(enemy.position)
-      }
+      id: createMatchupId(a, b),
+      you: a,
+      enemy: b
     }
   }
 

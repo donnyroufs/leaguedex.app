@@ -2,13 +2,14 @@ import { JSX } from 'react'
 import { useOutletContext } from 'react-router'
 
 type Matchup = {
+  id: string
   you: {
-    championName: string
+    name: string
     role: string
     team: 'blue' | 'red'
   }
   enemy: {
-    championName: string
+    name: string
     role: string
     team: 'blue' | 'red'
   }
@@ -43,9 +44,7 @@ export function CurrentMatch(): JSX.Element {
                 {ctx.matchup.you.team === 'blue' ? 'Your Pick' : 'Enemy Pick'}
               </div>
               <div className="text-2xl font-bold text-text-primary">
-                {ctx.matchup.you.team === 'blue'
-                  ? ctx.matchup.you.championName
-                  : ctx.matchup.enemy.championName}
+                {ctx.matchup.you.team === 'blue' ? ctx.matchup.you.name : ctx.matchup.enemy.name}
               </div>
               <div className="text-sm text-text-secondary capitalize mt-1">
                 {ctx.matchup.you.team === 'blue' ? ctx.matchup.you.role : ctx.matchup.enemy.role}
@@ -53,12 +52,8 @@ export function CurrentMatch(): JSX.Element {
             </div>
 
             <img
-              src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${ctx.matchup.you.team === 'blue' ? ctx.matchup.you.championName : ctx.matchup.enemy.championName}_0.jpg`}
-              alt={
-                ctx.matchup.you.team === 'blue'
-                  ? ctx.matchup.you.championName
-                  : ctx.matchup.enemy.championName
-              }
+              src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${ctx.matchup.you.team === 'blue' ? ctx.matchup.you.name : ctx.matchup.enemy.name}_0.jpg`}
+              alt={ctx.matchup.you.team === 'blue' ? ctx.matchup.you.name : ctx.matchup.enemy.name}
               className="w-full h-full object-cover object-top opacity-70"
             />
           </div>
@@ -83,9 +78,7 @@ export function CurrentMatch(): JSX.Element {
                 {ctx.matchup.you.team === 'red' ? 'Your Pick' : 'Enemy Pick'}
               </div>
               <div className="text-2xl font-bold text-text-primary">
-                {ctx.matchup.you.team === 'red'
-                  ? ctx.matchup.you.championName
-                  : ctx.matchup.enemy.championName}
+                {ctx.matchup.you.team === 'red' ? ctx.matchup.you.name : ctx.matchup.enemy.name}
               </div>
               <div className="text-sm text-text-secondary capitalize mt-1">
                 {ctx.matchup.you.team === 'red' ? ctx.matchup.you.role : ctx.matchup.enemy.role}
@@ -93,12 +86,8 @@ export function CurrentMatch(): JSX.Element {
             </div>
 
             <img
-              src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${ctx.matchup.you.team === 'red' ? ctx.matchup.you.championName : ctx.matchup.enemy.championName}_0.jpg`}
-              alt={
-                ctx.matchup.you.team === 'red'
-                  ? ctx.matchup.you.championName
-                  : ctx.matchup.enemy.championName
-              }
+              src={`https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${ctx.matchup.you.team === 'red' ? ctx.matchup.you.name : ctx.matchup.enemy.name}_0.jpg`}
+              alt={ctx.matchup.you.team === 'red' ? ctx.matchup.you.name : ctx.matchup.enemy.name}
               className="w-full h-full object-cover object-top opacity-70"
             />
           </div>
