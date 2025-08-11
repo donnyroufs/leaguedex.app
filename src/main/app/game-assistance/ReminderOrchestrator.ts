@@ -1,3 +1,4 @@
+import { Logger } from '../shared-kernel'
 import { NormalizedGameEvent } from './IRiotClient'
 import { ObjectiveTracker } from './ObjectiveTracker'
 import { OneTimeReminder, Reminder, RepeatingReminder } from './Reminder'
@@ -35,6 +36,13 @@ export class ReminderOrchestrator {
     if (enableNeutralObjectiveTimers) {
       const objectiveReminders = this._objectiveTracker.track(gameEvents, gameTime)
       this._reminders.push(...objectiveReminders)
+      if (objectiveReminders.length > 0) {
+        Logger.log(`Processing ${objectiveReminders.length} objective reminders`, {
+          objectiveReminders,
+          gameTime,
+          gameEvents
+        })
+      }
     }
 
     const oneTimeReminders = this._reminders.filter(
@@ -44,6 +52,10 @@ export class ReminderOrchestrator {
     if (oneTimeReminders.length > 0) {
       this._reminderProcessor.process(oneTimeReminders)
       this._reminders = this._reminders.filter((x) => !oneTimeReminders.some((r) => r.id === x.id))
+      Logger.log(`Processing ${oneTimeReminders.length} one-time reminders`, {
+        oneTimeReminders,
+        gameTime
+      })
     }
 
     const repeatingReminders = this._reminders.filter(
@@ -51,6 +63,10 @@ export class ReminderOrchestrator {
     )
 
     if (repeatingReminders.length > 0) {
+      Logger.log(`Processing ${repeatingReminders.length} repeating reminders`, {
+        repeatingReminders,
+        gameTime
+      })
       this._reminderProcessor.process(repeatingReminders)
     }
   }

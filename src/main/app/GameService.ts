@@ -4,6 +4,7 @@ import { GameRepository } from './GameRepository'
 import { MatchupId } from './Matchup'
 import { MatchupNote } from './MatchupNote'
 import { MatchupService } from './MatchupService'
+import { Logger } from './shared-kernel'
 
 // TODO: we need to fetch the game from the actual RIOT api because we do not have access to the current match id
 // This means that we will end up with duplicate(s). For now I created a quick and dirty solution to prevent this by making the ID unique.
@@ -20,6 +21,8 @@ export class GameService {
     const game = new Game(this.createGameId(data), matchup.id, new Date(), 'in-progress', [])
 
     await this._gameRepository.create(game)
+
+    Logger.log(`Created game ${game.id}`)
 
     return game.id
   }

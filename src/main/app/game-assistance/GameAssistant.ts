@@ -3,6 +3,7 @@ import { GameObject } from '../Game'
 import { GameService } from '../GameService'
 import { InsightsService } from '../InsightsService'
 import { MatchupService } from '../MatchupService'
+import { Logger } from '../shared-kernel'
 import { UserConfig, UserConfigRepository } from '../UserConfig'
 import { GameDetected, GameDetector } from './GameDetector'
 import { Contract, IDispatcher } from './IDispatcher'
@@ -128,7 +129,7 @@ export class GameAssistant {
   }
 
   private async activate(gameState: GameDetected): Promise<void> {
-    console.log('Game Assistant activated')
+    Logger.log('Game Assistant activated')
     const config = this._configRepository.getConfig()
     await this._reminderOrchestrator.initialize(
       gameState.time!,
@@ -144,7 +145,7 @@ export class GameAssistant {
   }
 
   private deactivate(): void {
-    console.log('Game Assistant deactivated')
+    Logger.log('Game Assistant deactivated')
     if (this._currentGameId) {
       this._gameService.complete(this._currentGameId)
     }
