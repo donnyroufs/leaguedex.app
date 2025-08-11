@@ -154,6 +154,5 @@ export class GameAssistant {
     this._insightsService = null
     this._processingInsights = false
     this._generatedInsights = null
-    this._generalInsights = null
   }
 }
