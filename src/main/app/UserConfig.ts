@@ -56,7 +56,10 @@ export class UserConfigRepository {
       throw new Error('Config not loaded')
     }
 
-    return this._loadedConfig
+    return {
+      ...createDefaultConfig(),
+      ...this._loadedConfig
+    }
   }
 
   public async update(config: UserConfig): Promise<void> {
