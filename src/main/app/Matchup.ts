@@ -1,10 +1,10 @@
 import { Champion } from './Champion'
 import { MatchupNote } from './MatchupNote'
 
-export type MatchupId = `${string}-vs-${string}`
+export type MatchupId = `${string}-vs-${string}-${string}`
 
 export function createMatchupId(you: Champion, enemy: Champion): MatchupId {
-  return `${you.name.toLowerCase()}-vs-${enemy.name.toLowerCase()}`
+  return `${you.name.toLowerCase()}-${you.role.toLowerCase()}-vs-${enemy.name.toLowerCase()}-${enemy.role.toLowerCase()}`
 }
 
 /**
