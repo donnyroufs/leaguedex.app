@@ -38,5 +38,5 @@ jobs:
         env:
           # DigitalOcean Spaces credentials (for reference)
           DO_KEY_ID: ${{ secrets.DO_SPACES_KEY }}
-          DO_KEY_SECRET: ${{ secrets.DO_SPACES_SECRET }}
+          DO_SECRET_KEY: ${{ secrets.DO_SPACES_SECRET }}
 
