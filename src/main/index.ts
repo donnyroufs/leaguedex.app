@@ -136,6 +136,12 @@ app.whenReady().then(() => {
 
   // Configure auto-updater
   if (!is.dev) {
+    autoUpdater.setFeedURL({
+      provider: 'spaces',
+      name: 'leaguedex-releases',
+      region: 'ams3',
+      acl: 'public-read'
+    })
     autoUpdater.checkForUpdatesAndNotify()
 
     autoUpdater.on('checking-for-update', () => {
