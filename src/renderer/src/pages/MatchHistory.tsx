@@ -21,11 +21,18 @@ type MatchHistoryItem = {
   needsReview: boolean
 }
 
-function parseMatchupId(matchupId: string): { yourChampion: string; enemyChampion: string } {
-  const parts = matchupId.split('-vs-')
+function parseMatchupId(matchupId: string): {
+  yourChampion: string
+  enemyChampion: string
+  yourRole: string
+} {
+  const [youPart, enemyPart] = matchupId.split('-vs-')
+  const [champion, role] = youPart?.split('-') || ['Unknown', 'Unknown']
+  const [enemyChampion] = enemyPart?.split('-') || ['Unknown']
   return {
-    yourChampion: parts[0] || 'Unknown',
-    enemyChampion: parts[1] || 'Unknown'
+    yourChampion: champion || 'Unknown',
+    enemyChampion: enemyChampion || 'Unknown',
+    yourRole: role || 'Unknown'
   }
 }
 
