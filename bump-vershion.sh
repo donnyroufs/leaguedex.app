@@ -1,16 +1,23 @@
-
 #!/bin/bash
 # bump-version.sh - Bump version and create tag
 
-VERSION=$1
-if [ -z "$VERSION" ]; then
-    echo "Usage: ./bump-version.sh <version>"
-    echo "Example: ./bump-version.sh 0.0.33"
+TYPE=$1
+if [ -z "$TYPE" ]; then
+    echo "Usage: ./bump-version.sh <type>"
+    echo "Type must be one of: major, minor, patch"
+    exit 1
+fi
+
+if [ "$TYPE" != "major" ] && [ "$TYPE" != "minor" ] && [ "$TYPE" != "patch" ]; then
+    echo "Type must be one of: major, minor, patch"
     exit 1
 fi
 
 # Update package.json version
-npm version $VERSION --no-git-tag-version
+npm version $TYPE --no-git-tag-version
+
+# Get the new version from package.json
+VERSION=$(node -p "require('./package.json').version")
 
 # Commit the version change
 git add package.json
