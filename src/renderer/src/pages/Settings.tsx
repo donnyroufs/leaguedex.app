@@ -134,7 +134,6 @@ export function Settings(): JSX.Element {
                 placeholder="Enter your API key"
                 className="w-full px-4 py-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 font-mono text-sm"
                 style={{ letterSpacing: '0.1em' }}
-                maxLength={100}
               />
             </div>
           </div>
