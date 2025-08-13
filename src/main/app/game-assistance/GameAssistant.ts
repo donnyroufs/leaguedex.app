@@ -103,7 +103,7 @@ export class GameAssistant {
 
       const matchup = gameState.data != null ? MatchupService.getMatchup(gameState.data) : null
 
-      if (matchup != null && !this._processingInsights) {
+      if (matchup != null && !this._processingInsights && this._assistantActive) {
         this._processingInsights = true
 
         this._generatedInsights =
