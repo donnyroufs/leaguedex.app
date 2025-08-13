@@ -34,6 +34,7 @@ export function Layout(): JSX.Element {
   const [insights, setInsights] = useState<string | null>(null)
   const [generalInsights, setGeneralInsights] = useState<string | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
@@ -60,9 +61,12 @@ export function Layout(): JSX.Element {
 
   const handleCheckForUpdates = async (): Promise<void> => {
     try {
+      setIsCheckingUpdates(true)
       await window.api.updater.checkForUpdates()
     } catch (error) {
       console.error('Failed to check for updates:', error)
+    } finally {
+      setIsCheckingUpdates(false)
     }
   }
 
@@ -152,14 +156,14 @@ export function Layout(): JSX.Element {
           </nav>
           <div className="mt-auto p-4 border-t border-border-primary bg-bg-primary">
             <div className="flex flex-col gap-2">
-              <p className="text-xs text-text-tertiary text-center">v{version}</p>
               {getUpdateButton()}
               <button
                 onClick={handleCheckForUpdates}
-                className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-bg-secondary hover:bg-bg-tertiary text-text-primary rounded transition-colors"
+                disabled={isCheckingUpdates}
+                className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-bg-secondary hover:bg-bg-tertiary text-text-primary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className="w-3 h-3" />
-                Check for Updates
+                <RefreshCw className={`w-3 h-3 ${isCheckingUpdates ? 'animate-spin' : ''}`} />
+                {isCheckingUpdates ? 'Checking...' : `Check for Updates (v${version || '...'})`}
               </button>
             </div>
           </div>
