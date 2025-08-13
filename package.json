@@ -1,5 +1,5 @@
 {
-  "name": "leaguedex.app",
+  "name": "leaguedex-app",
   "version": "0.0.40",
   "description": "Leaguedex is a tool for League of Legends players to track their games and analyze their performance.",
   "main": "./out/main/index.js",
