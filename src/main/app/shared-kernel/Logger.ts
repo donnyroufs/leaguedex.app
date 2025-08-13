@@ -8,6 +8,8 @@ type LogItem = {
   data?: Record<string, unknown>
 }
 
+// TODO: we can actually use the electron logger
+// app.setLogPath() and then we can use console api
 export class Logger {
   private static _batch: LogItem[] = []
 
