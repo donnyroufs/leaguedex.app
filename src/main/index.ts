@@ -1,6 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { autoUpdater } from 'electron-updater'
 import icon from '../../resources/icon.png?asset'
 
 import * as GameAssistance from './app/game-assistance'
@@ -133,6 +134,57 @@ app.whenReady().then(() => {
     return gameAssistant.getAllGames()
   })
 
+  // Configure auto-updater
+  if (!is.dev) {
+    autoUpdater.checkForUpdatesAndNotify()
+
+    autoUpdater.on('checking-for-update', () => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', { status: 'checking' })
+      })
+    })
+
+    autoUpdater.on('update-available', (info) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', {
+          status: 'available',
+          version: info.version,
+          releaseDate: info.releaseDate
+        })
+      })
+    })
+
+    autoUpdater.on('update-not-available', () => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', { status: 'not-available' })
+      })
+    })
+
+    autoUpdater.on('error', (err) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', {
+          status: 'error',
+          error: err.message
+        })
+      })
+    })
+
+    autoUpdater.on('download-progress', (progressObj) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', {
+          status: 'downloading',
+          progress: progressObj.percent
+        })
+      })
+    })
+
+    autoUpdater.on('update-downloaded', () => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', { status: 'downloaded' })
+      })
+    })
+  }
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -151,3 +203,24 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+// Add update handlers
+ipcMain.handle('check-for-updates', async () => {
+  if (!is.dev) {
+    return autoUpdater.checkForUpdates()
+  }
+  return null
+})
+
+ipcMain.handle('download-update', async () => {
+  if (!is.dev) {
+    return autoUpdater.downloadUpdate()
+  }
+  return null
+})
+
+ipcMain.handle('install-update', async () => {
+  if (!is.dev) {
+    autoUpdater.quitAndInstall()
+  }
+})

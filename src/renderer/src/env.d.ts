@@ -45,6 +45,26 @@ declare global {
         gameId: string,
         notes: { matchupNotes: string; generalNotes: string }
       ) => Promise<void>
+      updater: {
+        onUpdateStatus: (
+          callback: (data: {
+            status:
+              | 'checking'
+              | 'available'
+              | 'not-available'
+              | 'downloading'
+              | 'downloaded'
+              | 'error'
+            version?: string
+            releaseDate?: string
+            progress?: number
+            error?: string
+          }) => void
+        ) => () => void
+        checkForUpdates: () => Promise<void>
+        downloadUpdate: () => Promise<void>
+        installUpdate: () => Promise<void>
+      }
     }
   }
 }

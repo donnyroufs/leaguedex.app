@@ -4,7 +4,7 @@ import { Outlet } from 'react-router'
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
-import { Layers, Settings as SettingsIcon, Bell, Clock } from 'lucide-react'
+import { Layers, Settings as SettingsIcon, Bell, Clock, Download, RefreshCw } from 'lucide-react'
 
 type Matchup = {
   you: {
@@ -19,12 +19,21 @@ type Matchup = {
   }
 }
 
+type UpdateStatus = {
+  status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+  version?: string
+  releaseDate?: string
+  progress?: number
+  error?: string
+}
+
 export function Layout(): JSX.Element {
   const [gameTime, setGameTime] = useState<number | null>(null)
   const [matchup, setMatchup] = useState<Matchup | null>(null)
   const [version, setVersion] = useState<string | null>(null)
   const [insights, setInsights] = useState<string | null>(null)
   const [generalInsights, setGeneralInsights] = useState<string | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
@@ -40,6 +49,81 @@ export function Layout(): JSX.Element {
 
     return () => unsubscribe()
   }, [])
+
+  useEffect(() => {
+    const unsubscribe = window.api.updater.onUpdateStatus((data) => {
+      setUpdateStatus(data)
+    })
+
+    return () => unsubscribe()
+  }, [])
+
+  const handleCheckForUpdates = async (): Promise<void> => {
+    try {
+      await window.api.updater.checkForUpdates()
+    } catch (error) {
+      console.error('Failed to check for updates:', error)
+    }
+  }
+
+  const handleDownloadUpdate = async (): Promise<void> => {
+    try {
+      await window.api.updater.downloadUpdate()
+    } catch (error) {
+      console.error('Failed to download update:', error)
+    }
+  }
+
+  const handleInstallUpdate = async (): Promise<void> => {
+    try {
+      await window.api.updater.installUpdate()
+    } catch (error) {
+      console.error('Failed to install update:', error)
+    }
+  }
+
+  const getUpdateButton = (): JSX.Element | null => {
+    if (!updateStatus) return null
+
+    switch (updateStatus.status) {
+      case 'available':
+        return (
+          <button
+            onClick={handleDownloadUpdate}
+            className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+          >
+            <Download className="w-3 h-3" />
+            Update Available
+          </button>
+        )
+      case 'downloading':
+        return (
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-blue-600">
+            <RefreshCw className="w-3 h-3 animate-spin" />
+            Downloading... {updateStatus.progress?.toFixed(1)}%
+          </div>
+        )
+      case 'downloaded':
+        return (
+          <button
+            onClick={handleInstallUpdate}
+            className="flex items-center gap-2 px-3 py-2 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+          >
+            <Download className="w-3 h-3" />
+            Install Update
+          </button>
+        )
+      case 'error':
+        return (
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-red-600">
+            <span>Update Error</span>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="h-screen flex flex-col bg-bg-primary">
       <header>
@@ -67,7 +151,17 @@ export function Layout(): JSX.Element {
             </ul>
           </nav>
           <div className="mt-auto p-4 border-t border-border-primary bg-bg-primary">
-            <p className="text-xs text-text-tertiary text-center">v{version}</p>
+            <div className="flex flex-col gap-2">
+              <p className="text-xs text-text-tertiary text-center">v{version}</p>
+              {getUpdateButton()}
+              <button
+                onClick={handleCheckForUpdates}
+                className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-bg-secondary hover:bg-bg-tertiary text-text-primary rounded transition-colors"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Check for Updates
+              </button>
+            </div>
           </div>
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">

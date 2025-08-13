@@ -25,7 +25,29 @@ const api = {
   updateConfig: (config: UserConfig) => ipcRenderer.invoke('update-config', config),
   getConfig: () => ipcRenderer.invoke('get-config'),
   getGames: () => ipcRenderer.invoke('get-games'),
-  reviewGame: (gameId: string, notes: string) => ipcRenderer.invoke('review-game', gameId, notes)
+  reviewGame: (gameId: string, notes: string) => ipcRenderer.invoke('review-game', gameId, notes),
+  updater: {
+    onUpdateStatus: (
+      callback: (data: {
+        status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+        version?: string
+        releaseDate?: string
+        progress?: number
+        error?: string
+      }) => void
+    ) => {
+      ipcRenderer.on('update-status', (_, data) => {
+        callback(data)
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('update-status')
+      }
+    },
+    checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+    downloadUpdate: () => ipcRenderer.invoke('download-update'),
+    installUpdate: () => ipcRenderer.invoke('install-update')
+  }
 }
 
 if (process.contextIsolated) {

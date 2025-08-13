@@ -40,5 +40,8 @@ appImage:
   artifactName: ${name}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: spaces
+  name: leaguedex-releases
+  region: ams3
+  acl: public-read
+
