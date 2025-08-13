@@ -34,16 +34,16 @@ export function Game(): JSX.Element {
       const foundGame = games.find((g) => g.id === gameId)
 
       if (foundGame) {
-        console.log(foundGame)
         setGame(foundGame)
 
-        const [yourChamp, enemyChamp] = foundGame.matchupId.split('-vs-')
-        setMatchup({
-          you: { name: yourChamp, role: 'unknown' },
-          enemy: { name: enemyChamp, role: 'unknown' }
-        })
+        const [youPart, enemyPart] = foundGame.matchupId.split('-vs-')
+        const [yourChamp, yourRole] = youPart.split('-')
+        const [enemyChamp, enemyRole] = enemyPart.split('-')
 
-        console.log(foundGame)
+        setMatchup({
+          you: { name: yourChamp, role: yourRole },
+          enemy: { name: enemyChamp, role: enemyRole }
+        })
 
         const matchupNotes = foundGame.notes.filter((note) => note.type === 'matchup')
         const generalNotes = foundGame.notes.filter((note) => note.type === 'general')
