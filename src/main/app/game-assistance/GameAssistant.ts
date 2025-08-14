@@ -136,8 +136,8 @@ export class GameAssistant {
     )
     this._currentGameId = await this._gameService.createGame(gameState.data!)
     this._insightsService = createInsightsService(
-      config.insights.ai.enabled,
-      config.insights.ai.apiKey,
+      config.cloud.apiKey != null,
+      config.cloud.apiKey,
       this._gameService
     )
     this._assistantActive = true

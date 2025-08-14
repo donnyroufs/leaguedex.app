@@ -1,5 +1,5 @@
 import { JSX, useEffect, useState } from 'react'
-import { Timer, Brain } from 'lucide-react'
+import { Timer, Cloud } from 'lucide-react'
 import { ToggleSwitch } from '../components/ToggleSwitch'
 import { PageWrapper } from '../components/PageWrapper'
 
@@ -34,11 +34,8 @@ type UserConfig = {
   gameAssistance: {
     enableNeutralObjectiveTimers: boolean
   }
-  insights: {
-    ai: {
-      enabled: boolean
-      apiKey: string | null
-    }
+  cloud: {
+    apiKey: string | null
   }
 }
 
@@ -63,30 +60,12 @@ export function Settings(): JSX.Element {
     setConfig(updatedConfig)
   }
 
-  async function onUpdateAI(checked: boolean): Promise<void> {
+  async function onUpdateCloudApiKey(apiKey: string): Promise<void> {
     const updatedConfig = await window.api.updateConfig({
       ...config!,
-      insights: {
-        ...config!.insights,
-        ai: {
-          ...config!.insights.ai,
-          enabled: checked
-        }
-      }
-    })
-
-    setConfig(updatedConfig)
-  }
-
-  async function onUpdateApiKey(apiKey: string): Promise<void> {
-    const updatedConfig = await window.api.updateConfig({
-      ...config!,
-      insights: {
-        ...config!.insights,
-        ai: {
-          ...config!.insights.ai,
-          apiKey
-        }
+      cloud: {
+        ...config!.cloud,
+        apiKey
       }
     })
 
@@ -114,29 +93,20 @@ export function Settings(): JSX.Element {
           </div>
         </SettingsSection>
 
-        <SettingsSection title="Insights" icon={Brain}>
-          <div className="space-y-6">
-            <ToggleSwitch
-              checked={config.insights.ai.enabled}
-              onChange={onUpdateAI}
-              label="Enable AI"
-              description="Enable AI-powered insights and analysis"
+        <SettingsSection title="Cloud" icon={Cloud}>
+          <div className="space-y-2">
+            <label className="text-base font-medium text-text-primary leading-6">API Key</label>
+            <p className="text-sm text-text-tertiary leading-5">
+              Enter your API key for cloud services
+            </p>
+            <input
+              type="password"
+              value={config.cloud.apiKey || ''}
+              onChange={(e) => onUpdateCloudApiKey(e.target.value)}
+              placeholder="Enter your API key"
+              className="w-full px-4 py-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 font-mono text-sm"
+              style={{ letterSpacing: '0.1em' }}
             />
-
-            <div className="space-y-2">
-              <label className="text-base font-medium text-text-primary leading-6">API Key</label>
-              <p className="text-sm text-text-tertiary leading-5">
-                Enter your API key for AI services
-              </p>
-              <input
-                type="password"
-                value={config.insights.ai.apiKey || ''}
-                onChange={(e) => onUpdateApiKey(e.target.value)}
-                placeholder="Enter your API key"
-                className="w-full px-4 py-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 font-mono text-sm"
-                style={{ letterSpacing: '0.1em' }}
-              />
-            </div>
           </div>
         </SettingsSection>
       </div>

@@ -7,11 +7,17 @@ export type UserConfig = {
   gameAssistance: {
     enableNeutralObjectiveTimers: boolean
   }
-  insights: {
+  /**
+   * @deprecated
+   */
+  insights?: {
     ai: {
       enabled: boolean
       apiKey: string | null
     }
+  }
+  cloud: {
+    apiKey: string | null
   }
 }
 
@@ -20,11 +26,8 @@ function createDefaultConfig(): UserConfig {
     gameAssistance: {
       enableNeutralObjectiveTimers: true
     },
-    insights: {
-      ai: {
-        enabled: false,
-        apiKey: null
-      }
+    cloud: {
+      apiKey: null
     }
   }
 }
@@ -54,6 +57,14 @@ export class UserConfigRepository {
   public getConfig(): UserConfig {
     if (!this._loadedConfig) {
       throw new Error('Config not loaded')
+    }
+
+    if (this._loadedConfig.insights) {
+      console.warn('Insights config is deprecated. Please use cloud.apiKey instead.')
+      this._loadedConfig.cloud = {
+        apiKey: this._loadedConfig.insights.ai.apiKey
+      }
+      delete this._loadedConfig.insights
     }
 
     return {
