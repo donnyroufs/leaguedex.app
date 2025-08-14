@@ -1,6 +1,7 @@
 import { JSX } from 'react'
 import Markdown, { Components } from 'react-markdown'
 import { useOutletContext } from 'react-router'
+import { PageWrapper } from '../components/PageWrapper'
 
 type Matchup = {
   id: string
@@ -50,20 +51,22 @@ export function CurrentMatch(): JSX.Element {
 
   if (ctx.matchup === null) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-text-secondary text-lg mb-2">No active match found</div>
-          <div className="text-text-tertiary text-sm">
-            Start a League of Legends match to see champion analysis
+      <PageWrapper>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-text-secondary text-lg mb-2">No active match found</div>
+            <div className="text-text-tertiary text-sm">
+              Start a League of Legends match to see champion analysis
+            </div>
           </div>
         </div>
-      </div>
+      </PageWrapper>
     )
   }
 
   return (
-    <div className="flex-1">
-      <header className="relative h-40 overflow-hidden border-b border-border-primary bg-bg-secondary">
+    <PageWrapper>
+      <header className="relative h-40 overflow-hidden border-b border-border-primary bg-bg-secondary flex-shrink-0">
         <div className="inset-0 flex">
           <div className="flex-1 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-blue-950/15 to-slate-900/30 z-10" />
@@ -128,7 +131,7 @@ export function CurrentMatch(): JSX.Element {
           <div className="text-text-primary"></div>
         </div>
       </div>
-      <div className="space-y-4 p-4">
+      <div className="flex-1 overflow-y-auto min-h-0 space-y-4 p-4">
         <div className="rounded-lg border border-border-primary bg-bg-secondary p-4">
           <div className="text-text-primary font-semibold text-lg border-b border-border-primary pb-2 mb-3">
             Insights
@@ -140,6 +143,6 @@ export function CurrentMatch(): JSX.Element {
           </div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   )
 }

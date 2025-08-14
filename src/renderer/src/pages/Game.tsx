@@ -1,5 +1,6 @@
 import { JSX, useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router'
+import { PageWrapper } from '../components/PageWrapper'
 
 type Game = {
   id: string
@@ -134,8 +135,8 @@ export function Game(): JSX.Element {
   const isDisabled = isReviewed || !isCompleted || saving
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)]">
+    <PageWrapper>
+      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-semibold text-text-primary">{getMatchupTitle()}</h1>
           <div
@@ -153,7 +154,7 @@ export function Game(): JSX.Element {
         <div className="text-sm text-text-tertiary">{formatDate(game.createdAt)}</div>
       </div>
 
-      <div className="flex-1 p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto min-h-0 p-8 space-y-8">
         <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-lg p-6">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-text-primary">Matchup Review Notes</h2>
@@ -221,6 +222,6 @@ export function Game(): JSX.Element {
           </button>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   )
 }

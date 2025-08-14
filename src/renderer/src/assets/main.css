@@ -66,30 +66,54 @@
   --color-border-accent: rgba(0, 212, 255, 0.2);
 }
 
-body {
+html, body {
   @apply bg-bg-primary text-text-primary;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: var(--font-size-base);
   user-select: none;
-  /* overflow: hidden; */
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#root > * {
+  flex: 1;
+  min-height: 0;
 }
 
 /* Custom scrollbar styling */
 *::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
 }
 
 *::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.3);
+  background-clip: content-box;
+}
+
+/* Force scrollbars to always show on scrollable elements */
+.overflow-y-auto {
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
 }
 
 /* Custom animations */

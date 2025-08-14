@@ -2,6 +2,7 @@ import { JSX, useEffect, useState } from 'react'
 import { Plus, X, Bell } from 'lucide-react'
 import { AddReminderModal } from '../components/AddReminderModal'
 import { useModal } from '../hooks'
+import { PageWrapper } from '../components/PageWrapper'
 
 type Reminder = {
   id: string
@@ -139,8 +140,8 @@ export function RemindersPage(): JSX.Element {
   const hasReminders = reminders.length > 0
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)]">
+    <PageWrapper>
+      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
         <h1 className="text-2xl font-semibold text-text-primary">Reminders</h1>
         <button
           onClick={modal.onOpen}
@@ -150,42 +151,37 @@ export function RemindersPage(): JSX.Element {
           Add Reminder
         </button>
       </div>
-
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          {!hasReminders ? (
-            <div className="h-full flex items-center justify-center pb-12">
-              <EmptyState
-                title="No reminders yet"
-                subtitle="Create your first reminder to help you stay on top of your game timing and improve your gameplay."
-              />
-            </div>
-          ) : (
-            <div className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedOneTime.length > 0 && (
-                  <>
-                    <SectionHeader title="One Time" />
-                    {sortedOneTime.map((reminder) => (
-                      <ReminderCard key={reminder.id} reminder={reminder} onDelete={handleDelete} />
-                    ))}
-                  </>
-                )}
-
-                {sortedRecurring.length > 0 && (
-                  <>
-                    <SectionHeader title="Recurring" />
-                    {sortedRecurring.map((reminder) => (
-                      <ReminderCard key={reminder.id} reminder={reminder} onDelete={handleDelete} />
-                    ))}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+      {!hasReminders ? (
+        <div className="flex-1 flex items-center justify-center pb-12">
+          <EmptyState
+            title="No reminders yet"
+            subtitle="Create your first reminder to help you stay on top of your game timing and improve your gameplay."
+          />
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto min-h-0 p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {sortedOneTime.length > 0 && (
+              <>
+                <SectionHeader title="One Time" />
+                {sortedOneTime.map((reminder) => (
+                  <ReminderCard key={reminder.id} reminder={reminder} onDelete={handleDelete} />
+                ))}
+              </>
+            )}
+
+            {sortedRecurring.length > 0 && (
+              <>
+                <SectionHeader title="Recurring" />
+                {sortedRecurring.map((reminder) => (
+                  <ReminderCard key={reminder.id} reminder={reminder} onDelete={handleDelete} />
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <AddReminderModal isOpen={modal.isOpen} onClose={modal.onClose} onCreate={refreshReminders} />
-    </div>
+    </PageWrapper>
   )
 }

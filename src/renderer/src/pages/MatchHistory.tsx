@@ -1,6 +1,7 @@
 import { BarChartIcon } from 'lucide-react'
 import { JSX, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { PageWrapper } from '../components/PageWrapper'
 
 type GameData = {
   id: string
@@ -225,8 +226,8 @@ export function MatchHistory(): JSX.Element {
   const groupedMatches = groupAndSortMatches(matches)
 
   return (
-    <div className="flex flex-col w-full h-full">
-      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)]">
+    <PageWrapper>
+      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
         <h1 className="text-2xl font-semibold text-text-primary">Match History</h1>
         {hasMatches && (
           <span className="text-sm text-text-secondary">
@@ -235,27 +236,25 @@ export function MatchHistory(): JSX.Element {
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          {loading ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-text-secondary">Loading matches...</div>
-            </div>
-          ) : !hasMatches ? (
-            <div className="h-full flex items-center justify-center pb-12">
-              <EmptyState
-                title="No matches yet"
-                subtitle="Your match history will appear here once you start playing games. Each match will be tracked automatically."
-              />
-            </div>
-          ) : (
-            <div className="p-8 space-y-8">
-              <MatchGroup title="Today" matches={groupedMatches.today} />
-              <MatchGroup title="Earlier" matches={groupedMatches.earlier} />
-            </div>
-          )}
-        </div>
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {loading ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-text-secondary">Loading matches...</div>
+          </div>
+        ) : !hasMatches ? (
+          <div className="h-full flex items-center justify-center pb-12">
+            <EmptyState
+              title="No matches yet"
+              subtitle="Your match history will appear here once you start playing games. Each match will be tracked automatically."
+            />
+          </div>
+        ) : (
+          <div className="p-8 space-y-8">
+            <MatchGroup title="Today" matches={groupedMatches.today} />
+            <MatchGroup title="Earlier" matches={groupedMatches.earlier} />
+          </div>
+        )}
       </div>
-    </div>
+    </PageWrapper>
   )
 }

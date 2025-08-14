@@ -1,6 +1,7 @@
 import { JSX, useState, useMemo, useEffect } from 'react'
 import { SearchInput } from '../components/SearchInput'
 import { ChampionCard } from '../components/ChampionCard'
+import { PageWrapper } from '../components/PageWrapper'
 
 type Champion = {
   id: string
@@ -166,9 +167,9 @@ export function Dex(): JSX.Element {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <PageWrapper>
       {/* Header Section */}
-      <div className="p-6 border-b border-border-primary bg-bg-secondary/50">
+      <div className="p-6 border-b border-border-primary bg-bg-secondary/50 flex-shrink-0">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-text-primary mb-2">Champion Dex</h1>
@@ -184,7 +185,7 @@ export function Dex(): JSX.Element {
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary border border-border-primary rounded-lg">
-              <span className="text-sm text-text-secondary">{champions.length} Total</span>
+              <div className="text-sm text-text-secondary">{champions.length} Total</div>
             </div>
           </div>
         </div>
@@ -210,13 +211,13 @@ export function Dex(): JSX.Element {
       </div>
 
       {/* Champions Grid */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-y-auto min-h-0 p-6">
         {filteredChampions.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] text-center w-full">
             <div className="w-20 h-20 bg-bg-tertiary rounded-full flex items-center justify-center mb-6">
               <span className="text-3xl">🔍</span>
             </div>
-            <h3 className="text-2xl font-semibold text-text-primary mb-3">No champions found</h3>
+            <h3 className="text-3xl font-semibold text-text-primary mb-3">No champions found</h3>
             <p className="text-text-secondary max-w-2xl text-base leading-relaxed">
               Try adjusting your search terms or browse all champions by clearing the search.
             </p>
@@ -238,6 +239,6 @@ export function Dex(): JSX.Element {
           </div>
         )}
       </div>
-    </div>
+    </PageWrapper>
   )
 }

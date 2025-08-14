@@ -137,14 +137,14 @@ export function Layout(): JSX.Element {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-bg-primary">
-      <header>
+    <div className="w-full h-full flex flex-col bg-bg-primary" style={{ height: '100vh' }}>
+      <header className="flex-shrink-0">
         <Titlebar title="Leaguedex" />
         <Statusbar gameTime={gameTime} />
       </header>
 
-      <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary">
-        <aside className="w-60 bg-bg-tertiary backdrop-blur-md border-r border-border-primary flex flex-col pt-6">
+      <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary min-h-0">
+        <aside className="w-60 bg-bg-tertiary backdrop-blur-md border-r border-border-primary flex flex-col pt-6 flex-shrink-0">
           <p className="px-4 pb-2 text-xs uppercase tracking-wide text-text-tertiary">Your Data</p>
           <nav>
             <ul className="flex flex-col mt-2">
@@ -179,7 +179,7 @@ export function Layout(): JSX.Element {
             </div>
           </div>
         </aside>
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden min-h-0">
           <Outlet context={{ matchup, insights, generalInsights }} />
         </main>
       </div>

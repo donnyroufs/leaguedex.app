@@ -1,6 +1,7 @@
 import { JSX, useEffect, useState } from 'react'
 import { Timer, Brain } from 'lucide-react'
 import { ToggleSwitch } from '../components/ToggleSwitch'
+import { PageWrapper } from '../components/PageWrapper'
 
 type SettingsSectionProps = {
   title: string
@@ -97,11 +98,11 @@ export function Settings(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)]">
+    <PageWrapper>
+      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
         <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
       </div>
-      <div className="p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto min-h-0 p-8 space-y-8">
         <SettingsSection title="Game Assistance" icon={Timer}>
           <div className="space-y-2">
             <ToggleSwitch
@@ -139,6 +140,6 @@ export function Settings(): JSX.Element {
           </div>
         </SettingsSection>
       </div>
-    </div>
+    </PageWrapper>
   )
 }
