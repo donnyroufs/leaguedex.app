@@ -1,11 +1,11 @@
-import OpenAI from 'openai'
 import { MatchupId } from './Matchup'
 import { GameService } from './GameService'
+import { app } from 'electron'
 
 export class InsightsService {
   public constructor(
     private readonly _gameService: GameService,
-    private readonly _openai?: OpenAI
+    private readonly _apiKey?: string
   ) {}
 
   public async generateInsights(matchupId: MatchupId): Promise<string | null> {
@@ -17,7 +17,7 @@ export class InsightsService {
       return null
     }
 
-    if (!this._openai) {
+    if (!this._apiKey) {
       return [...notes, ...generalNotes]
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
         .map((note) => `- ${note.content}`)
@@ -25,43 +25,25 @@ export class InsightsService {
     }
 
     try {
-      const response = await this._openai!.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are my League of Legends coach. Analyze my matchup notes and give a very concise response:
+      const url = app.isPackaged
+        ? 'https://api.donnyroufs.com/insights'
+        : 'http://localhost:5005/insights'
 
-# Matchup Overview
-1. One sentence overview of the matchup based on my notes
-
-# Key Matchup Points
-2. 2-3 key bullet points I should remember from matchup-specific notes
-
-# General Focus Areas
-3. Key focus areas from my general notes
-
-Keep it brief and actionable. No fluff or extra explanations needed.`
-          },
-          {
-            role: 'user',
-            content: `
-Dataset:
-
-Specific matchup notes
-${JSON.stringify(notes)}
-
-
-General notes
-${JSON.stringify(generalNotes)}
-`
-          }
-        ]
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          notes,
+          generalNotes
+        }),
+        headers: {
+          'X-Api-Key': this._apiKey,
+          'Content-Type': 'application/json'
+        }
       })
-      const content = response.choices[0].message.content ?? null
-      return content
+      const json = await res.json()
+      return json.insights
     } catch (err) {
-      console.error(err)
+      console.error('Error generating insights', err)
       return null
     }
   }

@@ -1,4 +1,3 @@
-import OpenAI from 'openai'
 import { InsightsService } from './InsightsService'
 import { GameService } from './GameService'
 
@@ -15,10 +14,5 @@ export function createInsightsService(
     return new InsightsService(gameService)
   }
 
-  const openai = new OpenAI({
-    apiKey: apiKey!
-  })
-
-  return new InsightsService(gameService, openai)
+  return new InsightsService(gameService, apiKey!)
 }
-
