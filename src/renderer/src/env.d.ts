@@ -65,6 +65,9 @@ declare global {
         downloadUpdate: () => Promise<void>
         installUpdate: () => Promise<void>
       }
+      dex: {
+        all: () => Promise<Dex>
+      }
     }
   }
 }

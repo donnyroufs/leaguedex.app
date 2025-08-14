@@ -11,6 +11,7 @@ import { RemindersPage } from './pages/Reminders'
 import { Titlebar } from './components/Titlebar'
 import { MatchHistory } from './pages/MatchHistory'
 import { Game } from './pages/Game'
+import { Dex } from './pages/Dex'
 
 const router = createHashRouter([
   {
@@ -30,6 +31,11 @@ const router = createHashRouter([
       {
         index: true,
         path: '/',
+        element: <Dex />
+      },
+      {
+        index: false,
+        path: '/match',
         element: <CurrentMatch />
       },
       {

@@ -30,6 +30,18 @@ function createWindow(): void {
     }
   })
 
+  // Set Content Security Policy to allow Riot Games API
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ddragon.leagueoflegends.com https://*.riotgames.com; img-src 'self' data: https://ddragon.leagueoflegends.com; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
+        ]
+      }
+    })
+  })
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
@@ -52,6 +64,7 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  const dexService = GameAssistance.createDexService()
   // Set app user model id for windows
   // TODO: Revisit this
   electronApp.setAppUserModelId('com.leaguedex.app')
@@ -109,6 +122,10 @@ app.whenReady().then(() => {
       return gameAssistant.reviewGame(gameId, data.matchupNotes, data.generalNotes)
     }
   )
+
+  ipcMain.handle('dex-all', async () => {
+    return dexService.all()
+  })
 
   ipcMain.handle('get-config', async () => {
     return configRepository.getConfig()

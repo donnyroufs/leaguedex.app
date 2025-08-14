@@ -21,3 +21,4 @@ export function createInsightsService(
 
   return new InsightsService(gameService, openai)
 }
+

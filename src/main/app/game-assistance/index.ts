@@ -20,6 +20,7 @@ import { ReminderOrchestrator } from './ReminderOrchestrator'
 import { UserConfigRepository } from '../UserConfig'
 import { GameService } from '../GameService'
 import { GameRepository } from '../GameRepository'
+import { DexService } from '../DexService'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -60,6 +61,12 @@ function createGameService(): GameService {
   return new GameService(gameRepository)
 }
 
+const gameService = createGameService()
+
+export function createDexService(): DexService {
+  return new DexService(gameService)
+}
+
 export function createGameAssistant(configRepository: UserConfigRepository): GameAssistant {
   const riotClient = createRiotClient()
   const reminderService = createReminderService()
@@ -74,8 +81,6 @@ export function createGameAssistant(configRepository: UserConfigRepository): Gam
     reminderProcessor,
     objectiveTracker
   )
-
-  const gameService = createGameService()
 
   return new GameAssistant(
     gameDetector,

@@ -4,7 +4,15 @@ import { Outlet } from 'react-router'
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
-import { Layers, Settings as SettingsIcon, Bell, Clock, Download, RefreshCw } from 'lucide-react'
+import {
+  Layers,
+  Settings as SettingsIcon,
+  Bell,
+  Clock,
+  Download,
+  RefreshCw,
+  Book
+} from 'lucide-react'
 
 type Matchup = {
   you: {
@@ -141,7 +149,10 @@ export function Layout(): JSX.Element {
           <nav>
             <ul className="flex flex-col mt-2">
               <li>
-                <SidebarNavItem to="/" label="Match" icon={Layers} />
+                <SidebarNavItem to="/" label="Home" icon={Book} />
+              </li>
+              <li>
+                <SidebarNavItem to="/match" label="Match" icon={Layers} />
               </li>
               <li>
                 <SidebarNavItem to="/reminders" label="Reminders" icon={Bell} />
