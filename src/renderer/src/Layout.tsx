@@ -102,7 +102,7 @@ export function Layout(): JSX.Element {
         return (
           <button
             onClick={handleDownloadUpdate}
-            className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-xs bg-bg-tertiary hover:bg-bg-secondary text-text-accent border border-border-accent rounded transition-colors"
           >
             <Download className="w-3 h-3" />
             Update Available
@@ -110,7 +110,7 @@ export function Layout(): JSX.Element {
         )
       case 'downloading':
         return (
-          <div className="flex items-center gap-2 px-3 py-2 text-xs text-blue-600">
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-text-accent">
             <RefreshCw className="w-3 h-3 animate-spin" />
             Downloading... {updateStatus.progress?.toFixed(1)}%
           </div>
@@ -119,7 +119,7 @@ export function Layout(): JSX.Element {
         return (
           <button
             onClick={handleInstallUpdate}
-            className="flex items-center gap-2 px-3 py-2 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-xs bg-bg-tertiary hover:bg-bg-secondary text-status-success border border-status-success rounded transition-colors"
           >
             <Download className="w-3 h-3" />
             Install Update
@@ -127,7 +127,7 @@ export function Layout(): JSX.Element {
         )
       case 'error':
         return (
-          <div className="flex items-center gap-2 px-3 py-2 text-xs text-red-600">
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-status-danger">
             <span>Update Error</span>
           </div>
         )
