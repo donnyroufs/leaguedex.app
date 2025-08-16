@@ -94,7 +94,7 @@ export class GameAssistant {
 
       if (this._assistantActive && gameState.time !== null) {
         const gameEvents = await this._riotClient.getGameEvents()
-        this._reminderOrchestrator.processTick(
+        await this._reminderOrchestrator.processTick(
           gameState.time,
           gameEvents,
           config.gameAssistance.enableNeutralObjectiveTimers

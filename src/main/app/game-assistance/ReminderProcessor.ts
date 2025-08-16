@@ -7,7 +7,7 @@ export class ReminderProcessor {
 
   public constructor(private readonly _textToSpeech: ITextToSpeech) {}
 
-  public process(reminders: Reminder[]): void {
+  public async process(reminders: Reminder[]): Promise<void> {
     this._queue.push(...reminders)
 
     if (!this._processing) {

@@ -28,11 +28,11 @@ export class ReminderOrchestrator {
     this._reminders.push(...initialReminders)
   }
 
-  public processTick(
+  public async processTick(
     gameTime: Seconds,
     gameEvents: NormalizedGameEvent[],
     enableNeutralObjectiveTimers: boolean
-  ): void {
+  ): Promise<void> {
     if (enableNeutralObjectiveTimers) {
       const objectiveReminders = this._objectiveTracker.track(gameEvents, gameTime)
       this._reminders.push(...objectiveReminders)
@@ -50,7 +50,7 @@ export class ReminderOrchestrator {
     )
 
     if (oneTimeReminders.length > 0) {
-      this._reminderProcessor.process(oneTimeReminders)
+      await this._reminderProcessor.process(oneTimeReminders)
       this._reminders = this._reminders.filter((x) => !oneTimeReminders.some((r) => r.id === x.id))
       Logger.log(`Processing ${oneTimeReminders.length} one-time reminders`, {
         oneTimeReminders,
@@ -67,7 +67,7 @@ export class ReminderOrchestrator {
         repeatingReminders,
         gameTime
       })
-      this._reminderProcessor.process(repeatingReminders)
+      await this._reminderProcessor.process(repeatingReminders)
     }
   }
 
