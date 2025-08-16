@@ -31,6 +31,8 @@ declare global {
             matchup: Matchup | null
             insights: string | null
             generalInsights: string | null
+            totalPlayed: number
+            lastPlayed: Date | null
           }) => void
         ) => () => void
         getReminders: () => Promise<Reminder[]>

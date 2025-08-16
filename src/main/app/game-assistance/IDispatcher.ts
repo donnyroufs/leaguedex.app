@@ -15,5 +15,7 @@ export type Contract = {
     gameTime: Seconds | null
     matchup: Matchup | null
     insights: string | null
+    totalPlayed: number
+    lastPlayed: Date | null
   }
 }

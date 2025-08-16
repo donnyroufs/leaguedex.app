@@ -25,6 +25,8 @@ export class GameAssistant {
   private _insightsService: InsightsService | null = null
   private _generatedInsights: string | null = null
   private _processingInsights = false
+  private _totalPlayed = 0
+  private _lastPlayed: Date | null = null
 
   public constructor(
     private readonly _gameDetector: GameDetector,
@@ -110,12 +112,16 @@ export class GameAssistant {
           (await this._insightsService?.generateInsights(matchup.id)) ?? null
       }
 
-      this._dispatcher.dispatch('game-data', {
+      const data = {
         playing: this._isPlaying,
         gameTime: gameState.time,
         matchup,
+        totalPlayed: this._totalPlayed,
+        lastPlayed: this._lastPlayed,
         insights: this._generatedInsights
-      })
+      }
+
+      this._dispatcher.dispatch('game-data', data)
     }, 1000)
   }
 
@@ -140,6 +146,26 @@ export class GameAssistant {
       config.cloud.apiKey,
       this._gameService
     )
+    const games = await this._gameService.getAllGames()
+    const matchup = gameState.data != null ? MatchupService.getMatchup(gameState.data) : null
+    if (matchup != null) {
+      const matchupGames = games.filter(
+        (game) => game.status !== 'in-progress' && game.matchupId === matchup?.id
+      )
+      const totalPlayed = matchupGames.length
+
+      if (totalPlayed > 0) {
+        this._totalPlayed = totalPlayed
+        this._lastPlayed = new Date(
+          games
+            .filter((game) => game.status === 'completed')
+            .sort(
+              (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            )[0].createdAt
+        )
+      }
+    }
+
     this._assistantActive = true
   }
 
@@ -154,5 +180,7 @@ export class GameAssistant {
     this._insightsService = null
     this._processingInsights = false
     this._generatedInsights = null
+    this._totalPlayed = 0
+    this._lastPlayed = null
   }
 }

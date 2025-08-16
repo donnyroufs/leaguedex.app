@@ -26,6 +26,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.11.0",
+    "date-fns": "^4.1.0",
     "electron-updater": "^6.6.2",
     "lucide-react": "^0.536.0",
     "react-markdown": "^10.1.0",

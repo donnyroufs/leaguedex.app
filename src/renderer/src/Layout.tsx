@@ -43,6 +43,8 @@ export function Layout(): JSX.Element {
   const [generalInsights, setGeneralInsights] = useState<string | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false)
+  const [totalPlayed, setTotalPlayed] = useState<number>(0)
+  const [lastPlayed, setLastPlayed] = useState<Date | null>(null)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
@@ -54,6 +56,8 @@ export function Layout(): JSX.Element {
       setInsights(data.insights)
       setMatchup(data.matchup)
       setGeneralInsights(data.generalInsights)
+      setTotalPlayed(data.totalPlayed)
+      setLastPlayed(data.lastPlayed)
     })
 
     return () => unsubscribe()
@@ -180,7 +184,7 @@ export function Layout(): JSX.Element {
           </div>
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden min-h-0">
-          <Outlet context={{ matchup, insights, generalInsights }} />
+          <Outlet context={{ matchup, insights, generalInsights, totalPlayed, lastPlayed }} />
         </main>
       </div>
     </div>

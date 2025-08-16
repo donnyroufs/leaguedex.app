@@ -76,6 +76,7 @@ function MatchRow({ match }: MatchRowProps): JSX.Element {
     navigate(`/game/${match.id}`)
   }
 
+
   return (
     <div
       className="group bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] rounded-[10px] p-4 transition-all duration-200 hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.15)] hover:-translate-y-0.5 cursor-pointer"

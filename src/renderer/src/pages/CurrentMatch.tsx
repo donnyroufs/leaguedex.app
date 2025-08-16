@@ -2,6 +2,7 @@ import { JSX } from 'react'
 import Markdown, { Components } from 'react-markdown'
 import { useOutletContext } from 'react-router'
 import { PageWrapper } from '../components/PageWrapper'
+import { formatDistanceToNow } from 'date-fns'
 
 type Matchup = {
   id: string
@@ -45,9 +46,9 @@ export function CurrentMatch(): JSX.Element {
   const ctx = useOutletContext<{
     matchup: Matchup | null
     insights: string | null
+    totalPlayed: number
+    lastPlayed: Date | null
   }>()
-
-  console.log(ctx.insights)
 
   if (ctx.matchup === null) {
     return (
@@ -126,9 +127,29 @@ export function CurrentMatch(): JSX.Element {
           </div>
         </div>
       </header>
-      <div className="bg-bg-secondary py-4 border-b border-border-primary">
-        <div className="p-4">
-          <div className="text-text-primary"></div>
+      <div className="bg-gray-800/50 border-b border-gray-800">
+        <div className="max-w-6xl mx-auto px-8 py-4">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">Games:</span>
+                <span className="text-white font-medium">{ctx.totalPlayed}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">Last Played:</span>
+                <span className="text-gray-300">
+                  {ctx.lastPlayed
+                    ? formatDistanceToNow(ctx.lastPlayed, {
+                        addSuffix: true
+                      })
+                    : 'Never'}
+                </span>
+              </div>
+            </div>
+            <button className="text-gray-400 hover:text-white transition-colors">
+              View Full History
+            </button>
+          </div>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto min-h-0 space-y-4 p-4">
