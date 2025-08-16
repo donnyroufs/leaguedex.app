@@ -35,14 +35,6 @@ export class ObjectiveTracker {
           )
           break
         case 'HeraldKill':
-          reminders.push(
-            ...this.createReminder(
-              id,
-              objectivesConfig.herald.firstSpawnTime,
-              gameTime,
-              objectivesConfig.herald.name
-            )
-          )
           break
         case 'BaronKill':
           reminders.push(
