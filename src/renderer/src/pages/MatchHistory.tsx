@@ -64,27 +64,6 @@ function formatRelativeTime(date: Date): string {
   return date.toLocaleDateString()
 }
 
-function getStatusColor(status: 'in-progress' | 'completed' | 'reviewed'): string {
-  switch (status) {
-    case 'in-progress':
-      return 'bg-[rgba(0,255,136,0.15)] text-success'
-    case 'completed':
-      return 'bg-[rgba(0,212,255,0.15)] text-info'
-    case 'reviewed':
-      return 'bg-[rgba(255,255,255,0.1)] text-text-secondary'
-  }
-}
-
-function getStatusText(status: 'in-progress' | 'completed' | 'reviewed'): string {
-  switch (status) {
-    case 'in-progress':
-      return 'In Progress'
-    case 'completed':
-      return 'Completed'
-    case 'reviewed':
-      return 'Reviewed'
-  }
-}
 
 type MatchRowProps = {
   match: MatchHistoryItem
@@ -118,12 +97,6 @@ function MatchRow({ match }: MatchRowProps): JSX.Element {
         </div>
 
         <div className="flex items-center gap-4">
-          <div
-            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(match.status)}`}
-          >
-            {getStatusText(match.status)}
-          </div>
-
           <span className="text-xs text-text-tertiary min-w-[80px] text-right">
             {formatRelativeTime(match.createdAt)}
           </span>
