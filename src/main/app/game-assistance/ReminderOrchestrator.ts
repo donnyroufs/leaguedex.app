@@ -1,5 +1,6 @@
 import { Logger } from '../shared-kernel'
-import { NormalizedGameEvent } from './IRiotClient'
+import { DeathTracker } from './DeathTracker'
+import { AllGameData, NormalizedGameEvent } from './IRiotClient'
 import { ObjectiveTracker } from './ObjectiveTracker'
 import { OneTimeReminder, Reminder, RepeatingReminder } from './Reminder'
 import { ReminderProcessor } from './ReminderProcessor'
@@ -13,7 +14,8 @@ export class ReminderOrchestrator {
   public constructor(
     private readonly _reminderService: ReminderService,
     private readonly _reminderProcessor: ReminderProcessor,
-    private readonly _objectiveTracker: ObjectiveTracker
+    private readonly _objectiveTracker: ObjectiveTracker,
+    private readonly _deathTracker: DeathTracker
   ) {}
 
   public async initialize(gameTime: Seconds, enableNeutralObjectiveTimers: boolean): Promise<void> {
@@ -31,8 +33,21 @@ export class ReminderOrchestrator {
   public async processTick(
     gameTime: Seconds,
     gameEvents: NormalizedGameEvent[],
-    enableNeutralObjectiveTimers: boolean
+    enableNeutralObjectiveTimers: boolean,
+    gameData: AllGameData | null
   ): Promise<void> {
+    if (gameData != null) {
+      const deathReminders = await this._deathTracker.track(gameData, gameTime)
+
+      if (deathReminders.length > 0) {
+        Logger.log(`Processing ${deathReminders.length} death reminders`, {
+          deathReminders,
+          gameTime
+        })
+        await this._reminderProcessor.process(deathReminders)
+      }
+    }
+
     if (enableNeutralObjectiveTimers) {
       const objectiveReminders = this._objectiveTracker.track(gameEvents, gameTime)
       this._reminders.push(...objectiveReminders)

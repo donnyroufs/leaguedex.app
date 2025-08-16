@@ -99,7 +99,8 @@ export class GameAssistant {
         await this._reminderOrchestrator.processTick(
           gameState.time,
           gameEvents,
-          config.gameAssistance.enableNeutralObjectiveTimers
+          config.gameAssistance.enableNeutralObjectiveTimers,
+          gameState.data
         )
       }
 

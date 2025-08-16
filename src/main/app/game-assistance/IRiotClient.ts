@@ -12,8 +12,10 @@ export interface IRiotClient {
 
 export type GameEvent = {
   readonly EventID: 0
-  readonly EventName: 'DragonKill' | 'HeraldKill' | 'BaronKill'
+  readonly EventName: 'DragonKill' | 'HeraldKill' | 'BaronKill' | 'ChampionKill'
   readonly EventTime: 0
+  readonly VictimName?: string
+  readonly KillerName?: string
 }
 
 /**
@@ -21,8 +23,10 @@ export type GameEvent = {
  */
 export type NormalizedGameEvent = {
   readonly id: number
-  readonly name: 'DragonKill' | 'HeraldKill' | 'BaronKill'
+  readonly name: 'DragonKill' | 'HeraldKill' | 'BaronKill' | 'ChampionKill'
   readonly timeInSeconds: number
+  readonly victimName?: string
+  readonly killerName?: string
 }
 
 export type AllGameData = {

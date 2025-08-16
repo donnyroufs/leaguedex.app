@@ -21,6 +21,7 @@ import { UserConfigRepository } from '../UserConfig'
 import { GameService } from '../GameService'
 import { GameRepository } from '../GameRepository'
 import { DexService } from '../DexService'
+import { DeathTracker } from './DeathTracker'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -76,10 +77,12 @@ export function createGameAssistant(configRepository: UserConfigRepository): Gam
   const textToSpeech = new SayTextToSpeech()
   const reminderProcessor = new ReminderProcessor(textToSpeech)
   const objectiveTracker = new ObjectiveTracker()
+  const deathTracker = new DeathTracker()
   const reminderOrchestrator = new ReminderOrchestrator(
     reminderService,
     reminderProcessor,
-    objectiveTracker
+    objectiveTracker,
+    deathTracker
   )
 
   return new GameAssistant(
