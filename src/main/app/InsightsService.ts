@@ -1,4 +1,4 @@
-import { MatchupId } from './Matchup'
+import { MatchupId, parseMatchupId } from './Matchup'
 import { GameService } from './GameService'
 import { app } from 'electron'
 
@@ -32,8 +32,17 @@ export class InsightsService {
       const res = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
-          notes,
-          generalNotes
+          notes: notes.map((note) => ({
+            content: note.content,
+            createdAt: note.createdAt.toISOString(),
+            type: note.type
+          })),
+          generalNotes: generalNotes.map((note) => ({
+            content: note.content,
+            createdAt: note.createdAt.toISOString(),
+            type: note.type
+          })),
+          matchup: parseMatchupId(matchupId)
         }),
         headers: {
           'X-Api-Key': this._apiKey,
