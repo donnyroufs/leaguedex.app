@@ -29,15 +29,16 @@ describeFeature(
 
     BeforeEachScenario(async () => {
       app = createApp()
-      await app.activate()
+      await app.start()
     })
 
-    AfterEachScenario(() => {
-      app.deactivate()
+    AfterEachScenario(async () => {
+      await app.stop()
     })
 
     Background(({ Given, And }) => {
       Given(`the application is running`, () => {})
+
       And(`I have one reminder configured:`, (_, data: DataTableReminder[]) => {})
     })
 

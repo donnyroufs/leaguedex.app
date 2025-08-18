@@ -6,8 +6,8 @@ Feature: Coaching
   Background:
     Given the application is running
     And I have one reminder configured:
-      | name          | triggerType| triggerValue| text          | audioFile|
-      | Map Awareness | once         | 120          | Check minimap | reminder_map.mp3|
+      | name          | triggerType  | triggerValue | text          | audioFile        |
+      | Map Awareness | once         | 120          | Check minimap | reminder_map.mp3 |
 
   Scenario: No reminder when no game is running
     And we are not in a League of Legends match

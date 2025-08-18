@@ -1,0 +1,61 @@
+@startuml Game Detection
+!theme bluegray
+
+title Game Detection - Functional Flow
+
+participant "App" as App
+participant "GameDetectionService" as GDS
+participant "RiotAPI" as API
+participant "EventStore" as ES
+participant "CoachingModule" as CM
+
+== App Startup ==
+App -> GDS: startPolling(eventBus)
+activate GDS
+
+== Game Detection Loop ==
+loop Every 1000ms
+    GDS -> API: getCurrentGame()
+    API --> GDS: GameData | null
+
+    alt Game Running
+        GDS -> GDS: Update minimal state\n(wasInGame = true)
+        GDS -> ES: publish(gameTick, full game state)
+        ES -> CM: dispatch(gameTick with full game state)
+        CM -> CM: Process game tick
+    else No Game
+        alt Was previously running
+            GDS -> GDS: Update minimal state\n(wasInGame = false)
+            GDS -> ES: publish(gameEnded)
+            ES -> CM: dispatch(gameEnded)
+            CM -> CM: Handle game ended
+        end
+    end
+end
+
+== Game State Changes ==
+note over GDS, ES : When game state changes, appropriate events are published
+
+alt Game Started (first detection)
+    GDS -> GDS: Update minimal state\n(wasInGame = true, matchId = '123')
+    GDS -> ES: publish(gameStarted, full game state)
+    ES -> CM: dispatch(gameStarted with full game state)
+    CM -> CM: Handle game started
+else Game Ended
+    GDS -> GDS: Update minimal state\n(wasInGame = false, matchId = null)
+    GDS -> ES: publish(gameEnded)
+    ES -> CM: dispatch(gameEnded)
+    CM -> CM: Handle game ended
+end
+
+== Shutdown ==
+App -> GDS: stopPolling()
+deactivate GDS
+
+note right of GDS : Lives in Shared Kernel\nMinimal state only:\n- wasInGame: boolean\n- currentMatchId: string\nPublishes full game state\nin events
+
+note right of ES : Central event hub\nRoutes events to subscribers\nMaintains event history
+
+note right of CM : No knowledge of polling\nOnly knows about events\nPure event-driven
+
+@enduml

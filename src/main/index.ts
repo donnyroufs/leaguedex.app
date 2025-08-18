@@ -7,6 +7,7 @@ import icon from '../../resources/icon.png?asset'
 import * as GameAssistance from './app/game-assistance'
 import { CreateReminder } from './app/game-assistance/GameAssistant'
 import { UserConfig, UserConfigRepository } from './app/UserConfig'
+import { createApp } from './app/CompositionRoot'
 
 function createWindow(): void {
   // Create the browser window.
@@ -63,8 +64,12 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   const dexService = GameAssistance.createDexService()
+
+  const leaguedexApp = createApp()
+  await leaguedexApp.start()
+
   // Set app user model id for windows
   // TODO: Revisit this
   electronApp.setAppUserModelId('com.leaguedex.app')
@@ -103,13 +108,13 @@ app.whenReady().then(() => {
   const configRepository = UserConfigRepository.create()
   const gameAssistant = GameAssistance.createGameAssistant(configRepository)
 
-  gameAssistant
-    .on('game-data', async (data) => {
-      BrowserWindow.getAllWindows().forEach((window) => {
-        window.webContents.send('game-data', { ...data })
-      })
-    })
-    .start()
+  // gameAssistant
+  //   .on('game-data', async (data) => {
+  //     BrowserWindow.getAllWindows().forEach((window) => {
+  //       window.webContents.send('game-data', { ...data })
+  //     })
+  //   })
+  //   .start()
 
   ipcMain.handle('update-config', async (_, config: UserConfig) => {
     await configRepository.update(config)

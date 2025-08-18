@@ -1,11 +1,11 @@
 import { Result } from '../shared-kernel'
 
 export class CoachingModule {
-  public async activate(): Promise<Result<string, Error>> {
-    return Result.ok('Coaching activated')
+  public async init(): Promise<Result<string, Error>> {
+    return Result.ok('Coaching initialized')
   }
 
-  public async deactivate(): Promise<Result<string, Error>> {
-    return Result.ok('Coaching deactivated')
+  public async dispose(): Promise<Result<string, Error>> {
+    return Result.ok('Coaching disposed')
   }
 }
