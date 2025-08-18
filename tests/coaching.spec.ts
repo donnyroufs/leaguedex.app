@@ -1,6 +1,16 @@
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
+import { createApp } from '../src/main/app/CompositionRoot'
+import { App } from '../src/main/app/App'
 
 const feature = await loadFeature('tests/features/coaching.feature')
+
+type DataTableReminder = {
+  name: string
+  triggerType: string
+  triggerValue: number
+  text: string
+  audioFile: string
+}
 
 describeFeature(
   feature,
@@ -12,14 +22,23 @@ describeFeature(
     Background,
     Scenario
   }) => {
-    BeforeAllScenarios(() => {})
+    let app!: App
+
+    BeforeAllScenarios(async () => {})
     AfterAllScenarios(() => {})
-    BeforeEachScenario(() => {})
-    AfterEachScenario(() => {})
+
+    BeforeEachScenario(async () => {
+      app = createApp()
+      await app.activate()
+    })
+
+    AfterEachScenario(() => {
+      app.deactivate()
+    })
 
     Background(({ Given, And }) => {
       Given(`the application is running`, () => {})
-      And(`I have one reminder configured:`, () => {})
+      And(`I have one reminder configured:`, (_, data: DataTableReminder[]) => {})
     })
 
     Scenario(`No reminder when no game is running`, ({ When, Then, And }) => {
