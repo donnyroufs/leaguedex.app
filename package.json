@@ -14,6 +14,7 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
+    "test": "vitest",
     "postinstall": "electron-builder install-app-deps",
     "publish-app": "electron-builder -p always",
     "build:unpack": "npm run build && electron-builder --dir",
@@ -35,6 +36,7 @@
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
+    "@amiceli/vitest-cucumber": "^5.1.2",
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
@@ -54,6 +56,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "typescript": "^5.8.3",
-    "vite": "^7.0.5"
+    "vite": "^7.0.5",
+    "vitest": "^3.2.4"
   }
 }
