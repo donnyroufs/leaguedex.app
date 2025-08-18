@@ -1,37 +1,10 @@
-# leaguedex-app
+# Leaguedex.gg
 
-An Electron application with React and TypeScript
+Example generating a spec from a feature:
+`npx @amiceli/vitest-cucumber --feature tests/features/coaching.feature --space tests/features/coaching.spec.ts --spec tests/coaching.spec.ts`
 
-## Recommended IDE Setup
+## Domains
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+### Coaching
 
-## Project Setup
-
-### Install
-
-```bash
-$ yarn
-```
-
-### Development
-
-```bash
-$ yarn dev
-```
-
-### Build
-
-```bash
-# For windows
-$ yarn build:win
-
-# For macOS
-$ yarn build:mac
-
-# For Linux
-$ yarn build:linux
-```
-
-
-revert
+- Smart Reminders
