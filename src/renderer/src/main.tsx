@@ -4,14 +4,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createHashRouter, RouterProvider } from 'react-router'
 
-import { CurrentMatch } from './pages/CurrentMatch'
 import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
 import { RemindersPage } from './pages/Reminders'
 import { Titlebar } from './components/Titlebar'
-import { MatchHistory } from './pages/MatchHistory'
-import { Game } from './pages/Game'
-import { Dex } from './pages/Dex'
 
 const router = createHashRouter([
   {
@@ -29,30 +25,12 @@ const router = createHashRouter([
     ),
     children: [
       {
-        index: true,
-        path: '/',
-        element: <Dex />
-      },
-      {
-        index: false,
-        path: '/match',
-        element: <CurrentMatch />
-      },
-      {
         path: '/settings',
         element: <Settings />
       },
       {
-        path: '/reminders',
+        path: '/',
         element: <RemindersPage />
-      },
-      {
-        path: '/match-history',
-        element: <MatchHistory />
-      },
-      {
-        path: '/game/:gameId',
-        element: <Game />
       }
     ]
   }

@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events'
-import { GameState } from './game-detection/GameState'
 
 export type EventMap = {
   'game-started': GameStartedEvent
@@ -16,16 +15,16 @@ export interface IEventBus {
   unsubscribe<T extends EventKey>(eventType: T, callback: EventCallback<T>): void
 }
 
-export class GameEvent<TData> {
-  public readonly id: string = crypto.randomUUID()
+export abstract class GameEvent<TData> {
+  public abstract readonly eventType: EventKey
 
   public constructor(
-    public readonly gameTick: number,
+    public readonly id: number,
     public readonly data: TData
   ) {}
 }
 
-export class GameStartedEvent extends GameEvent<GameState> {
+export class GameStartedEvent extends GameEvent<{ gameTime: number }> {
   public readonly eventType = 'game-started'
 }
 
@@ -33,7 +32,7 @@ export class GameEndedEvent extends GameEvent<null> {
   public readonly eventType = 'game-ended'
 }
 
-export class GameTickEvent extends GameEvent<GameState> {
+export class GameTickEvent extends GameEvent<{ gameTime: number }> {
   public readonly eventType = 'game-tick'
 }
 

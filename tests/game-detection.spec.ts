@@ -5,6 +5,7 @@ import { FakeTimer } from './FakeTimer'
 import { EventBusSpy } from './EventBusSpy'
 import { RiotApi } from '../src/main/app/shared-kernel'
 import { RiotClientDataSourceStub } from './RiotClientDataSourceStub'
+import { GameTickEvent } from '../src/main/app/shared-kernel/EventBus'
 
 type Sut = {
   sut: GameDetectionService
@@ -26,21 +27,19 @@ describe('Game Detection Service', () => {
   test('should detect game start', async () => {
     const { sut, eventBus, timer, dataSource } = createSut()
 
-    dataSource.setGameTime(0)
+    dataSource.setGameStarted()
     sut.start()
-    await timer.nextTick()
-    dataSource.setGameTime(1)
+
     await timer.nextTick()
 
-    expect(eventBus.totalCalls).toEqual(1)
-    expect(eventBus.lastEvent!.gameTick).toEqual(1)
-    expect(eventBus.lastEventType).toEqual('game-started')
+    expect(eventBus.totalCalls).toEqual(2)
+    expect(eventBus.hasAllEvents(['game-started', 'game-tick'])).toBe(true)
   })
 
   test('should detect game end', async () => {
     const { sut, eventBus, timer, dataSource } = createSut()
 
-    dataSource.setGameTime(0)
+    dataSource.setGameStarted()
     sut.start()
 
     await timer.nextTick()
@@ -48,18 +47,19 @@ describe('Game Detection Service', () => {
     dataSource.setGameTime(1)
     await timer.nextTick()
 
-    dataSource.setGameTime(0)
+    dataSource.shouldError()
     await timer.nextTick()
 
-    expect(eventBus.totalCalls).toEqual(2)
-    expect(eventBus.lastEvent!.gameTick).toEqual(0)
-    expect(eventBus.lastEventType).toEqual('game-ended')
+    expect(eventBus.totalCalls).toEqual(4)
+    expect(eventBus.hasAllEvents(['game-started', 'game-tick', 'game-tick', 'game-ended'])).toBe(
+      true
+    )
   })
 
   test('should detect game tick', async () => {
     const { sut, eventBus, timer, dataSource } = createSut()
 
-    dataSource.setGameTime(0)
+    dataSource.setGameStarted()
     sut.start()
 
     dataSource.setGameTime(1)
@@ -68,9 +68,10 @@ describe('Game Detection Service', () => {
     dataSource.setGameTime(2)
     await timer.nextTick()
 
-    expect(eventBus.totalCalls).toEqual(2)
-    expect(eventBus.lastEvent!.gameTick).toEqual(2)
-    expect(eventBus.lastEventType).toEqual('game-tick')
+    expect(eventBus.totalCalls).toEqual(3)
+    expect(eventBus.hasAllEvents(['game-started', 'game-tick', 'game-tick'])).toBe(true)
+    const lastEvent: GameTickEvent = eventBus.lastEvent as GameTickEvent
+    expect(lastEvent.data.gameTime).toEqual(2)
   })
 
   test('should not dispatch any events from riot api before game detection', async () => {
@@ -81,22 +82,9 @@ describe('Game Detection Service', () => {
     await timer.nextTick()
 
     expect(eventBus.totalCalls).toEqual(0)
-    expect(eventBus.lastEventType).toBeNull()
+    expect(eventBus.events.length).toEqual(0)
   })
 
-  test('should dispatch game-ended event if riot api returns error after game detection', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.setGameTime(0)
-    sut.start()
-
-    dataSource.setGameTime(1)
-    await timer.nextTick()
-
-    dataSource.shouldError()
-    await timer.nextTick()
-
-    expect(eventBus.totalCalls).toEqual(2)
-    expect(eventBus.lastEventType).toEqual('game-ended')
-  })
+  // Test against buffer, and multiple events
+  test.todo('Should not dispatch older events if first tick is not multiple events')
 })

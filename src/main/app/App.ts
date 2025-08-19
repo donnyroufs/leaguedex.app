@@ -1,10 +1,6 @@
 import { CoachingModule } from './coaching'
-import {
-  GameEndedEvent,
-  GameStartedEvent,
-  GameTickEvent,
-  IEventBus
-} from './shared-kernel/EventBus'
+import { GameStartedEvent, GameTickEvent, IEventBus } from './shared-kernel'
+import { createGameDataDto } from './shared-kernel/contracts'
 import { GameDetectionService } from './shared-kernel/game-detection/GameDetectionService'
 import { INotifyElectron } from './shared-kernel/INotifyElectron'
 
@@ -34,30 +30,21 @@ export class App {
   private async onGameStarted(evt: GameStartedEvent): Promise<void> {
     const result = await this._coachingModule.init()
     const value = result.unwrap()
-    this._notifyElectron.notify('game-data', this.createData(evt.gameTick))
+    const data = createGameDataDto(true, evt.data.gameTime)
+    this._notifyElectron.notify(data.type, data)
     console.log(value)
   }
 
-  private async onGameEnded(evt: GameEndedEvent): Promise<void> {
+  private async onGameEnded(): Promise<void> {
     const result = await this._coachingModule.dispose()
     const value = result.unwrap()
-    this._notifyElectron.notify('game-data', this.createData(evt.gameTick))
+    const data = createGameDataDto(false, null)
+    this._notifyElectron.notify(data.type, data)
     console.log(value)
   }
 
   private onGameTick(evt: GameTickEvent): void {
-    this._notifyElectron.notify('game-data', this.createData(evt.gameTick))
-  }
-
-  // TODO: type safe, we need to define contracts and see how to share this accordingly with renderer.
-  private createData(gameTick: number): unknown {
-    return {
-      playing: true,
-      gameTime: gameTick,
-      matchup: null,
-      insights: null,
-      totalPlayed: 0,
-      lastPlayed: null
-    }
+    const data = createGameDataDto(true, evt.data.gameTime)
+    this._notifyElectron.notify(data.type, data)
   }
 }

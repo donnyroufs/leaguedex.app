@@ -2,15 +2,12 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater } from 'electron-updater'
+
 import icon from '../../resources/icon.png?asset'
 
-import * as GameAssistance from './app/game-assistance'
-import { CreateReminder } from './app/game-assistance/GameAssistant'
-import { UserConfig, UserConfigRepository } from './app/UserConfig'
-import { createApp } from './app/CompositionRoot'
+import { createAppAndStart } from './app/CompositionRoot'
 
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -65,23 +62,18 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  const dexService = GameAssistance.createDexService()
+  await createAppAndStart()
 
-  const leaguedexApp = createApp()
-  await leaguedexApp.start()
+  ipcMain.handle('get-version', async () => {
+    return app.getVersion()
+  })
 
-  // Set app user model id for windows
-  // TODO: Revisit this
   electronApp.setAppUserModelId('com.leaguedex.app')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // Window control handlers
   ipcMain.on('window-minimize', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow()
     if (focusedWindow) focusedWindow.minimize()
@@ -103,60 +95,6 @@ app.whenReady().then(async () => {
     if (focusedWindow) focusedWindow.close()
   })
 
-  createWindow()
-
-  const configRepository = UserConfigRepository.create()
-  const gameAssistant = GameAssistance.createGameAssistant(configRepository)
-
-  // gameAssistant
-  //   .on('game-data', async (data) => {
-  //     BrowserWindow.getAllWindows().forEach((window) => {
-  //       window.webContents.send('game-data', { ...data })
-  //     })
-  //   })
-  //   .start()
-
-  ipcMain.handle('update-config', async (_, config: UserConfig) => {
-    await configRepository.update(config)
-    return configRepository.getConfig()
-  })
-
-  ipcMain.handle(
-    'review-game',
-    async (_, gameId: string, data: { matchupNotes: string; generalNotes: string }) => {
-      return gameAssistant.reviewGame(gameId, data.matchupNotes, data.generalNotes)
-    }
-  )
-
-  ipcMain.handle('dex-all', async () => {
-    return dexService.all()
-  })
-
-  ipcMain.handle('get-config', async () => {
-    return configRepository.getConfig()
-  })
-
-  ipcMain.handle('add-reminder', async (_, reminder: CreateReminder) => {
-    return gameAssistant.addReminder(reminder)
-  })
-
-  ipcMain.handle('get-version', async () => {
-    return app.getVersion()
-  })
-
-  ipcMain.handle('remove-reminder', async (_, id: string) => {
-    return gameAssistant.removeReminder(id)
-  })
-
-  ipcMain.handle('get-reminders', async () => {
-    return gameAssistant.getReminders()
-  })
-
-  ipcMain.handle('get-games', async () => {
-    return gameAssistant.getAllGames()
-  })
-
-  // Configure auto-updater
   if (!is.dev) {
     autoUpdater.setFeedURL({
       provider: 'spaces',
@@ -218,6 +156,8 @@ app.whenReady().then(async () => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  createWindow()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

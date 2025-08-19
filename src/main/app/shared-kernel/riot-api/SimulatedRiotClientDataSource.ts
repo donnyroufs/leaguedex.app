@@ -10,12 +10,17 @@ type WriteableDeep<T> = {
 export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
   private _response: WriteableDeep<LiveGameData> =
     SimulatedRiotClientDataSource.createSampleResponse()
+  private _shouldError = false
 
   private constructor() {
     //
   }
 
   public async getGameData(): Promise<GetGameDataResult> {
+    if (this._shouldError) {
+      return Result.err(new Error('Simulated error'))
+    }
+
     return Result.ok(this._response)
   }
 
@@ -24,6 +29,10 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
 
     eventBus.subscribe('game-tick', () => {
       source._response.gameData.gameTime += 1
+
+      if (source._response.gameData.gameTime > 10) {
+        source._shouldError = true
+      }
     })
 
     return source
@@ -233,7 +242,7 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
           {
             EventID: 0,
             EventName: 'GameStart',
-            EventTime: 0
+            EventTime: 0.0000000023
           }
         ]
       },

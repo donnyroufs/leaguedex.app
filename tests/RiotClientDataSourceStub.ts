@@ -28,6 +28,18 @@ export class RiotClientDataSourceStub implements IRiotClientDataSource {
     this._response.gameData.gameTime = gameTime
   }
 
+  public setGameStarted(): void {
+    this._response.events = {
+      Events: [
+        {
+          EventID: 0,
+          EventName: 'GameStart',
+          EventTime: 0.0000000023
+        }
+      ]
+    }
+  }
+
   public shouldError(error?: Error): void {
     this._shouldError = true
     this._error = error ?? null

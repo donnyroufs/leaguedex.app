@@ -1,5 +1,5 @@
-// TOOD: make type safe;
+import { Contracts } from '.'
 
 export interface INotifyElectron {
-  notify<TData = unknown>(channel: string, data: TData): void
+  notify(channel: 'game-data', data: Contracts.GameDataDto): void
 }

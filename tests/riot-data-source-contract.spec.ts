@@ -12,6 +12,7 @@ const implementations = [
 
 describe.each(implementations)('$name should implement contract', async (implementation) => {
   // TODO: add exact contract
+  // @ts-expect-error need to implement
   const contract: LiveGameData
 
   test('should return game state', async () => {

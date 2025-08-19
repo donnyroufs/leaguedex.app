@@ -6,56 +6,58 @@ title Game Detection - Functional Flow
 participant "App" as App
 participant "GameDetectionService" as GDS
 participant "RiotAPI" as API
-participant "EventStore" as ES
+participant "EventBus" as EB
 participant "CoachingModule" as CM
 
 == App Startup ==
-App -> GDS: startPolling(eventBus)
+App -> GDS: start()
 activate GDS
+GDS -> GDS: startTimer(polling every 1000ms)
 
 == Game Detection Loop ==
 loop Every 1000ms
-    GDS -> API: getCurrentGame()
-    API --> GDS: GameData | null
+    GDS -> API: getGameState()
+    API --> GDS: Result<GameState> | Err
 
-    alt Game Running
-        GDS -> GDS: Update minimal state\n(wasInGame = true)
-        GDS -> ES: publish(gameTick, full game state)
-        ES -> CM: dispatch(gameTick with full game state)
-        CM -> CM: Process game tick
-    else No Game
-        alt Was previously running
-            GDS -> GDS: Update minimal state\n(wasInGame = false)
-            GDS -> ES: publish(gameEnded)
-            ES -> CM: dispatch(gameEnded)
-            CM -> CM: Handle game ended
+    alt Game Running (Result.isOk())
+        alt First time detecting game (!_gameStarted)
+            GDS -> GDS: _gameStarted = true
+        end
+
+        GDS -> GDS: Filter unprocessed events
+        GDS -> GDS: Check if first tick with multiple events
+
+        alt Not first tick with multiple events
+            GDS -> EB: publish(eventType, event) for each unprocessed event
+            GDS -> GDS: Mark events as processed
+        end
+
+        GDS -> EB: publish('game-tick', GameTickEvent)
+
+    else No Game (Result.isErr())
+        alt Was previously running (_gameStarted)
+            GDS -> GDS: _gameStarted = false
+            GDS -> EB: publish('game-ended', GameEndedEvent)
         end
     end
 end
 
-== Game State Changes ==
-note over GDS, ES : When game state changes, appropriate events are published
+== Event Handling ==
+note over GDS, EB : Events are published directly to EventBus
 
 alt Game Started (first detection)
-    GDS -> GDS: Update minimal state\n(wasInGame = true, matchId = '123')
-    GDS -> ES: publish(gameStarted, full game state)
-    ES -> CM: dispatch(gameStarted with full game state)
-    CM -> CM: Handle game started
+    GDS -> GDS: _gameStarted = true
+    GDS -> EB: publish individual game events
+    GDS -> EB: publish('game-tick', GameTickEvent)
 else Game Ended
-    GDS -> GDS: Update minimal state\n(wasInGame = false, matchId = null)
-    GDS -> ES: publish(gameEnded)
-    ES -> CM: dispatch(gameEnded)
-    CM -> CM: Handle game ended
+    GDS -> GDS: _gameStarted = false
+    GDS -> EB: publish('game-ended', GameEndedEvent)
 end
 
 == Shutdown ==
-App -> GDS: stopPolling()
+App -> GDS: stop()
 deactivate GDS
+GDS -> GDS: stopTimer()
 
-note right of GDS : Lives in Shared Kernel\nMinimal state only:\n- wasInGame: boolean\n- currentMatchId: string\nPublishes full game state\nin events
-
-note right of ES : Central event hub\nRoutes events to subscribers\nMaintains event history
-
-note right of CM : No knowledge of polling\nOnly knows about events\nPure event-driven
 
 @enduml

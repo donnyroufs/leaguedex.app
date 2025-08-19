@@ -1,6 +1,5 @@
-import { JSX, useEffect, useState } from 'react'
-import { Timer, Cloud } from 'lucide-react'
-import { ToggleSwitch } from '../components/ToggleSwitch'
+import { JSX } from 'react'
+import { Cloud } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 
 type SettingsSectionProps = {
@@ -30,83 +29,18 @@ export type ToggleSwitchProps = {
   description?: string
 }
 
-type UserConfig = {
-  gameAssistance: {
-    enableNeutralObjectiveTimers: boolean
-  }
-  cloud: {
-    apiKey: string | null
-  }
-}
-
 export function Settings(): JSX.Element {
-  const [config, setConfig] = useState<UserConfig>()
-
-  useEffect(() => {
-    window.api.getConfig().then((config) => {
-      setConfig(config)
-    })
-  }, [])
-
-  async function onUpdateNeutralTimers(checked: boolean): Promise<void> {
-    const updatedConfig = await window.api.updateConfig({
-      ...config!,
-      gameAssistance: {
-        ...config!.gameAssistance,
-        enableNeutralObjectiveTimers: checked
-      }
-    })
-
-    setConfig(updatedConfig)
-  }
-
-  async function onUpdateCloudApiKey(apiKey: string): Promise<void> {
-    const updatedConfig = await window.api.updateConfig({
-      ...config!,
-      cloud: {
-        ...config!.cloud,
-        apiKey
-      }
-    })
-
-    setConfig(updatedConfig)
-  }
-
-  if (!config) {
-    return <div>Loading...</div>
-  }
-
   return (
     <PageWrapper>
       <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
         <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
       </div>
       <div className="flex-1 overflow-y-auto min-h-0 p-8 space-y-8">
-        <SettingsSection title="Game Assistance" icon={Timer}>
+        <SettingsSection title="General" icon={Cloud}>
           <div className="space-y-2">
-            <ToggleSwitch
-              checked={config.gameAssistance.enableNeutralObjectiveTimers}
-              onChange={onUpdateNeutralTimers}
-              label="Neutral Objective Timers"
-              description="Enable automatic timers for dragon, baron, and other neutral objectives"
-            />
-          </div>
-        </SettingsSection>
-
-        <SettingsSection title="Cloud" icon={Cloud}>
-          <div className="space-y-2">
-            <label className="text-base font-medium text-text-primary leading-6">API Key</label>
-            <p className="text-sm text-text-tertiary leading-5">
-              Enter your API key for cloud services
-            </p>
-            <input
-              type="password"
-              value={config.cloud.apiKey || ''}
-              onChange={(e) => onUpdateCloudApiKey(e.target.value)}
-              placeholder="Enter your API key"
-              className="w-full px-4 py-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent transition-all duration-200 font-mono text-sm"
-              style={{ letterSpacing: '0.1em' }}
-            />
+            <div className="text-sm text-text-tertiary leading-5">
+              There are no settings for this app for now.
+            </div>
           </div>
         </SettingsSection>
       </div>

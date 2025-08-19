@@ -1,10 +1,8 @@
-export class GameState {
-  /**
-   * 0 means that the game is in loading screen.
-   */
-  public get isInGame(): boolean {
-    return this.gameTick > 0
-  }
+import { GameEvent } from '../EventBus'
 
-  public constructor(public readonly gameTick: number) {}
+export class GameState {
+  public constructor(
+    public readonly gameTime: number,
+    public readonly events: GameEvent<unknown>[]
+  ) {}
 }

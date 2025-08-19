@@ -32,6 +32,7 @@ export class Result<T = void, E = Error> {
     if (this.isErr()) {
       throw new Error('Cannot get value from failed result')
     }
+
     return this._value as T
   }
 

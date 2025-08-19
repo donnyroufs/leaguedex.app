@@ -13,6 +13,15 @@ export class EventBusSpy implements IEventBus {
     this.lastEventType = eventType
   }
 
+  public hasEvent(eventType: EventKey): boolean {
+    return this.events.some((event) => event.eventType === eventType)
+  }
+
+  public hasAllEvents(eventTypes: EventKey[]): boolean {
+    const events = this.events.filter((event) => eventTypes.includes(event.eventType))
+    return events.length === eventTypes.length
+  }
+
   public subscribe(): void {
     return
   }

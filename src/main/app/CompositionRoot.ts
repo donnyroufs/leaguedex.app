@@ -19,3 +19,8 @@ export function createApp(): App {
 
   return new App(coachingModule, gameDetectionService, eventBus, notifyElectron)
 }
+
+export async function createAppAndStart(): Promise<void> {
+  const app = createApp()
+  await app.start()
+}

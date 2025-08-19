@@ -1,14 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { Reminder } from '../main/app/game-assistance/Reminder'
-import { UserConfig } from '../main/app/UserConfig'
+import { Contracts } from '../main/app/shared-kernel'
 
 const api = {
-  minimizeWindow: () => ipcRenderer.send('window-minimize'),
-  maximizeWindow: () => ipcRenderer.send('window-maximize'),
-  closeWindow: () => ipcRenderer.send('window-close'),
-  gameAssistant: {
-    onGameData: (callback: (data: { playing: boolean; gameTime: number | null }) => void) => {
+  app: {
+    onGameData: (callback: (data: Contracts.GameDataDto) => void) => {
       ipcRenderer.on('game-data', (_, data) => {
         callback(data)
       })
@@ -16,16 +12,13 @@ const api = {
       return () => {
         ipcRenderer.removeAllListeners('game-data')
       }
-    },
-    getReminders: () => ipcRenderer.invoke('get-reminders'),
-    addReminder: (reminder: Reminder) => ipcRenderer.invoke('add-reminder', reminder),
-    removeReminder: (id: string) => ipcRenderer.invoke('remove-reminder', id)
+    }
   },
+
+  minimizeWindow: () => ipcRenderer.send('window-minimize'),
+  maximizeWindow: () => ipcRenderer.send('window-maximize'),
+  closeWindow: () => ipcRenderer.send('window-close'),
   getVersion: () => ipcRenderer.invoke('get-version'),
-  updateConfig: (config: UserConfig) => ipcRenderer.invoke('update-config', config),
-  getConfig: () => ipcRenderer.invoke('get-config'),
-  getGames: () => ipcRenderer.invoke('get-games'),
-  reviewGame: (gameId: string, notes: string) => ipcRenderer.invoke('review-game', gameId, notes),
   updater: {
     onUpdateStatus: (
       callback: (data: {
@@ -47,9 +40,6 @@ const api = {
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
     downloadUpdate: () => ipcRenderer.invoke('download-update'),
     installUpdate: () => ipcRenderer.invoke('install-update')
-  },
-  dex: {
-    all: () => ipcRenderer.invoke('dex-all')
   }
 }
 
