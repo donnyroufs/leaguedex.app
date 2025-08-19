@@ -1,16 +1,12 @@
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
-import { createApp } from '../src/main/app/CompositionRoot'
+
+import { expect } from 'vitest'
+import { CreateReminderDto } from '../src/main/app/coaching'
 import { App } from '../src/main/app/App'
+import { createTestApp } from '../src/main/app/CompositionRoot'
+import { FakeReminderRepository } from '../src/main/app/coaching/FakeReminderRepository'
 
 const feature = await loadFeature('tests/features/coaching.feature')
-
-type DataTableReminder = {
-  name: string
-  triggerType: string
-  triggerValue: number
-  text: string
-  audioFile: string
-}
 
 describeFeature(
   feature,
@@ -23,23 +19,41 @@ describeFeature(
     Scenario
   }) => {
     let app!: App
+    let fakeReminderRepository!: FakeReminderRepository
 
-    BeforeAllScenarios(async () => {})
-    AfterAllScenarios(() => {})
-
-    BeforeEachScenario(async () => {
-      app = createApp()
-      await app.start()
+    BeforeAllScenarios(async () => {
+      fakeReminderRepository = new FakeReminderRepository()
+      app = await createTestApp({
+        reminderRepository: fakeReminderRepository
+      })
     })
 
-    AfterEachScenario(async () => {
+    AfterAllScenarios(async () => {
       await app.stop()
     })
 
-    Background(({ Given, And }) => {
-      Given(`the application is running`, () => {})
+    BeforeEachScenario(() => {})
 
-      And(`I have one reminder configured:`, (_, data: DataTableReminder[]) => {})
+    AfterEachScenario(() => {
+      fakeReminderRepository.clear()
+    })
+
+    Background(({ Given, And }) => {
+      Given(`the application is running`, async () => {
+        await app.start()
+      })
+
+      And(`I have one reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
+        const createdReminderId = await app.addReminder({
+          interval: Number(data.interval),
+          text: data.text
+        })
+
+        const reminders = await app.getReminders()
+
+        expect(reminders).toHaveLength(1)
+        expect(reminders[0].id).toBe(createdReminderId)
+      })
     })
 
     Scenario(`No reminder when no game is running`, ({ When, Then, And }) => {
@@ -48,17 +62,9 @@ describeFeature(
       Then(`no audio should play`, () => {})
     })
 
-    Scenario(`Game detection activates reminders`, ({ Given, When, Then, And }) => {
-      Given(`we are not in a League of Legends match at 0 seconds`, () => {})
-      When(`a League of Legends match is detected`, () => {})
-      Then(`the reminder system should be activated`, () => {})
-      And(`reminders should start processing`, () => {})
-    })
-
     Scenario(`Single time-based reminder works`, ({ When, Then, And }) => {
       And(`we are in a League of Legends match at 0 seconds`, () => {})
-      When(`120 seconds pass in game time`, () => {})
-      And(`we have entered laning phase`, () => {})
+      When(`60 seconds pass in game time`, () => {})
       Then(`I should hear the audio "reminder_map.mp3"`, () => {})
     })
   }

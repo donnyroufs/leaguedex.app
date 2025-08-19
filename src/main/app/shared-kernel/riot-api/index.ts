@@ -5,3 +5,4 @@ export type {
   GetGameDataResult
 } from './IRiotClientDataSource'
 export { SimulatedRiotClientDataSource } from './SimulatedRiotClientDataSource'
+export { RiotClientDataSource } from './RiotClientDataSource'

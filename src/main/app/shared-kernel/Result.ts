@@ -20,9 +20,17 @@ export class Result<T = void, E = Error> {
     return !this.isOk()
   }
 
+  public throwOrReturn<T>(defaultValue: T): T {
+    if (this.isErr()) {
+      throw this._error
+    }
+
+    return defaultValue
+  }
+
   public unwrap(): T {
     if (this.isErr()) {
-      throw new Error('Cannot unwrap failed result')
+      throw this._error
     }
 
     return this._value as T

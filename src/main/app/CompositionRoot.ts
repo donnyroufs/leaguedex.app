@@ -1,26 +1,87 @@
-import { CoachingModule } from './coaching'
+import { app, type IpcMain } from 'electron'
+import { CoachingModule, FileSystemReminderRepository, IReminderRepository } from './coaching'
 import { App } from './App'
 
-import * as sharedKernel from './shared-kernel'
+import {
+  ElectronAdapter,
+  EventBus,
+  GameDetectionService,
+  IEventBus,
+  INotifyElectron,
+  IRiotClientDataSource,
+  ITimer,
+  NotifyElectron,
+  RiotApi,
+  SimulatedRiotClientDataSource,
+  Timer
+} from './shared-kernel'
+import path from 'path'
+import { ElectronLogger } from './shared-kernel/ElectronLogger'
+import { ILogger } from './shared-kernel/ILogger'
 
-export function createApp(): App {
-  // Modules
-  const coachingModule = new CoachingModule()
-
-  // Cross cutting concerns
-  const eventBus = new sharedKernel.EventBus()
-  const dataSource = sharedKernel.SimulatedRiotClientDataSource.create(eventBus)
-  const riotApi = new sharedKernel.RiotApi(dataSource)
-  const notifyElectron = new sharedKernel.NotifyElectron()
-
-  // Game Detection
-  const timer = new sharedKernel.Timer()
-  const gameDetectionService = new sharedKernel.GameDetectionService(eventBus, riotApi, timer)
-
-  return new App(coachingModule, gameDetectionService, eventBus, notifyElectron)
+type AppDependencies = {
+  eventBus: IEventBus
+  dataSource: IRiotClientDataSource
+  notifyElectron: INotifyElectron
+  timer: ITimer
+  reminderRepository: IReminderRepository
+  logger: ILogger
 }
 
-export async function createAppAndStart(): Promise<void> {
-  const app = createApp()
-  await app.start()
+export async function createApp(
+  overrides: Partial<AppDependencies> = {},
+  isPackaged: boolean = false
+): Promise<App> {
+  // Cross cutting concerns
+  const dataPath = isPackaged ? app.getPath('userData') : path.join(process.cwd(), 'data')
+  const logger = overrides.logger ?? new ElectronLogger(path.join(dataPath, 'logs.log'))
+  const eventBus = overrides.eventBus ?? new EventBus()
+  const dataSource = overrides.dataSource ?? SimulatedRiotClientDataSource.create(eventBus)
+  const riotApi = new RiotApi(dataSource)
+  const notifyElectron = overrides.notifyElectron ?? new NotifyElectron()
+
+  // Game Detection
+  const timer = overrides.timer ?? new Timer()
+  const gameDetectionService = new GameDetectionService(eventBus, riotApi, timer)
+
+  // Modules
+  const reminderRepository =
+    overrides.reminderRepository ?? (await FileSystemReminderRepository.create(dataPath))
+  const coachingModule = new CoachingModule(reminderRepository)
+
+  if (isPackaged) {
+    const os = await import('os')
+
+    logger.info('app created', {
+      dataPath,
+      isPackaged,
+      overrides,
+      version: app.getVersion(),
+      locale: app.getSystemLocale(),
+      os: os.platform()
+    })
+  }
+
+  return new App(coachingModule, gameDetectionService, eventBus, notifyElectron, logger)
+}
+
+export async function createTestApp(overrides: Partial<AppDependencies> = {}): Promise<App> {
+  if (overrides?.logger == null) {
+    overrides.logger = {
+      info: (): void => {},
+      error: (): void => {}
+    }
+  }
+
+  return createApp(overrides, false)
+}
+
+export async function createAppAndStart(ipcMain?: IpcMain): Promise<void> {
+  const leaguedex = await createApp({}, app.isPackaged)
+
+  if (ipcMain) {
+    await ElectronAdapter.setup(leaguedex, ipcMain)
+  }
+
+  await leaguedex.start()
 }

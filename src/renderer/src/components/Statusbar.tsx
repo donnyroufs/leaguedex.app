@@ -23,7 +23,7 @@ export function Statusbar({ gameTime }: Props): JSX.Element {
           className={`w-2 h-2 rounded-full ${ingame ? 'bg-success shadow-[0_0_10px_rgba(0,255,136,0.8)] animate-[statusPulse_2s_infinite]' : 'bg-text-tertiary'}`}
         ></div>
         <span
-          className={`text-sm font-semibold ${ingame ? 'text-success' : 'text-text-secondary'}`}
+          className={`text-sm font-semibold mt-0.5 ${ingame ? 'text-success' : 'text-text-secondary'}`}
         >
           {ingame ? 'IN GAME' : 'NOT IN GAME'}
         </span>

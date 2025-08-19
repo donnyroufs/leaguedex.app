@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { Contracts } from '../main/app/shared-kernel'
+import { CreateReminderDto } from '../main/app/coaching'
 
 const api = {
   app: {
@@ -12,7 +13,9 @@ const api = {
       return () => {
         ipcRenderer.removeAllListeners('game-data')
       }
-    }
+    },
+    addReminder: (data: CreateReminderDto) => ipcRenderer.invoke('add-reminder', data),
+    getReminders: () => ipcRenderer.invoke('get-reminders')
   },
 
   minimizeWindow: () => ipcRenderer.send('window-minimize'),

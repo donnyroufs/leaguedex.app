@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 import { Contracts } from '../../main/app/shared-kernel'
+import { CreateReminderDto } from '../../main/app/coaching'
+import { IReminderDto } from '../../main/app/coaching/ReminderDto'
 
 declare global {
   interface Window {
@@ -10,6 +12,8 @@ declare global {
       closeWindow: () => void
       app: {
         onGameData: (callback: (data: Contracts.GameDataDto) => void) => () => void
+        addReminder: (data: CreateReminderDto) => Promise<string>
+        getReminders: () => Promise<IReminderDto[]>
       }
 
       getVersion: () => Promise<string>

@@ -62,7 +62,7 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  await createAppAndStart()
+  await createAppAndStart(ipcMain)
 
   ipcMain.handle('get-version', async () => {
     return app.getVersion()
