@@ -2,8 +2,8 @@ import { describe, expect, test, afterEach } from 'vitest'
 import fs from 'fs/promises'
 import path from 'path'
 
-import { FakeReminderRepository } from '../src/main/app/coaching/FakeReminderRepository'
-import { FileSystemReminderRepository } from '../src/main/app/coaching'
+import { FakeReminderRepository } from '../src/main/adapters/outbound/repositories/FakeReminderRepository'
+import { FileSystemReminderRepository } from '../src/main/adapters/outbound/repositories/FileSystemReminderRepository'
 import { ReminderBuilder } from './ReminderBuilder'
 
 const fsPath = path.join(process.cwd(), crypto.randomUUID())

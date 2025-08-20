@@ -1,5 +1,5 @@
-import { ITextToSpeech } from '../src/main/app/coaching/ITextToSpeech'
-import { Result } from '../src/main/app/shared-kernel'
+import { ITextToSpeech } from '../src/main/hexagon/ports/ITextToSpeech'
+import { Result } from '../src/main/shared-kernel'
 
 export class TextToSpeechSpy implements ITextToSpeech {
   public totalCalls: number = 0

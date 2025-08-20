@@ -1,4 +1,4 @@
-import { ITimer } from '../src/main/app/shared-kernel/ITimer'
+import { ITimer } from '../src/main/hexagon/ports/ITimer'
 
 export class FakeTimer implements ITimer {
   private _callback: (() => Promise<void>) | null = null

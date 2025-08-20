@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { Contracts } from '../main/app/shared-kernel'
-import { CreateReminderDto } from '../main/app/coaching'
+import { Contracts } from '../main/shared-kernel'
+import { CreateReminderDto } from '../main/hexagon'
 
 const api = {
   app: {

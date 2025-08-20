@@ -1,4 +1,4 @@
-import { Reminder } from '../src/main/app/coaching/IReminderRepository'
+import { Reminder } from '../src/main/hexagon/Reminder'
 
 export class ReminderBuilder {
   private _text: string = 'from-builder'

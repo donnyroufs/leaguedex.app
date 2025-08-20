@@ -1,10 +1,10 @@
-import { Result } from '../src/main/app/shared-kernel'
+import { Result } from '../src/main/shared-kernel'
 import {
   IRiotClientDataSource,
-  SimulatedRiotClientDataSource,
   LiveGameData,
   GetGameDataResult
-} from '../src/main/app/shared-kernel'
+} from '../src/main/adapters/outbound/riot-api/IRiotClientDataSource'
+import { SimulatedRiotClientDataSource } from '../src/main/adapters/outbound/riot-api/SimulatedRiotClientDataSource'
 
 type WriteableDeep<T> = {
   -readonly [P in keyof T]: T[P] extends object ? WriteableDeep<T[P]> : T[P]

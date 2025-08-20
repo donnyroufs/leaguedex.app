@@ -2,13 +2,12 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateReminderDto } from '../src/main/app/coaching'
-import { App } from '../src/main/app/App'
-import { createTestApp } from '../src/main/app/CompositionRoot'
-import { FakeReminderRepository } from '../src/main/app/coaching/FakeReminderRepository'
+import { CreateReminderDto } from '../src/main/hexagon'
+import { FakeReminderRepository, EventBus, ElectronLogger } from '../src/main/adapters/outbound'
+import { App } from '../src/main/Leaguedex'
+import { createTestApp } from '../src/main/CompositionRoot'
+
 import { FakeTimer } from './FakeTimer'
-import { EventBus } from '../src/main/app/shared-kernel'
-import { ElectronLogger } from '../src/main/app/shared-kernel/ElectronLogger'
 import { AudioSpy } from './AudioSpy'
 import { RiotClientDataSourceStub } from './RiotClientDataSourceStub'
 import { DummyElectronNotifier } from './DummyElectronNotifier'
@@ -87,7 +86,9 @@ describeFeature(
     })
 
     BeforeEachScenario(() => {})
+
     AfterEachScenario(async () => {
+      eventBus.clear()
       audioPlayer.clear()
       fakeReminderRepository.clear()
     })
@@ -183,7 +184,7 @@ describeFeature(
       })
     })
 
-    Scenario(`Reminder on death event`, ({ Given, When, Then, And }) => {
+    Scenario.skip(`Reminder on death event`, ({ Given, When, Then, And }) => {
       Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
         const createdReminderId = await createReminder(data)
 

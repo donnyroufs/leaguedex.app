@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'vitest'
 import path from 'path'
 import fs from 'fs/promises'
 
-import { FileSystemReminderRepository } from '../src/main/app/coaching'
+import { FileSystemReminderRepository } from '../src/main/adapters/outbound/repositories/FileSystemReminderRepository'
 import { ReminderBuilder } from './ReminderBuilder'
 
 describe('FileSystemReminderRepository', () => {

@@ -1,12 +1,12 @@
 import { test, describe, expect } from 'vitest'
 
-import { GameDetectionService } from '../src/main/app/shared-kernel/game-detection/GameDetectionService'
+import { GameDetectionService } from '../src/main/hexagon/GameDetectionService'
 import { FakeTimer } from './FakeTimer'
 import { EventBusSpy } from './EventBusSpy'
-import { RiotApi } from '../src/main/app/shared-kernel'
+import { RiotApi } from '../src/main/adapters/outbound/riot-api'
 import { RiotClientDataSourceStub } from './RiotClientDataSourceStub'
-import { GameTickEvent } from '../src/main/app/shared-kernel/EventBus'
-import { ElectronLogger } from '../src/main/app/shared-kernel/ElectronLogger'
+import { GameTickEvent } from '../src/main/hexagon/events/GameTickEvent'
+import { ElectronLogger } from '../src/main/adapters/outbound/ElectronLogger'
 
 type Sut = {
   sut: GameDetectionService

@@ -1,4 +1,4 @@
-import { EventKey, EventMap, GameEvent, IEventBus } from '../src/main/app/shared-kernel/EventBus'
+import { EventKey, EventMap, GameEvent, IEventBus } from '../src/main/adapters/outbound/EventBus'
 
 export class EventBusSpy implements IEventBus {
   public events: GameEvent<unknown>[] = []

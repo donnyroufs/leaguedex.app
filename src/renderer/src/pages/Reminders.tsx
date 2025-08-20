@@ -4,11 +4,11 @@ import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
 import { CreateReminderForm } from '../components/CreateReminderForm'
-import { IReminderDto } from 'src/main/app/coaching/ReminderDto'
+// @ts-expect-error we need to fix sharing contracts
+import { IReminderDto, CreateReminderDto } from '../../../main/app/coaching/ReminderDto'
 import { useModal, useToast } from '../hooks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { useLoaderData, useRevalidator } from 'react-router'
-import { CreateReminderDto } from 'src/main/app/coaching'
 
 type LoaderData = {
   reminders: IReminderDto[]

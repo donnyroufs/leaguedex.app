@@ -5,7 +5,7 @@ import { autoUpdater } from 'electron-updater'
 
 import icon from '../../resources/icon.png?asset'
 
-import { createAppAndStart } from './app/CompositionRoot'
+import { createAppAndStart } from './CompositionRoot'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({

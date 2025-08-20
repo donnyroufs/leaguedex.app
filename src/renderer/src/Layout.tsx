@@ -5,7 +5,7 @@ import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
 import { Settings as SettingsIcon, Bell, Download, RefreshCw } from 'lucide-react'
-import { Contracts } from 'src/main/app/shared-kernel'
+import { Contracts } from 'src/main/shared-kernel'
 
 type UpdateStatus = {
   status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'

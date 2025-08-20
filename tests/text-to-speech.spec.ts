@@ -1,8 +1,8 @@
 import { expect, describe, test } from 'vitest'
 import fs from 'fs/promises'
 
-import { TextToSpeech } from '../src/main/app/coaching/TextToSpeech'
-import { ElectronLogger } from '../src/main/app/shared-kernel/ElectronLogger'
+import { TextToSpeech } from '../src/main/adapters/outbound/TextToSpeech'
+import { ElectronLogger } from '../src/main/adapters/outbound/ElectronLogger'
 
 describe('Text to speech', () => {
   const audioDir = 'tmpaudio-' + crypto.randomUUID()

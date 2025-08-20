@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { RiotApi } from '../src/main/app/shared-kernel'
+import { RiotApi } from '../src/main/adapters/outbound/riot-api'
 import { RiotClientDataSourceStub } from './RiotClientDataSourceStub'
 
 describe('Riot Api', () => {

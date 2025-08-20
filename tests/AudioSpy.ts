@@ -1,5 +1,5 @@
-import { IAudioPlayer } from '../src/main/app/coaching/IAudioPlayer'
-import { Result } from '../src/main/app/shared-kernel'
+import { IAudioPlayer } from '../src/main/hexagon/ports/IAudioPlayer'
+import { Result } from '../src/main/shared-kernel'
 
 export class AudioSpy implements IAudioPlayer {
   public totalCalls: number = 0

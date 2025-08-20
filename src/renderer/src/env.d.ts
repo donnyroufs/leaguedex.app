@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
-import { Contracts } from '../../main/app/shared-kernel'
+import { Contracts } from '../../main/shared-kernel'
 import { CreateReminderDto } from '../../main/app/coaching'
-import { IReminderDto } from '../../main/app/coaching/ReminderDto'
+import { IReminderDto } from '../../main/hexagon/ReminderDto'
 
 declare global {
   interface Window {
