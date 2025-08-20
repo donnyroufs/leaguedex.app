@@ -21,14 +21,22 @@ export function RemindersPage(): JSX.Element {
   const { revalidate } = useRevalidator()
   const toast = useToast()
 
-  const formatIntervalDisplay = (interval: number, isRepeating: boolean): string => {
-    if (isRepeating) {
-      return `Every ${interval} seconds`
+  const formatTriggerDisplay = (reminder: IReminderDto): string => {
+    if (reminder.triggerType === 'interval' && reminder.interval) {
+      return `Every ${reminder.interval} seconds`
     }
 
-    const minutes = Math.floor(interval / 60)
-    const seconds = interval % 60
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    if (reminder.triggerType === 'oneTime' && reminder.triggerAt) {
+      const minutes = Math.floor(reminder.triggerAt / 60)
+      const seconds = reminder.triggerAt % 60
+      return `At ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    if (reminder.triggerType === 'event' && reminder.event) {
+      return `On ${reminder.event}`
+    }
+
+    return 'Unknown trigger'
   }
 
   const handleCreateReminder = async (data: CreateReminderDto): Promise<void> => {
@@ -74,9 +82,7 @@ export function RemindersPage(): JSX.Element {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-text-primary font-medium">{reminder.text}</p>
-                    <p className="text-text-tertiary text-sm">
-                      {formatIntervalDisplay(reminder.interval, reminder.isRepeating)}
-                    </p>
+                    <p className="text-text-tertiary text-sm">{formatTriggerDisplay(reminder)}</p>
                   </div>
                 </div>
               </div>

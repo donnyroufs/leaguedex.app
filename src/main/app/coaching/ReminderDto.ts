@@ -1,6 +1,8 @@
 export interface IReminderDto {
   id: string
-  interval: number
   text: string
-  isRepeating: boolean
+  triggerType: 'interval' | 'oneTime' | 'event'
+  interval?: number
+  triggerAt?: number
+  event?: string
 }
