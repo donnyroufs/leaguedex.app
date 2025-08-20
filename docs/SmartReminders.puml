@@ -7,9 +7,11 @@ package "Riot API" {
   [Live Game Data] as riot
 }
 
-package "Shared Kernel" {
-  [GameDetectionService] as detection
-  [EventBus] as eventBus
+package "Game Manager Context" {
+  [RiotApi] as riotApi
+  [GameStateBuilder] as stateBuilder
+  [GameState] as gameState
+  [EventEmitter] as eventEmitter
   [GameTickEvent] as gameTick
 }
 
@@ -21,37 +23,45 @@ package "Coaching Context" {
 }
 
 ' Data flow
-riot --> detection : Raw game data
-detection --> eventBus : Publishes events
-eventBus --> coaching : Subscribes to events
-coaching --> coachingState : Builds from events
-coaching --> reminders : Checks against state
+riot --> riotApi : Raw game data
+riotApi --> stateBuilder : Raw data
+stateBuilder --> gameState : Processed game state
+gameState --> eventEmitter : State updates
+eventEmitter --> gameTick : Emits game-tick events
+gameTick --> coaching : Rich game state
+
+' Coaching internal flow
+coaching --> coachingState : Builds from game-tick events
+coachingState --> reminders : Checks against state buffer
 reminders --> audio : Plays when triggered
 
-' Event flow
-detection --> gameTick : Only new events
-gameTick --> coaching : Clean event stream
-
-note right of detection
-  Tracks processed events
-  Deduplicates before publishing
+note right of stateBuilder
+  Transforms raw Riot data
+  into meaningful game state
+  (dragon status, player stats, etc.)
 end note
 
-note right of coaching
-  Transforms shared events
-  Builds coaching-specific state
-  Owns reminder logic
+note right of gameState
+  Owns complete game state
+  Manages state transitions
+  Single source of truth
 end note
 
 note right of coachingState
-  Coaching interpretation
-  of game state
-  (deaths, kills, objectives)
+  Maintains state buffer
+  Detects patterns across ticks
+  Builds coaching-specific insights
 end note
 
 note right of reminders
-  Checks if reminders
-  should trigger based
-  on current state
+  Smart reminder triggers
+  (gold gained, CS patterns,
+  objective timing, etc.)
+end note
+
+note right of coaching
+  Consumes game-tick events
+  Builds own domain state
+  Independent from Game Manager
 end note
 @enduml
