@@ -21,6 +21,8 @@ export class App {
   ) {}
 
   public async start(): Promise<void> {
+    this._logger.info('app starting')
+
     this._eventBus.subscribe('game-started', this.onGameStarted.bind(this))
     this._eventBus.subscribe('game-ended', this.onGameEnded.bind(this))
     this._eventBus.subscribe('game-tick', this.onGameTick.bind(this))
@@ -62,7 +64,7 @@ export class App {
 
   private async onGameTick(evt: GameTickEvent): Promise<void> {
     this._logger.info('onGameTick')
-    const data = createGameDataDto(true, evt.data.gameTime)
+    const data = createGameDataDto(true, evt.data.state.gameTime)
     this._notifyElectron.notify(data.type, data)
 
     await this._remindersGameTickListener.handle(evt)

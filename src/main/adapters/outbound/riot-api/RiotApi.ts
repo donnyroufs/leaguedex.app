@@ -1,4 +1,4 @@
-import { GameEvent, GameStartedEvent } from '../../../hexagon'
+import { GameEvent, GameStartedEvent, Player } from '../../../hexagon'
 import { IRiotClientDataSource, LiveGameData, RiotGameEvent } from './IRiotClientDataSource'
 import { Result } from '../../../shared-kernel'
 import { GameState } from '../../../hexagon'
@@ -18,11 +18,28 @@ export class RiotApi {
   }
 
   private transformToDomain(rawGameState: LiveGameData): GameState {
+    const activePlayer = rawGameState.activePlayer
+    const player = rawGameState.allPlayers.find((p) => p.summonerName === activePlayer.summonerName)
+
+    if (!player) {
+      throw new Error('Active player not found')
+    }
+
+    const domainPlayer: Player = {
+      summonerName: player.summonerName,
+      isAlive: !player.isDead,
+      // TODO: do we need to floor this?
+      respawnsIn: Math.floor(player.respawnTimer) || null
+    }
+
+    const events = rawGameState.events.Events.map((evt) =>
+      this.transformEvent(evt, rawGameState)
+    ).filter(Boolean) as GameEvent<unknown>[]
+
     return new GameState(
       rawGameState.gameData.gameTime,
-      rawGameState.events.Events.map((evt) => this.transformEvent(evt, rawGameState)).filter(
-        Boolean
-      ) as GameEvent<unknown>[]
+      events as GameEvent<unknown>[],
+      domainPlayer
     )
   }
 

@@ -34,13 +34,14 @@ Feature: Coaching - Smart Reminders
     When another "60" seconds pass in game time
     Then I should not hear the audio "ward_river" again
 
-  Scenario: Reminder on death event
+  Scenario: Reminder on respawn event
     Given I have a reminder configured:
       | text             | triggerType | event |
-      | Play safer now   | event       | death |
+      | Play safer now   | event       | respawn |
     And we are in a League of Legends match
-    When "300" seconds pass in game time
+    When the player dies with a "10" seconds death timer
+    And "10" seconds have passed
     Then I should hear the audio "play_safer_now"
-    When another "300" seconds pass in game time
+    When the player dies again with a "15" seconds death timer
     Then I should hear the audio "play_safer_now" again
 

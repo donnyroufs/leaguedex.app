@@ -38,6 +38,7 @@ type AppDependencies = {
   logger: ILogger
   audioPlayer: IAudioPlayer
   tts: ITextToSpeech
+  endTimer: number
 }
 
 export async function createApp(
@@ -53,7 +54,9 @@ export async function createApp(
   const eventBus = overrides.eventBus ?? new EventBus(logger)
   const dataSource =
     overrides.dataSource ??
-    (isProd ? new RiotClientDataSource() : SimulatedRiotClientDataSource.create(eventBus))
+    (isProd
+      ? new RiotClientDataSource()
+      : SimulatedRiotClientDataSource.createAndStartGame(overrides.endTimer ?? 60))
   const riotApi = new RiotApi(dataSource)
   const notifyElectron = overrides.notifyElectron ?? new NotifyElectron()
 

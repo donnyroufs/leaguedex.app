@@ -1,6 +1,5 @@
 import { Result } from '../../../shared-kernel'
 import { LiveGameData } from './IRiotClientDataSource'
-import { IEventBus } from '../../../hexagon'
 import { GetGameDataResult, IRiotClientDataSource } from './IRiotClientDataSource'
 
 type WriteableDeep<T> = {
@@ -8,61 +7,40 @@ type WriteableDeep<T> = {
 }
 
 export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
-  private _response: WriteableDeep<LiveGameData> | null = null
+  private _response: WriteableDeep<LiveGameData> | Error | null = null
 
-  private constructor() {
-    //
-  }
+  public constructor(
+    private readonly _endTimer: number,
+    private _startTimer: number,
+    private readonly _isTestSuite: boolean
+  ) {}
 
   public async getGameData(): Promise<GetGameDataResult> {
+    // TODO: match contract
     if (this._response == null) {
-      // TODO: match contract
       return Result.err(new Error('Game not started 404'))
+    }
+
+    if (this._response instanceof Error) {
+      return Result.err(this._response)
+    }
+
+    if (!this._isTestSuite) {
+      this.tick()
     }
 
     return Result.ok(this._response)
   }
 
   public startGame(): void {
-    this._response = SimulatedRiotClientDataSource.createSampleResponse()
+    this._response = this.createSampleResponse()
   }
 
   public endGame(): void {
     this._response = null
   }
 
-  public static create(
-    eventBus: IEventBus,
-    startDelay: number = 5_000,
-    endTimer: number = 60
-  ): IRiotClientDataSource {
-    const source = new SimulatedRiotClientDataSource()
-
-    setTimeout(() => {
-      source.startGame()
-    }, startDelay)
-
-    // Simulate the first tick to be 1
-    eventBus.subscribe('game-started', () => {
-      source._response = SimulatedRiotClientDataSource.createSampleResponse(1)
-    })
-
-    eventBus.subscribe('game-tick', () => {
-      if (source._response == null) {
-        return
-      }
-
-      source._response.gameData.gameTime += 1
-
-      if (source._response.gameData.gameTime >= endTimer) {
-        source.endGame()
-      }
-    })
-
-    return source
-  }
-
-  public static createSampleResponse(tick: number = 0): WriteableDeep<LiveGameData> {
+  private createSampleResponse(): WriteableDeep<LiveGameData> {
     return {
       activePlayer: {
         abilities: {
@@ -205,7 +183,7 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
           ]
         },
         level: 1,
-        summonerName: 'Riot Tuxedo'
+        summonerName: 'test#1234'
       },
       allPlayers: [
         {
@@ -245,7 +223,7 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
             wardScore: 0
           },
           skinID: 0,
-          summonerName: 'Riot Tuxedo',
+          summonerName: 'test#1234',
           summonerSpells: {
             summonerSpellOne: {
               displayName: 'Flash',
@@ -272,11 +250,114 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
       },
       gameData: {
         gameMode: 'CLASSIC',
-        gameTime: tick,
+        gameTime: this._startTimer,
         mapName: 'Map11',
         mapNumber: 11,
         mapTerrain: 'Default'
       }
     }
+  }
+
+  public simulateError(): void {
+    this._response = new Error('Game ended')
+  }
+
+  public simulateNull(): void {
+    this._response = null
+  }
+
+  public simulatePlayerDeath(respawnTimer: number): void {
+    if (this._response == null) {
+      console.log('Game not started')
+      throw new Error('Game not started')
+    }
+
+    if (this._response instanceof Error) {
+      console.log('Game ended')
+      throw this._response
+    }
+
+    const name = this._response.activePlayer.summonerName
+    const player = this._response.allPlayers.find((p) => p.summonerName === name)
+
+    if (!player) {
+      throw new Error('Player not found')
+    }
+
+    player.isDead = true
+    player.respawnTimer = respawnTimer
+  }
+
+  private tick(): void {
+    if (this._response == null) {
+      return
+    }
+
+    if (this._response instanceof Error) {
+      throw this._response
+    }
+
+    this._response.gameData.gameTime += 1
+
+    // if (this._response.gameData.gameTime === 20) {
+    //   this.simulatePlayerDeath(30)
+    // }
+
+    // Handle respawn timers
+    if (this._response.allPlayers) {
+      for (const player of this._response.allPlayers) {
+        if (player.isDead && player.respawnTimer > 0) {
+          player.respawnTimer = Math.max(0, player.respawnTimer - 1)
+        }
+      }
+    }
+
+    if (this._response.gameData.gameTime >= this._endTimer) {
+      this.endGame()
+    }
+  }
+
+  public setGameStarted(gameTime: number = 0): void {
+    this._startTimer = gameTime
+    this._response = this.createSampleResponse()
+  }
+
+  public nextTick(): void {
+    if (this._response instanceof Error) {
+      throw this._response
+    }
+
+    if (this._response == null) {
+      return
+    }
+
+    this._response.gameData.gameTime += 1
+  }
+
+  public advanceToFutureTick(gameTime: number): void {
+    if (this._response instanceof Error) {
+      throw this._response
+    }
+
+    while (this._response!.gameData.gameTime < gameTime) {
+      this.tick()
+    }
+  }
+
+  public static createAndStartGame(
+    endTimer: number,
+    startTimer: number = 0
+  ): IRiotClientDataSource {
+    const source = new SimulatedRiotClientDataSource(endTimer, startTimer, false)
+    source.startGame()
+    return source
+  }
+
+  public static createForTests(
+    endTimer: number = 99999,
+    startTimer: number = 0
+  ): SimulatedRiotClientDataSource {
+    const source = new SimulatedRiotClientDataSource(endTimer, startTimer, true)
+    return source
   }
 }

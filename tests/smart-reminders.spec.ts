@@ -3,13 +3,17 @@ import fs from 'fs/promises'
 import { expect } from 'vitest'
 
 import { CreateReminderDto } from '../src/main/hexagon'
-import { FakeReminderRepository, EventBus, ElectronLogger } from '../src/main/adapters/outbound'
+import {
+  FakeReminderRepository,
+  EventBus,
+  ElectronLogger,
+  SimulatedRiotClientDataSource
+} from '../src/main/adapters/outbound'
 import { App } from '../src/main/Leaguedex'
 import { createTestApp } from '../src/main/CompositionRoot'
 
 import { FakeTimer } from './FakeTimer'
 import { AudioSpy } from './AudioSpy'
-import { RiotClientDataSourceStub } from './RiotClientDataSourceStub'
 import { DummyElectronNotifier } from './DummyElectronNotifier'
 
 const feature = await loadFeature('tests/features/smart-reminders.feature')
@@ -29,12 +33,11 @@ describeFeature(
     let timer: FakeTimer
     let audioPlayer: AudioSpy
     let eventBus: EventBus
-    let dataSource: RiotClientDataSourceStub
+    let dataSource: SimulatedRiotClientDataSource
     let notifyElectron: DummyElectronNotifier
 
     async function advanceGameTicks(ticks: number): Promise<void> {
       for (let i = 0; i < ticks; i++) {
-        dataSource.tick()
         await timer.tick()
       }
     }
@@ -67,7 +70,7 @@ describeFeature(
       timer = new FakeTimer()
       eventBus = new EventBus(ElectronLogger.createNull())
       audioPlayer = new AudioSpy()
-      dataSource = new RiotClientDataSourceStub()
+      dataSource = new SimulatedRiotClientDataSource(999999, 0, false)
       notifyElectron = new DummyElectronNotifier()
 
       app = await createTestApp({
@@ -138,18 +141,18 @@ describeFeature(
         await advanceGameTicks(Number(seconds))
       })
 
-      Then(`I should hear the audio "check_minimap"`, async () => {
+      Then(`I should hear the audio {string}`, async (_, audio: string) => {
         expect(audioPlayer.totalCalls).toBe(1)
-        expect(audioPlayer.lastCalledWith).toContain('check_minimap')
+        expect(audioPlayer.lastCalledWith).toContain(audio)
       })
 
       When(`another {string} seconds pass in game time`, async (_, seconds: string) => {
         await advanceGameTicks(Number(seconds))
       })
 
-      Then(`I should hear the audio "check_minimap" again`, async () => {
+      Then(`I should hear the audio {string} again`, async (_, audio: string) => {
         expect(audioPlayer.totalCalls).toBe(2)
-        expect(audioPlayer.lastCalledWith).toContain('check_minimap')
+        expect(audioPlayer.lastCalledWith).toContain(audio)
       })
     })
 
@@ -170,9 +173,9 @@ describeFeature(
         await advanceGameTicks(Number(seconds))
       })
 
-      Then(`I should hear the audio "ward_river"`, async () => {
+      Then(`I should hear the audio {string}`, async (_, audio: string) => {
         expect(audioPlayer.totalCalls).toBe(1)
-        expect(audioPlayer.lastCalledWith).toContain('ward_river')
+        expect(audioPlayer.lastCalledWith).toContain(audio)
       })
 
       When(`another {string} seconds pass in game time`, async (_, seconds: string) => {
@@ -184,7 +187,7 @@ describeFeature(
       })
     })
 
-    Scenario.skip(`Reminder on death event`, ({ Given, When, Then, And }) => {
+    Scenario(`Reminder on respawn event`, ({ Given, When, Then, And }) => {
       Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
         const createdReminderId = await createReminder(data)
 
@@ -197,20 +200,30 @@ describeFeature(
         dataSource.setGameStarted()
       })
 
-      When(`{string} seconds pass in game time`, async (_, seconds: string) => {
+      When(`the player dies with a {string} seconds death timer`, async (_, deathTimer: string) => {
+        dataSource.simulatePlayerDeath(Number(deathTimer))
+      })
+
+      And(`{string} seconds have passed`, async (_, seconds: string) => {
         await advanceGameTicks(Number(seconds))
       })
 
-      Then(`I should hear the audio "play_safer_now"`, async () => {
+      Then(`I should hear the audio {string}`, async (_, audio: string) => {
         expect(audioPlayer.totalCalls).toBe(1)
+        expect(audioPlayer.lastCalledWith).toContain(audio)
       })
 
-      When(`another {string} seconds pass in game time`, async (_, seconds: string) => {
-        await advanceGameTicks(Number(seconds))
-      })
+      When(
+        `the player dies again with a {string} seconds death timer`,
+        async (_, deathTimer: string) => {
+          dataSource.simulatePlayerDeath(Number(deathTimer))
+          await advanceGameTicks(Number(deathTimer))
+        }
+      )
 
-      Then(`I should hear the audio "play_safer_now" again`, async () => {
-        expect(audioPlayer.totalCalls).toBe(1)
+      Then(`I should hear the audio {string} again`, async (_, audio: string) => {
+        expect(audioPlayer.totalCalls).toBe(2)
+        expect(audioPlayer.lastCalledWith).toContain(audio)
       })
     })
   }

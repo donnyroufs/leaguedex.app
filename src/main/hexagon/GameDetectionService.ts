@@ -84,12 +84,7 @@ export class GameDetectionService {
         new GameStartedEvent(++this._internalEventIdCounter, { gameTime: 0 })
       )
     } else {
-      this._eventBus.publish(
-        'game-tick',
-        new GameTickEvent(++this._internalEventIdCounter, {
-          gameTime: gameState.gameTime
-        })
-      )
+      this.publishGameTick(gameState)
     }
   }
 
@@ -97,7 +92,7 @@ export class GameDetectionService {
     this._eventBus.publish(
       'game-tick',
       new GameTickEvent(++this._internalEventIdCounter, {
-        gameTime: gameState.gameTime
+        state: gameState
       })
     )
   }

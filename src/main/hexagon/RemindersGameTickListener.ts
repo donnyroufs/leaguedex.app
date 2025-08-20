@@ -11,21 +11,27 @@ export class RemindersGameTickListener {
   ) {}
 
   public async handle(evt: GameTickEvent): Promise<void> {
+    const { gameTime } = evt.data.state
+
     const reminders = await this._reminderRepository.all()
     const dueReminders = reminders.unwrap().filter((reminder) => {
       if (reminder.triggerType === 'interval' && reminder.interval) {
-        return evt.data.gameTime % reminder.interval === 0
+        return gameTime % reminder.interval === 0
       }
 
       if (reminder.triggerType === 'oneTime' && reminder.triggerAt) {
-        return evt.data.gameTime === reminder.triggerAt
+        return gameTime === reminder.triggerAt
+      }
+
+      if (reminder.triggerType === 'event' && reminder.event === 'respawn') {
+        return evt.data.state.activePlayer.respawnsIn === 1
       }
 
       return false
     })
 
     this._logger.info('Processing reminders', {
-      gameTime: evt.data.gameTime,
+      gameTime,
       dueRemindersLen: dueReminders.length
     })
 
