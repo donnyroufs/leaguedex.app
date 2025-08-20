@@ -17,6 +17,6 @@ Feature: Coaching
   Scenario: Repeatable time-based reminder works
     And we are in a League of Legends match at 0 seconds
     When 60 seconds pass in game time
-    Then I should hear the audio "reminder_map.mp3"
+    Then I should hear the audio "check_minimap"
     And 120 seconds pass in game time
-    Then I should hear the audio "reminder_map.mp3" again
+    Then I should hear the audio "check_minimap" again

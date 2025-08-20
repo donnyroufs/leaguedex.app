@@ -1,6 +1,7 @@
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
-
+import fs from 'fs/promises'
 import { expect } from 'vitest'
+
 import { CreateReminderDto } from '../src/main/app/coaching'
 import { App } from '../src/main/app/App'
 import { createTestApp } from '../src/main/app/CompositionRoot'
@@ -8,6 +9,9 @@ import { FakeReminderRepository } from '../src/main/app/coaching/FakeReminderRep
 import { FakeTimer } from './FakeTimer'
 import { EventBus } from '../src/main/app/shared-kernel'
 import { ElectronLogger } from '../src/main/app/shared-kernel/ElectronLogger'
+import { AudioSpy } from './AudioSpy'
+import { RiotClientDataSourceStub } from './RiotClientDataSourceStub'
+import { DummyElectronNotifier } from './DummyElectronNotifier'
 
 const feature = await loadFeature('tests/features/coaching.feature')
 
@@ -24,28 +28,44 @@ describeFeature(
     let app!: App
     let fakeReminderRepository!: FakeReminderRepository
     let timer: FakeTimer
-    let audioSpy: AudioSpy
+    let audioPlayer: AudioSpy
     let eventBus: EventBus
+    let dataSource: RiotClientDataSourceStub
+    let notifyElectron: DummyElectronNotifier
+
+    async function advanceGameTicks(ticks: number): Promise<void> {
+      for (let i = 0; i < ticks; i++) {
+        dataSource.tick()
+        await timer.tick()
+      }
+    }
 
     BeforeAllScenarios(async () => {
       fakeReminderRepository = new FakeReminderRepository()
       timer = new FakeTimer()
       eventBus = new EventBus(ElectronLogger.createNull())
+      audioPlayer = new AudioSpy()
+      dataSource = new RiotClientDataSourceStub()
+      notifyElectron = new DummyElectronNotifier()
+
       app = await createTestApp({
         reminderRepository: fakeReminderRepository,
         timer,
-        audioPlayer: audioSpy,
-        eventBus
+        audioPlayer,
+        eventBus,
+        dataSource,
+        notifyElectron
       })
     })
 
     AfterAllScenarios(async () => {
       await app.stop()
+      await fs.rm('tmpaudio', { recursive: true, force: true })
     })
 
     BeforeEachScenario(() => {})
 
-    AfterEachScenario(() => {
+    AfterEachScenario(async () => {
       fakeReminderRepository.clear()
     })
 
@@ -68,56 +88,42 @@ describeFeature(
     })
 
     Scenario(`No reminder when no game is running`, ({ When, Then, And }) => {
-      And(`we are not in a League of Legends match`, () => {
-        let called = false
-
-        eventBus.subscribe('game-tick', () => {
-          called = true
-        })
-
-        timer.advanceTicks(5)
-
-        expect(called).toBe(false)
+      And(`we are not in a League of Legends match`, async () => {
+        dataSource.simulateNull()
+        await advanceGameTicks(1)
       })
 
       When(`60 seconds pass`, async () => {
-        await timer.advanceTicks(55)
+        await advanceGameTicks(60)
       })
 
       Then(`no audio should play`, () => {
-        expect(audioSpy.totalCalls).toBe(0)
+        expect(audioPlayer.totalCalls).toBe(0)
       })
     })
 
     Scenario(`Repeatable time-based reminder works`, ({ When, Then, And }) => {
       And(`we are in a League of Legends match at 0 seconds`, async () => {
-        let called = false
-
-        eventBus.subscribe('game-tick', () => {
-          called = true
-        })
-
-        await timer.advanceTicks(5)
-        expect(called).toBe(true)
+        dataSource.setGameStarted()
+        await advanceGameTicks(1)
       })
 
-      When(`60 seconds pass in game time`, () => {
-        timer.advanceTicks(55)
+      When(`60 seconds pass in game time`, async () => {
+        await advanceGameTicks(59)
       })
 
-      // TODO: figure out how to get audio path from feature
-      Then(`I should hear the audio "reminder_map.mp3"`, () => {
-        expect(audioSpy.totalCalls).toBe(1)
-        expect(audioSpy.lastCalledWith).toEqual('reminder_map.mp3')
+      Then(`I should hear the audio {string}`, async (_, audioName: string) => {
+        expect(audioPlayer.totalCalls).toBe(1)
+        expect(audioPlayer.lastCalledWith).toContain(audioName)
       })
 
-      And(`120 seconds pass in game time`, () => {
-        timer.advanceTicks(60)
+      And(`120 seconds pass in game time`, async () => {
+        await advanceGameTicks(60)
       })
 
-      Then(`I should hear the audio "reminder_map.mp3" again`, () => {
-        expect(audioSpy.totalCalls).toBe(2)
-        expect(audioSpy.lastCalledWith).toEqual('reminder_map.mp3')
+      Then(`I should hear the audio {string} again`, async (_, audioName: string) => {
+        expect(audioPlayer.totalCalls).toBe(2)
+        expect(audioPlayer.lastCalledWith).toContain(audioName)
       })
     })
   }

@@ -1,6 +1,7 @@
 import { app, type IpcMain } from 'electron'
 import { CoachingModule, FileSystemReminderRepository, IReminderRepository } from './coaching'
 import { App } from './App'
+import os from 'os'
 
 import {
   ElectronAdapter,
@@ -20,6 +21,10 @@ import path from 'path'
 import { ElectronLogger } from './shared-kernel/ElectronLogger'
 import { ILogger } from './shared-kernel/ILogger'
 import { FakeReminderRepository } from './coaching/FakeReminderRepository'
+import { IAudioPlayer } from './coaching/IAudioPlayer'
+import { AudioPlayer } from './coaching/AudioPlayer'
+import { ITextToSpeech } from './coaching/ITextToSpeech'
+import { TextToSpeech } from './coaching/TextToSpeech'
 
 type AppDependencies = {
   eventBus: IEventBus
@@ -28,11 +33,14 @@ type AppDependencies = {
   timer: ITimer
   reminderRepository: IReminderRepository
   logger: ILogger
+  audioPlayer: IAudioPlayer
+  tts: ITextToSpeech
 }
 
 export async function createApp(
   overrides: Partial<AppDependencies> = {},
-  isPackaged: boolean = false
+  isPackaged: boolean = false,
+  platform: 'win32' | 'darwin' = 'win32'
 ): Promise<App> {
   const isProd = isPackaged || process.env.NODE_ENV === 'production'
 
@@ -59,7 +67,10 @@ export async function createApp(
     reminderRepository = overrides.reminderRepository ?? new FakeReminderRepository()
   }
 
-  const coachingModule = new CoachingModule(reminderRepository)
+  const audioPlayer = overrides.audioPlayer ?? new AudioPlayer(logger)
+  const tts =
+    overrides.tts ?? (await TextToSpeech.create(logger, path.join(dataPath, 'audio'), platform))
+  const coachingModule = new CoachingModule(reminderRepository, audioPlayer, tts, eventBus, logger)
 
   if (isPackaged) {
     const os = await import('os')
@@ -82,11 +93,19 @@ export async function createTestApp(overrides: Partial<AppDependencies> = {}): P
     overrides.logger = ElectronLogger.createNull()
   }
 
+  if (overrides.tts == null) {
+    overrides.tts = await TextToSpeech.create(
+      ElectronLogger.createNull(),
+      path.join('tmpaudio'),
+      'darwin'
+    )
+  }
+
   return createApp(overrides, false)
 }
 
 export async function createAppAndStart(ipcMain?: IpcMain): Promise<void> {
-  const leaguedex = await createApp({}, app.isPackaged)
+  const leaguedex = await createApp({}, app.isPackaged, os.platform() as 'win32' | 'darwin')
 
   if (ipcMain) {
     await ElectronAdapter.setup(leaguedex, ipcMain)

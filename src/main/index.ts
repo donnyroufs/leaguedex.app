@@ -28,18 +28,6 @@ function createWindow(): void {
     }
   })
 
-  // Set Content Security Policy to allow Riot Games API
-  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [
-          "default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://ddragon.leagueoflegends.com https://*.riotgames.com; img-src 'self' data: https://ddragon.leagueoflegends.com; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
-        ]
-      }
-    })
-  })
-
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })

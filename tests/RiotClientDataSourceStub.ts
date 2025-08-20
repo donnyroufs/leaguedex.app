@@ -25,6 +25,12 @@ export class RiotClientDataSourceStub implements IRiotClientDataSource {
     return Result.ok(this._response)
   }
 
+  public tick(): void {
+    if (this._response != null && 'gameData' in this._response) {
+      this._response.gameData.gameTime++
+    }
+  }
+
   public setGameTime(gameTime: number): void {
     if (this._response instanceof Error) {
       throw this._response

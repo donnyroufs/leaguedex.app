@@ -4,6 +4,7 @@ export type Reminder = {
   id: string
   interval: number
   text: string
+  audioUrl: string
 }
 
 export interface IReminderRepository {
