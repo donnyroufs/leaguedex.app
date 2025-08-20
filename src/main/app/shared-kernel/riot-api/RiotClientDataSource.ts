@@ -24,7 +24,13 @@ export class RiotClientDataSource implements IRiotClientDataSource {
         return Result.err(new Error('Game not started 404'))
       }
 
-      return Result.ok(response.data)
+      return Result.ok({
+        ...response.data,
+        gameData: {
+          ...response.data.gameData,
+          gameTime: Math.floor(response.data.gameData.gameTime)
+        }
+      })
     } catch (err) {
       return Result.err(err as Error)
     }
