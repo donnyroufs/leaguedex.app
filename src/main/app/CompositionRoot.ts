@@ -12,6 +12,7 @@ import {
   ITimer,
   NotifyElectron,
   RiotApi,
+  RiotClientDataSource,
   SimulatedRiotClientDataSource,
   Timer
 } from './shared-kernel'
@@ -32,17 +33,21 @@ export async function createApp(
   overrides: Partial<AppDependencies> = {},
   isPackaged: boolean = false
 ): Promise<App> {
+  const isProd = isPackaged || process.env.NODE_ENV === 'production'
+
   // Cross cutting concerns
   const dataPath = isPackaged ? app.getPath('userData') : path.join(process.cwd(), 'data')
-  const logger = overrides.logger ?? new ElectronLogger(path.join(dataPath, 'logs.log'))
-  const eventBus = overrides.eventBus ?? new EventBus()
-  const dataSource = overrides.dataSource ?? SimulatedRiotClientDataSource.create(eventBus)
+  const logger = overrides.logger ?? new ElectronLogger(path.join(dataPath, 'logs.log'), 'info')
+  const eventBus = overrides.eventBus ?? new EventBus(logger)
+  const dataSource =
+    overrides.dataSource ??
+    (isProd ? new RiotClientDataSource() : SimulatedRiotClientDataSource.create(eventBus))
   const riotApi = new RiotApi(dataSource)
   const notifyElectron = overrides.notifyElectron ?? new NotifyElectron()
 
   // Game Detection
   const timer = overrides.timer ?? new Timer()
-  const gameDetectionService = new GameDetectionService(eventBus, riotApi, timer)
+  const gameDetectionService = new GameDetectionService(eventBus, riotApi, timer, logger)
 
   // Modules
   const reminderRepository =
@@ -67,10 +72,7 @@ export async function createApp(
 
 export async function createTestApp(overrides: Partial<AppDependencies> = {}): Promise<App> {
   if (overrides?.logger == null) {
-    overrides.logger = {
-      info: (): void => {},
-      error: (): void => {}
-    }
+    overrides.logger = ElectronLogger.createNull()
   }
 
   return createApp(overrides, false)

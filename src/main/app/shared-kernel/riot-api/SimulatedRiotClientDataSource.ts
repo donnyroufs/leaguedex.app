@@ -8,37 +8,61 @@ type WriteableDeep<T> = {
 }
 
 export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
-  private _response: WriteableDeep<LiveGameData> =
-    SimulatedRiotClientDataSource.createSampleResponse()
-  private _shouldError = false
+  private _response: WriteableDeep<LiveGameData> | null = null
 
   private constructor() {
     //
   }
 
   public async getGameData(): Promise<GetGameDataResult> {
-    if (this._shouldError) {
-      return Result.err(new Error('Simulated error'))
+    if (this._response == null) {
+      // TODO: match contract
+      return Result.err(new Error('Game not started 404'))
     }
 
     return Result.ok(this._response)
   }
 
-  public static create(eventBus: IEventBus): IRiotClientDataSource {
+  public startGame(): void {
+    this._response = SimulatedRiotClientDataSource.createSampleResponse()
+  }
+
+  public endGame(): void {
+    this._response = null
+  }
+
+  public static create(
+    eventBus: IEventBus,
+    startDelay: number = 5_000,
+    endTimer: number = 60
+  ): IRiotClientDataSource {
     const source = new SimulatedRiotClientDataSource()
 
+    setTimeout(() => {
+      source.startGame()
+    }, startDelay)
+
+    // Simulate the first tick to be 1
+    eventBus.subscribe('game-started', () => {
+      source._response = SimulatedRiotClientDataSource.createSampleResponse(1)
+    })
+
     eventBus.subscribe('game-tick', () => {
+      if (source._response == null) {
+        return
+      }
+
       source._response.gameData.gameTime += 1
 
-      if (source._response.gameData.gameTime > 10) {
-        source._shouldError = true
+      if (source._response.gameData.gameTime >= endTimer) {
+        source.endGame()
       }
     })
 
     return source
   }
 
-  public static createSampleResponse(): WriteableDeep<LiveGameData> {
+  public static createSampleResponse(tick: number = 0): WriteableDeep<LiveGameData> {
     return {
       activePlayer: {
         abilities: {
@@ -248,7 +272,7 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
       },
       gameData: {
         gameMode: 'CLASSIC',
-        gameTime: 1,
+        gameTime: tick,
         mapName: 'Map11',
         mapNumber: 11,
         mapTerrain: 'Default'

@@ -11,42 +11,37 @@ type WriteableDeep<T> = {
 }
 
 export class RiotClientDataSourceStub implements IRiotClientDataSource {
-  private _response: WriteableDeep<LiveGameData> =
-    SimulatedRiotClientDataSource.createSampleResponse()
-  private _shouldError = false
-  private _error: Error | null = null
+  private _response: WriteableDeep<LiveGameData> | Error | null = null
 
   public async getGameData(): Promise<GetGameDataResult> {
-    if (this._shouldError) {
-      return Result.err(this._error ?? new Error('RiotClientDataSourceStub error'))
+    if (this._response instanceof Error) {
+      return Result.err(this._response)
+    }
+
+    if (this._response == null) {
+      return Result.err(new Error('Game not started'))
     }
 
     return Result.ok(this._response)
   }
 
   public setGameTime(gameTime: number): void {
-    this._response.gameData.gameTime = gameTime
-  }
-
-  public setGameStarted(): void {
-    this._response.events = {
-      Events: [
-        {
-          EventID: 0,
-          EventName: 'GameStart',
-          EventTime: 0.0000000023
-        }
-      ]
+    if (this._response instanceof Error) {
+      throw this._response
     }
+
+    this._response!.gameData.gameTime = gameTime
   }
 
-  public shouldError(error?: Error): void {
-    this._shouldError = true
-    this._error = error ?? null
+  public setGameStarted(gameTime: number = 0): void {
+    this._response = SimulatedRiotClientDataSource.createSampleResponse(gameTime)
   }
 
-  public shouldNotError(): void {
-    this._shouldError = false
-    this._error = null
+  public simulateError(): void {
+    this._response = new Error('Game ended')
+  }
+
+  public simulateNull(): void {
+    this._response = null
   }
 }

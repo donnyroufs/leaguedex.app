@@ -22,6 +22,16 @@ export class EventBusSpy implements IEventBus {
     return events.length === eventTypes.length
   }
 
+  public hasAllEventsInOrder(eventTypes: EventKey[]): boolean {
+    for (let i = 0; i < eventTypes.length; i++) {
+      if (this.events[i]?.eventType !== eventTypes[i]) {
+        return false
+      }
+    }
+
+    return true
+  }
+
   public subscribe(): void {
     return
   }

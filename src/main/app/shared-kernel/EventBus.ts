@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { ILogger } from './ILogger'
 
 export type EventMap = {
   'game-started': GameStartedEvent
@@ -39,11 +40,12 @@ export class GameTickEvent extends GameEvent<{ gameTime: number }> {
 export class EventBus implements IEventBus {
   private readonly _emitter: EventEmitter
 
-  public constructor() {
+  public constructor(private readonly _logger: ILogger) {
     this._emitter = new EventEmitter()
   }
 
   public publish<T extends EventKey>(eventType: T, event: EventMap[T]): void {
+    this._logger.debug(`Publishing event`, { event })
     this._emitter.emit(eventType, event)
   }
 

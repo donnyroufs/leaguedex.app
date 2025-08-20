@@ -14,10 +14,14 @@ export class RiotClientDataSource implements IRiotClientDataSource {
 
   public async getGameData(): Promise<GetGameDataResult> {
     try {
-      const response = await this._axios.get<LiveGameData>('/liveclientdata/eventdata')
+      const response = await this._axios.get<LiveGameData>('/liveclientdata/allgamedata')
 
       if (response.status !== 200) {
         return Result.err(new Error('Failed to get game data'))
+      }
+
+      if (!('gameData' in response.data)) {
+        return Result.err(new Error('Game not started 404'))
       }
 
       return Result.ok(response.data)

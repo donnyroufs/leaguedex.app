@@ -23,4 +23,10 @@ export class FakeTimer implements ITimer {
       await this._callback()
     }
   }
+
+  public async tick(): Promise<void> {
+    if (this._callback && this._isRunning) {
+      await this._callback()
+    }
+  }
 }

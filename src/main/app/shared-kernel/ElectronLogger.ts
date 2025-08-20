@@ -2,7 +2,7 @@ import { ILogger } from './ILogger'
 import log from 'electron-log'
 
 export class ElectronLogger implements ILogger {
-  public constructor(path: string, level: 'info' | 'error' = 'info') {
+  public constructor(path: string, level: 'info' | 'error' | 'debug' = 'error') {
     log.transports.file.level = level
     log.transports.file.resolvePathFn = () => path
     log.transports.file.maxSize = 1024 * 1024 * 10 // 10MB
@@ -14,5 +14,17 @@ export class ElectronLogger implements ILogger {
 
   public error(message: string, data: Record<string, unknown> = {}): void {
     log.error(message, data)
+  }
+
+  public debug(message: string, data: Record<string, unknown> = {}): void {
+    log.debug(message, data)
+  }
+
+  public static createNull(): ILogger {
+    return {
+      info: () => {},
+      error: () => {},
+      debug: () => {}
+    }
   }
 }

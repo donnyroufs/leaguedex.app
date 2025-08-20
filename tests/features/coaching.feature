@@ -1,7 +1,7 @@
 Feature: Coaching
   As a League of Legends player
   I want to receive a simple audio reminder
-  So that I can prove the system works end-to-end
+  So that I can form better habits
 
   Background:
     Given the application is running

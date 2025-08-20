@@ -1,17 +1,19 @@
-import { EventKey, EventMap, GameEndedEvent, GameTickEvent, IEventBus } from '../EventBus'
-import { RiotApi } from '../riot-api'
+import { GameEndedEvent, GameStartedEvent, GameTickEvent, IEventBus } from '../EventBus'
+import { RiotApi } from '../riot-api/RiotApi'
 import { ITimer } from '../ITimer'
 import { GameState } from './GameState'
+import { GetGameStateResult } from '../riot-api/RiotApi'
+import { ILogger } from '../ILogger'
 
 export class GameDetectionService {
-  private _processedEvents: Set<number> = new Set()
   private _internalEventIdCounter = 10_000
   private _gameStarted = false
 
   public constructor(
     private readonly _eventBus: IEventBus,
     private readonly _riotApi: RiotApi,
-    private readonly _timer: ITimer
+    private readonly _timer: ITimer,
+    private readonly _logger: ILogger
   ) {}
 
   public start(): void {
@@ -28,49 +30,68 @@ export class GameDetectionService {
     try {
       const result = await this._riotApi.getGameState()
 
-      if (!this._gameStarted && result.isErr()) {
+      if (this.shouldSkipProcessing(result)) {
         return
       }
 
-      if (this._gameStarted && result.isErr()) {
-        this._eventBus.publish(
-          'game-ended',
-          new GameEndedEvent(++this._internalEventIdCounter, null)
-        )
-        this._gameStarted = false
+      if (this.shouldEndGame(result)) {
+        this.endGame()
         return
       }
 
-      if (!this._gameStarted && result.isOk()) {
-        this._gameStarted = true
+      if (this.shouldStartGame(result)) {
+        this.startGame(result.getValue())
+        return
       }
 
-      const gameState = result.getValue()
-      const unprocessedEvents = gameState.events.filter((evt) => !this._processedEvents.has(evt.id))
-
-      const BUFFER = 3
-
-      const isFirstTickWithMultipleEvents =
-        this._processedEvents.size === 0 &&
-        unprocessedEvents.length > 1 &&
-        gameState.gameTime > BUFFER
-
-      // We don't know the exact time the game started (in real time), so we ignore past events and continue from now on;
-      // Later we can utilize the spectator API to get the exact time the game started but for now it's not worth the effort.
-      if (!isFirstTickWithMultipleEvents) {
-        unprocessedEvents.forEach((event) => {
-          this._eventBus.publish(event.eventType, event as EventMap[EventKey])
-          this._processedEvents.add(event.id)
-        })
+      if (this.shouldPublishGameTick(result)) {
+        this.publishGameTick(result.getValue())
       }
-
-      this.publishNextTick(gameState)
     } catch (err) {
-      console.error(err)
+      this._logger.error('Failed to process game state', { error: err })
     }
   }
 
-  private publishNextTick(gameState: GameState): void {
+  private shouldSkipProcessing(result: GetGameStateResult): boolean {
+    return !this._gameStarted && result.isErr()
+  }
+
+  private shouldEndGame(result: GetGameStateResult): boolean {
+    return this._gameStarted && result.isErr()
+  }
+
+  private shouldStartGame(result: GetGameStateResult): boolean {
+    return !this._gameStarted && result.isOk()
+  }
+
+  private shouldPublishGameTick(result: GetGameStateResult): boolean {
+    return this._gameStarted && result.isOk()
+  }
+
+  private endGame(): void {
+    this._eventBus.publish('game-ended', new GameEndedEvent(++this._internalEventIdCounter, null))
+    this._gameStarted = false
+  }
+
+  private startGame(gameState: GameState): void {
+    this._gameStarted = true
+
+    if (gameState.gameTime === 0) {
+      this._eventBus.publish(
+        'game-started',
+        new GameStartedEvent(++this._internalEventIdCounter, { gameTime: 0 })
+      )
+    } else {
+      this._eventBus.publish(
+        'game-tick',
+        new GameTickEvent(++this._internalEventIdCounter, {
+          gameTime: gameState.gameTime
+        })
+      )
+    }
+  }
+
+  private publishGameTick(gameState: GameState): void {
     this._eventBus.publish(
       'game-tick',
       new GameTickEvent(++this._internalEventIdCounter, {
