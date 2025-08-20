@@ -90,11 +90,10 @@ describeFeature(
     Scenario(`No reminder when no game is running`, ({ When, Then, And }) => {
       And(`we are not in a League of Legends match`, async () => {
         dataSource.simulateNull()
-        await advanceGameTicks(1)
       })
 
-      When(`60 seconds pass`, async () => {
-        await advanceGameTicks(60)
+      When(`{string} seconds pass`, async (_, seconds: string) => {
+        await advanceGameTicks(Number(seconds))
       })
 
       Then(`no audio should play`, () => {
@@ -105,11 +104,10 @@ describeFeature(
     Scenario(`Repeatable time-based reminder works`, ({ When, Then, And }) => {
       And(`we are in a League of Legends match at 0 seconds`, async () => {
         dataSource.setGameStarted()
-        await advanceGameTicks(1)
       })
 
-      When(`60 seconds pass in game time`, async () => {
-        await advanceGameTicks(59)
+      When(`{string} seconds pass in game time`, async (_, seconds: string) => {
+        await advanceGameTicks(Number(seconds))
       })
 
       Then(`I should hear the audio {string}`, async (_, audioName: string) => {
@@ -117,8 +115,8 @@ describeFeature(
         expect(audioPlayer.lastCalledWith).toContain(audioName)
       })
 
-      And(`120 seconds pass in game time`, async () => {
-        await advanceGameTicks(60)
+      And(`another {string} seconds pass in game time`, async (_, seconds: string) => {
+        await advanceGameTicks(Number(seconds))
       })
 
       Then(`I should hear the audio {string} again`, async (_, audioName: string) => {
