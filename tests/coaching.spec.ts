@@ -23,7 +23,8 @@ describeFeature(
     BeforeEachScenario,
     AfterEachScenario,
     Background,
-    Scenario
+    Scenario,
+    ScenarioOutline
   }) => {
     let app!: App
     let fakeReminderRepository!: FakeReminderRepository
@@ -64,30 +65,30 @@ describeFeature(
     })
 
     BeforeEachScenario(() => {})
-
     AfterEachScenario(async () => {
+      audioPlayer.clear()
       fakeReminderRepository.clear()
     })
 
-    Background(({ Given, And }) => {
+    Background(({ Given }) => {
       Given(`the application is running`, async () => {
         await app.start()
       })
+    })
 
-      And(`I have one reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
+    Scenario(`No reminder when no game is running`, ({ Given, When, Then, And }) => {
+      Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
         const createdReminderId = await app.addReminder({
           interval: Number(data.interval),
-          text: data.text
+          text: data.text,
+          isRepeating: true
         })
 
         const reminders = await app.getReminders()
-
         expect(reminders).toHaveLength(1)
         expect(reminders[0].id).toBe(createdReminderId)
       })
-    })
 
-    Scenario(`No reminder when no game is running`, ({ When, Then, And }) => {
       And(`we are not in a League of Legends match`, async () => {
         dataSource.simulateNull()
       })
@@ -101,27 +102,81 @@ describeFeature(
       })
     })
 
-    Scenario(`Repeatable time-based reminder works`, ({ When, Then, And }) => {
+    ScenarioOutline(`Repeating Reminders`, ({ Given, When, Then, And }, variables) => {
+      Given(
+        `I have a <interval> second repeating reminder configured:`,
+        async (_, [data]: CreateReminderDto[]) => {
+          const createdReminderId = await app.addReminder({
+            interval: Number(variables.interval),
+            text: data.text,
+            isRepeating: true
+          })
+
+          const reminders = await app.getReminders()
+          expect(reminders).toHaveLength(1)
+          expect(reminders[0].id).toBe(createdReminderId)
+        }
+      )
+
       And(`we are in a League of Legends match at 0 seconds`, async () => {
         dataSource.setGameStarted()
       })
 
-      When(`{string} seconds pass in game time`, async (_, seconds: string) => {
-        await advanceGameTicks(Number(seconds))
+      When(`"<interval>" seconds pass in game time`, async () => {
+        await advanceGameTicks(Number(variables.interval))
       })
 
-      Then(`I should hear the audio {string}`, async (_, audioName: string) => {
+      Then(`I should hear the audio "check_minimap"`, async () => {
         expect(audioPlayer.totalCalls).toBe(1)
-        expect(audioPlayer.lastCalledWith).toContain(audioName)
+        expect(audioPlayer.lastCalledWith).toContain('check_minimap')
       })
 
-      And(`another {string} seconds pass in game time`, async (_, seconds: string) => {
-        await advanceGameTicks(Number(seconds))
+      And(`another "<interval>" seconds pass in game time`, async () => {
+        await advanceGameTicks(Number(variables.interval))
       })
 
-      Then(`I should hear the audio {string} again`, async (_, audioName: string) => {
+      Then(`I should hear the audio "check_minimap" again`, async () => {
         expect(audioPlayer.totalCalls).toBe(2)
-        expect(audioPlayer.lastCalledWith).toContain(audioName)
+        expect(audioPlayer.lastCalledWith).toContain('check_minimap')
+      })
+    })
+
+    ScenarioOutline(`One-Time Reminders`, ({ Given, When, Then, And }, variables) => {
+      Given(
+        `I have a <interval> second one-time reminder configured:`,
+        async (_, [data]: CreateReminderDto[]) => {
+          const createdReminderId = await app.addReminder({
+            interval: Number(variables.interval),
+            text: data.text,
+            isRepeating: false
+          })
+
+          const reminders = await app.getReminders()
+
+          expect(reminders).toHaveLength(1)
+          expect(reminders[0].id).toBe(createdReminderId)
+        }
+      )
+
+      And(`we are in a League of Legends match at 0 seconds`, () => {
+        dataSource.setGameStarted()
+      })
+
+      When(`"<interval>" seconds pass in game time`, async () => {
+        await advanceGameTicks(Number(variables.interval))
+      })
+
+      Then(`I should hear the audio "check_minimap"`, async () => {
+        expect(audioPlayer.totalCalls).toBe(1)
+        expect(audioPlayer.lastCalledWith).toContain('check_minimap')
+      })
+
+      And(`another "<interval>" seconds pass in game time`, async () => {
+        await advanceGameTicks(Number(variables.interval))
+      })
+
+      Then(`I should not hear the audio "check_minimap" again`, async () => {
+        expect(audioPlayer.totalCalls).toBe(1)
       })
     })
   }

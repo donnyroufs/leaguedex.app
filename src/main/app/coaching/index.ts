@@ -9,7 +9,8 @@ import { ILogger } from '../shared-kernel/ILogger'
 
 const createReminderSchema = z.object({
   interval: z.number().min(1),
-  text: z.string().min(1)
+  text: z.string().min(1),
+  isRepeating: z.boolean()
 })
 
 export type CreateReminderDto = z.infer<typeof createReminderSchema>
@@ -37,7 +38,8 @@ export class CoachingModule {
       id,
       interval: parsedData.interval,
       text: parsedData.text,
-      audioUrl: audioPath
+      audioUrl: audioPath,
+      isRepeating: parsedData.isRepeating
     })
 
     return saveResult.throwOrReturn(id)
@@ -51,7 +53,8 @@ export class CoachingModule {
     return reminders.map((reminder) => ({
       id: reminder.id,
       interval: reminder.interval,
-      text: reminder.text
+      text: reminder.text,
+      isRepeating: reminder.isRepeating
     }))
   }
 
@@ -65,9 +68,13 @@ export class CoachingModule {
 
   private async onProcessReminders(evt: GameTickEvent): Promise<void> {
     const reminders = await this._reminderRepository.all()
-    const dueReminders = reminders
-      .unwrap()
-      .filter((reminder) => evt.data.gameTime % reminder.interval === 0)
+    const dueReminders = reminders.unwrap().filter((reminder) => {
+      if (reminder.isRepeating) {
+        return evt.data.gameTime % reminder.interval === 0
+      }
+
+      return evt.data.gameTime === reminder.interval
+    })
 
     this._logger.info('Processing reminders', {
       gameTime: evt.data.gameTime,

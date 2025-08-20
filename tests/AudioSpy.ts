@@ -10,4 +10,9 @@ export class AudioSpy implements IAudioPlayer {
     this.lastCalledWith = audioName
     return Result.ok(undefined)
   }
+
+  public clear(): void {
+    this.totalCalls = 0
+    this.lastCalledWith = undefined
+  }
 }

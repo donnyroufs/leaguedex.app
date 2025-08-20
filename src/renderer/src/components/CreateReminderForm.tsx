@@ -2,7 +2,7 @@ import { JSX, useState } from 'react'
 import { Button } from './Button'
 
 type CreateReminderFormProps = {
-  onSubmit: (data: { text: string; interval: number }) => Promise<void>
+  onSubmit: (data: { text: string; interval: number; isRepeating: boolean }) => Promise<void>
   onCancel: () => void
   isLoading?: boolean
 }
@@ -14,6 +14,7 @@ export function CreateReminderForm({
 }: CreateReminderFormProps): JSX.Element {
   const [text, setText] = useState<string>('')
   const [interval, setInterval] = useState<string>('')
+  const [isRepeating, setIsRepeating] = useState<boolean>(true)
   const [errors, setErrors] = useState<{ text?: string; interval?: string }>({})
 
   const validateForm = (): boolean => {
@@ -46,7 +47,8 @@ export function CreateReminderForm({
     try {
       await onSubmit({
         text: text.trim(),
-        interval: Number(interval)
+        interval: Number(interval),
+        isRepeating
       })
     } catch (error) {
       console.error('Failed to create reminder:', error)
@@ -64,7 +66,7 @@ export function CreateReminderForm({
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="e.g., Check minimap every 30 seconds"
+          placeholder="e.g., Check minimap"
           className={`w-full px-4 py-3 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-border-accent focus:border-transparent transition-all duration-200 ${
             errors.text ? 'border-status-danger' : 'border-border-primary'
           }`}
@@ -91,6 +93,19 @@ export function CreateReminderForm({
           }`}
         />
         {errors.interval && <p className="mt-1 text-sm text-status-danger">{errors.interval}</p>}
+      </div>
+
+      <div className="flex items-center">
+        <input
+          id="reminder-repeatable"
+          type="checkbox"
+          checked={isRepeating}
+          onChange={(e) => setIsRepeating(e.target.checked)}
+          className="h-4 w-4 text-border-accent bg-bg-primary border-border-primary rounded focus:ring-border-accent focus:ring-2"
+        />
+        <label htmlFor="reminder-repeatable" className="ml-2 block text-sm text-text-primary">
+          Repeatable reminder
+        </label>
       </div>
 
       <div className="flex items-center justify-end gap-3 pt-4">

@@ -8,6 +8,7 @@ import { IReminderDto } from 'src/main/app/coaching/ReminderDto'
 import { useModal, useToast } from '../hooks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { useLoaderData, useRevalidator } from 'react-router'
+import { CreateReminderDto } from 'src/main/app/coaching'
 
 type LoaderData = {
   reminders: IReminderDto[]
@@ -20,7 +21,17 @@ export function RemindersPage(): JSX.Element {
   const { revalidate } = useRevalidator()
   const toast = useToast()
 
-  const handleCreateReminder = async (data: { text: string; interval: number }): Promise<void> => {
+  const formatIntervalDisplay = (interval: number, isRepeating: boolean): string => {
+    if (isRepeating) {
+      return `Every ${interval} seconds`
+    }
+
+    const minutes = Math.floor(interval / 60)
+    const seconds = interval % 60
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  const handleCreateReminder = async (data: CreateReminderDto): Promise<void> => {
     setIsCreating(true)
     try {
       await window.api.app.addReminder(data)
@@ -63,7 +74,9 @@ export function RemindersPage(): JSX.Element {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-text-primary font-medium">{reminder.text}</p>
-                    <p className="text-text-tertiary text-sm">Every {reminder.interval} seconds</p>
+                    <p className="text-text-tertiary text-sm">
+                      {formatIntervalDisplay(reminder.interval, reminder.isRepeating)}
+                    </p>
                   </div>
                 </div>
               </div>
