@@ -48,10 +48,10 @@ export class TextToSpeech implements ITextToSpeech {
         throw new Error(`Unsupported platform: ${this._platform}`)
       }
 
-      this._logger.info(`TTS audio saved to ${outputPath}`)
+      this._logger.info('TTS audio saved to', { outputPath })
       return Result.ok(outputPath)
     } catch (err) {
-      this._logger.error(`TTS generation failed: ${(err as Error).message}`)
+      this._logger.error('TTS generation failed', { err })
       return Result.err(err as Error)
     }
   }
