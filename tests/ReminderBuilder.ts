@@ -12,7 +12,9 @@ export class ReminderBuilder {
     return {
       id: crypto.randomUUID(),
       interval: 1000,
-      text: this._text
+      text: this._text,
+      triggerType: 'interval',
+      audioUrl: 'https://example.com/audio.mp3'
     }
   }
 }
