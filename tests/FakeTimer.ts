@@ -29,4 +29,10 @@ export class FakeTimer implements ITimer {
       await this._callback()
     }
   }
+
+  public async advanceTicks(ticks: number): Promise<void> {
+    for (let i = 0; i < ticks; i++) {
+      await this.tick()
+    }
+  }
 }

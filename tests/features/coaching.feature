@@ -11,10 +11,12 @@ Feature: Coaching
 
   Scenario: No reminder when no game is running
     And we are not in a League of Legends match
-    When 120 seconds pass
+    When 60 seconds pass
     Then no audio should play
 
-  Scenario: Single time-based reminder works
+  Scenario: Repeatable time-based reminder works
     And we are in a League of Legends match at 0 seconds
     When 60 seconds pass in game time
     Then I should hear the audio "reminder_map.mp3"
+    And 120 seconds pass in game time
+    Then I should hear the audio "reminder_map.mp3" again

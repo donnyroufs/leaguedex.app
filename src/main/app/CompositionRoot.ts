@@ -19,6 +19,7 @@ import {
 import path from 'path'
 import { ElectronLogger } from './shared-kernel/ElectronLogger'
 import { ILogger } from './shared-kernel/ILogger'
+import { FakeReminderRepository } from './coaching/FakeReminderRepository'
 
 type AppDependencies = {
   eventBus: IEventBus
@@ -50,8 +51,14 @@ export async function createApp(
   const gameDetectionService = new GameDetectionService(eventBus, riotApi, timer, logger)
 
   // Modules
-  const reminderRepository =
-    overrides.reminderRepository ?? (await FileSystemReminderRepository.create(dataPath))
+  let reminderRepository: IReminderRepository
+
+  if (isProd && overrides.reminderRepository == null) {
+    reminderRepository = await FileSystemReminderRepository.create(dataPath)
+  } else {
+    reminderRepository = overrides.reminderRepository ?? new FakeReminderRepository()
+  }
+
   const coachingModule = new CoachingModule(reminderRepository)
 
   if (isPackaged) {
