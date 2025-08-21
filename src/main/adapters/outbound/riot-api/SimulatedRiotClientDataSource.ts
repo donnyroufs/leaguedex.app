@@ -32,6 +32,34 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
     return Result.ok(this._response)
   }
 
+  public simulateObjectiveDeath(objective: string, deathTime: number): void {
+    if (this._response == null) {
+      throw new Error('Game not started')
+    }
+
+    if (this._response instanceof Error) {
+      throw this._response
+    }
+
+    switch (objective) {
+      case 'dragon':
+        this._response.events.Events.push({
+          EventID: this._response.events.Events.length + 1,
+          EventName: 'DragonKill',
+          EventTime: deathTime
+        })
+        break
+      case 'baron':
+        this._response.events.Events.push({
+          EventID: this._response.events.Events.length + 1,
+          EventName: 'BaronKill',
+          EventTime: deathTime
+        })
+        break
+      default:
+    }
+  }
+
   public startGame(): void {
     this._response = this.createSampleResponse()
   }
@@ -268,12 +296,10 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
 
   public simulatePlayerDeath(respawnTimer: number): void {
     if (this._response == null) {
-      console.log('Game not started')
       throw new Error('Game not started')
     }
 
     if (this._response instanceof Error) {
-      console.log('Game ended')
       throw this._response
     }
 

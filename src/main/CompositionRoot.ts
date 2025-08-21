@@ -3,7 +3,7 @@ import path from 'path'
 import { app, type IpcMain } from 'electron'
 
 import { FileSystemReminderRepository, FakeReminderRepository } from './adapters/outbound'
-import { IReminderRepository } from './hexagon'
+import { GameObjectiveTracker, IReminderRepository } from './hexagon'
 import { App } from './Leaguedex'
 import { ElectronAdapter } from './adapters/inbound'
 import { EventBus } from './adapters/outbound'
@@ -76,10 +76,12 @@ export async function createApp(
   const tts =
     overrides.tts ?? (await TextToSpeech.create(logger, path.join(dataPath, 'audio'), platform))
 
+  const gameObjectiveTracker = new GameObjectiveTracker()
   const remindersGameTickListener = new RemindersGameTickListener(
     reminderRepository,
     audioPlayer,
-    logger
+    logger,
+    gameObjectiveTracker
   )
   const createReminderUseCase = new CreateReminderUseCase(tts, reminderRepository)
   const getRemindersUseCase = new GetRemindersUseCase(reminderRepository)

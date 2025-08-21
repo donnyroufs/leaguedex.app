@@ -22,3 +22,5 @@ export * from './CreateReminderUseCase'
 export * from './GetRemindersUseCase'
 export * from './RemindersGameTickListener'
 export * from './GameDetectionService'
+
+export * from './GameObjectiveTracker'

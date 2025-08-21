@@ -1,9 +1,16 @@
-import { GameEvent, GameStartedEvent, Player } from '../../../hexagon'
+import {
+  BaronKilledEvent,
+  DragonKilledEvent,
+  GameEvent,
+  GameStartedEvent,
+  Player
+} from '../../../hexagon'
 import { IRiotClientDataSource, LiveGameData, RiotGameEvent } from './IRiotClientDataSource'
 import { Result } from '../../../shared-kernel'
 import { GameState } from '../../../hexagon'
 import { GetGameStateResult } from '../../../hexagon'
 
+// https://static.developer.riotgames.com/docs/lol/liveclientdata_events.json
 export class RiotApi {
   public constructor(private readonly _dataSource: IRiotClientDataSource) {}
 
@@ -32,9 +39,7 @@ export class RiotApi {
       respawnsIn: Math.round(player.respawnTimer) || null
     }
 
-    const events = rawGameState.events.Events.map((evt) =>
-      this.transformEvent(evt, rawGameState)
-    ).filter(Boolean) as GameEvent<unknown>[]
+    const events = rawGameState.events.Events.map(this.transformEvent).filter(Boolean)
 
     return new GameState(
       rawGameState.gameData.gameTime,
@@ -43,15 +48,21 @@ export class RiotApi {
     )
   }
 
-  private transformEvent(
-    evt: RiotGameEvent,
-    rawGameState: LiveGameData
-  ): GameEvent<unknown> | null {
+  // TODO: regression test that we pass the right gametime. It should be from the event not the state.
+  private transformEvent(evt: RiotGameEvent): GameEvent<unknown> | null {
     switch (evt.EventName) {
       case 'GameStart':
         return new GameStartedEvent(evt.EventID, {
           // TODO: check if we should floor/round or even ceil this
-          gameTime: Math.round(rawGameState.gameData.gameTime)
+          gameTime: Math.round(evt.EventTime)
+        })
+      case 'DragonKill':
+        return new DragonKilledEvent(evt.EventID, {
+          gameTime: Math.round(evt.EventTime)
+        })
+      case 'BaronKill':
+        return new BaronKilledEvent(evt.EventID, {
+          gameTime: Math.round(evt.EventTime)
         })
       default:
         // TODO: handle other events

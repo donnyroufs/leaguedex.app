@@ -15,7 +15,7 @@ export interface IRiotClientDataSource {
 
 // TODO: probably need to map different data types based on name
 export type RiotGameEvent = {
-  readonly EventID: 0
+  readonly EventID: number
   readonly EventName: 'DragonKill' | 'HeraldKill' | 'BaronKill' | 'GameStart' | 'MinionsSpawning'
   /**
    * Seems like riot sends a floating point number, but we should just floor it and use it as seconds.

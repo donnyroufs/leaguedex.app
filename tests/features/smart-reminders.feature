@@ -45,3 +45,34 @@ Feature: Coaching - Smart Reminders
     When the player dies again with a "15" seconds death timer
     Then I should hear the audio "play_safer_now" again
 
+  Scenario Outline: Reminder before spawning objective
+    Given I have a reminder configured:
+      | text                | triggerType | objective   | beforeObjective |
+      | <objective> spawn   | objective   | <objective> | 30              |
+    And we are in a League of Legends match
+    When "<time>" seconds pass in game time
+    Then I should hear the audio "<objective>_spawn"
+    When the <objective> has died at "<death_time>" seconds
+    And "<next_time>" seconds pass in game time
+    Then I should hear the audio "<objective>_spawn" again
+
+    Examples:
+      | objective | time | next_time | death_time |
+      | dragon    | 270  | 575       | 305        |
+      | baron     | 1470 | 1835      | 1505       |
+
+  Scenario Outline: Reminder before spawning one-time objective
+    Given I have a reminder configured:
+      | text                | triggerType | objective   | beforeObjective |
+      | <objective> spawn   | objective   | <objective> | 30              |
+    And we are in a League of Legends match
+    When "<time>" seconds pass in game time
+    Then I should hear the audio "<objective>_spawn"
+    When "<next_time>" seconds pass in game time
+    Then I should not hear the audio "<objective>_spawn" again
+
+    Examples:
+      | objective | time | next_time |
+      | herald    | 870  | 0         |
+      | grubs     | 450  | 0         |
+      | atakhan   | 1170 | 0         |

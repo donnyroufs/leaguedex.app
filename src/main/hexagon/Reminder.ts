@@ -4,7 +4,8 @@
  * - `oneTime`: Reminder that triggers at a specific time.
  * - `event`: Reminder that triggers when a specific event occurs.
  */
-export type ReminderTriggerType = 'interval' | 'oneTime' | 'event'
+export type ReminderTriggerType = 'interval' | 'oneTime' | 'event' | 'objective'
+export type ReminderObjective = 'dragon' | 'baron'
 
 export type Reminder = {
   id: string
@@ -14,4 +15,6 @@ export type Reminder = {
   interval?: number
   triggerAt?: number
   event?: string
+  objective?: ReminderObjective
+  beforeObjective?: number
 }

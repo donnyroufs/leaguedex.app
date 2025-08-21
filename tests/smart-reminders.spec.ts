@@ -26,7 +26,8 @@ describeFeature(
     BeforeEachScenario,
     AfterEachScenario,
     Background,
-    Scenario
+    Scenario,
+    ScenarioOutline
   }) => {
     let app!: App
     let fakeReminderRepository!: FakeReminderRepository
@@ -45,10 +46,12 @@ describeFeature(
     async function createReminder(data: CreateReminderDto): Promise<string> {
       const reminderData: {
         text: string
-        triggerType: 'interval' | 'oneTime' | 'event'
+        triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
         interval?: number
         triggerAt?: number
         event?: string
+        objective?: 'dragon' | 'baron'
+        beforeObjective?: number
       } = {
         text: data.text,
         triggerType: data.triggerType
@@ -60,6 +63,13 @@ describeFeature(
         reminderData.triggerAt = Number(data.triggerAt)
       } else if (data.triggerType === 'event' && data.event) {
         reminderData.event = data.event
+      } else if (
+        data.triggerType === 'objective' &&
+        data.objective != null &&
+        data.beforeObjective != null
+      ) {
+        reminderData.objective = data.objective
+        reminderData.beforeObjective = Number(data.beforeObjective)
       }
 
       return app.addReminder(reminderData)
@@ -226,5 +236,85 @@ describeFeature(
         expect(audioPlayer.lastCalledWith).toContain(audio)
       })
     })
+
+    ScenarioOutline(
+      `Reminder before spawning objective`,
+      ({ Given, When, Then, And }, variables) => {
+        Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
+          const transformedData = {
+            ...data,
+            text: replace(data.text, variables),
+            objective: variables.objective,
+            beforeObjective: Number(data.beforeObjective)
+          }
+          const createdReminderId = await createReminder(transformedData)
+
+          const reminders = await app.getReminders()
+          expect(reminders).toHaveLength(1)
+          expect(reminders[0].id).toBe(createdReminderId)
+        })
+
+        And(`we are in a League of Legends match`, () => {
+          dataSource.setGameStarted()
+        })
+
+        When(`"<time>" seconds pass in game time`, async () => {
+          await advanceGameTicks(Number(variables.time))
+        })
+
+        Then(`I should hear the audio "<objective>_spawn"`, () => {
+          expect(audioPlayer.totalCalls).toBe(1)
+        })
+
+        When(`the <objective> has died at "<death_time>" seconds`, async () => {
+          dataSource.simulateObjectiveDeath(variables.objective, Number(variables.death_time))
+        })
+
+        And(`"<next_time>" seconds pass in game time`, async () => {
+          await advanceGameTicks(Number(variables.next_time))
+        })
+
+        Then(`I should hear the audio "<objective>_spawn" again`, () => {
+          expect(audioPlayer.totalCalls).toBe(2)
+        })
+      }
+    )
+
+    ScenarioOutline.skip(
+      `Reminder before spawning one-time objective`,
+      ({ Given, When, Then, And }, variables) => {
+        Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
+          const createdReminderId = await createReminder(data)
+
+          const reminders = await app.getReminders()
+          expect(reminders).toHaveLength(1)
+          expect(reminders[0].id).toBe(createdReminderId)
+        })
+
+        And(`we are in a League of Legends match`, () => {
+          dataSource.setGameStarted()
+        })
+
+        When(`"<time>" seconds pass in game time`, async () => {
+          await advanceGameTicks(Number(variables.time))
+        })
+
+        Then(`I should hear the audio "<objective>_spawn"`, () => {
+          expect(audioPlayer.totalCalls).toBe(1)
+        })
+
+        When(`"<next_time>" seconds pass in game time`, () => {
+          advanceGameTicks(Number(variables.next_time))
+        })
+
+        Then(`I should not hear the audio "<objective>_spawn" again`, () => {
+          expect(audioPlayer.totalCalls).toBe(1)
+        })
+      }
+    )
   }
 )
+
+function replace(key: string, variables: Record<string, string>): string {
+  return key.replace(/<([^>]+)>/g, (_, p1) => variables[p1] || '')
+}
