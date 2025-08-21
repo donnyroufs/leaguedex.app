@@ -28,8 +28,8 @@ export class RiotApi {
     const domainPlayer: Player = {
       summonerName: player.summonerName,
       isAlive: !player.isDead,
-      // TODO: do we need to floor this?
-      respawnsIn: Math.floor(player.respawnTimer) || null
+      // TODO: check if we should floor/round or even ceil this
+      respawnsIn: Math.round(player.respawnTimer) || null
     }
 
     const events = rawGameState.events.Events.map((evt) =>
@@ -50,8 +50,8 @@ export class RiotApi {
     switch (evt.EventName) {
       case 'GameStart':
         return new GameStartedEvent(evt.EventID, {
-          // TODO: make sure we test this Floor
-          gameTime: Math.floor(rawGameState.gameData.gameTime)
+          // TODO: check if we should floor/round or even ceil this
+          gameTime: Math.round(rawGameState.gameData.gameTime)
         })
       default:
         // TODO: handle other events
