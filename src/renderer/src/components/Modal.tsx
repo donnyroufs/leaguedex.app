@@ -46,13 +46,13 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps): JSX.Ele
       />
       <div
         ref={modalRef}
-        className="relative w-full max-w-2xl mx-4 bg-bg-secondary border border-border-primary rounded-xl shadow-2xl"
+        className="relative w-full max-w-6xl mx-4 bg-bg-secondary border border-border-primary rounded-xl shadow-2xl max-h-[90vh] flex flex-col"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         tabIndex={-1}
       >
-        <div className="flex items-center justify-between p-6 border-b border-border-primary">
+        <div className="flex items-center justify-between p-6 border-b border-border-primary flex-shrink-0">
           <h2 id="modal-title" className="text-lg font-semibold text-text-primary">
             {title}
           </h2>
@@ -64,7 +64,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps): JSX.Ele
             <X size={20} />
           </button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   )

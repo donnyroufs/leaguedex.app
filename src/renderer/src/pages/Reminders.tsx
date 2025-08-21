@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Bell, Plus } from 'lucide-react'
+import { Bell, Plus, Clock, Zap, Target, Timer } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -21,6 +21,25 @@ export function RemindersPage(): JSX.Element {
   const { revalidate } = useRevalidator()
   const toast = useToast()
 
+  const getReminderIcon = (triggerType: IReminderDto['triggerType']): JSX.Element => {
+    switch (triggerType) {
+      case 'interval':
+        return <Timer className="w-4 h-4 text-info" />
+      case 'oneTime':
+        return <Clock className="w-4 h-4 text-success" />
+      case 'event':
+        return <Zap className="w-4 h-4 text-warning" />
+      case 'objective':
+        return <Target className="w-4 h-4 text-premium" />
+      default:
+        return <Bell className="w-4 h-4 text-neutral" />
+    }
+  }
+
+  const getReminderColor = (): string => {
+    return 'border-border-primary'
+  }
+
   const formatTriggerDisplay = (reminder: IReminderDto): string => {
     if (reminder.triggerType === 'interval' && reminder.interval) {
       return `Every ${reminder.interval} seconds`
@@ -36,7 +55,27 @@ export function RemindersPage(): JSX.Element {
       return `On ${reminder.event}`
     }
 
+    if (reminder.triggerType === 'objective' && reminder.objective && reminder.beforeObjective) {
+      const objectiveName = reminder.objective === 'dragon' ? 'Dragon' : 'Baron'
+      return `${reminder.beforeObjective} seconds before ${objectiveName} spawns`
+    }
+
     return 'Unknown trigger'
+  }
+
+  const getTriggerTypeLabel = (triggerType: IReminderDto['triggerType']): string => {
+    switch (triggerType) {
+      case 'interval':
+        return 'Interval'
+      case 'oneTime':
+        return 'One-time'
+      case 'event':
+        return 'Event'
+      case 'objective':
+        return 'Objective'
+      default:
+        return 'Unknown'
+    }
   }
 
   const handleCreateReminder = async (data: CreateReminderDto): Promise<void> => {
@@ -56,14 +95,14 @@ export function RemindersPage(): JSX.Element {
 
   return (
     <PageWrapper>
-      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
+      <div className="flex items-center justify-between p-8 border-b border-border-primary">
         <h1 className="text-2xl font-semibold text-text-primary">Reminders</h1>
         <Button onClick={onOpen} size="md">
           <Plus size={16} className="mr-2" />
           Add Reminder
         </Button>
       </div>
-      <div className="flex-1 overflow-y-auto min-h-0 p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto min-h-0 p-8">
         {reminders.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <EmptyState
@@ -73,20 +112,48 @@ export function RemindersPage(): JSX.Element {
             />
           </div>
         ) : (
-          <div className="w-full max-w-4xl space-y-4">
-            {reminders.map((reminder) => (
-              <div
-                key={reminder.id}
-                className="bg-bg-secondary border border-border-primary rounded-lg p-4 hover:border-border-accent transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-text-primary font-medium">{reminder.text}</p>
-                    <p className="text-text-tertiary text-sm">{formatTriggerDisplay(reminder)}</p>
+          <div className="w-full max-w-7xl mx-auto">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {reminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  className={`relative border rounded-lg bg-bg-secondary ${getReminderColor()}`}
+                >
+                  <div className="p-5">
+                    <div className="flex items-center space-x-4 mb-6">
+                      <div className="flex-shrink-0 w-12 h-12 bg-bg-primary rounded-xl flex items-center justify-center border border-border-primary/20">
+                        {getReminderIcon(reminder.triggerType)}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">
+                          {getTriggerTypeLabel(reminder.triggerType)}
+                        </span>
+                        <div className="w-6 h-px bg-current opacity-30 mt-1.5"></div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-text-primary font-semibold text-lg leading-tight">
+                        {reminder.text}
+                      </h3>
+                      <div className="flex items-center space-x-2.5 text-text-secondary">
+                        <Timer className="w-3.5 h-3.5 text-text-tertiary" />
+                        <span className="text-sm font-medium">
+                          {formatTriggerDisplay(reminder)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-border-primary/20">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-info/80"></div>
+                        <span className="text-xs text-text-tertiary font-medium">Active</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

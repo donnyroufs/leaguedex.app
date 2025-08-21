@@ -16,7 +16,9 @@ export class GetRemindersUseCase implements IUseCase<void, IReminderDto[]> {
       triggerType: reminder.triggerType,
       interval: reminder.interval,
       triggerAt: reminder.triggerAt,
-      event: reminder.event
+      event: reminder.event,
+      objective: reminder.objective,
+      beforeObjective: reminder.beforeObjective
     }))
   }
 }

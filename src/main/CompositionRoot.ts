@@ -56,7 +56,7 @@ export async function createApp(
     overrides.dataSource ??
     (isProd
       ? new RiotClientDataSource()
-      : SimulatedRiotClientDataSource.createAndStartGame(overrides.endTimer ?? 60))
+      : SimulatedRiotClientDataSource.createAndStartGame(overrides.endTimer ?? 600))
   const riotApi = new RiotApi(dataSource)
   const notifyElectron = overrides.notifyElectron ?? new NotifyElectron()
 
