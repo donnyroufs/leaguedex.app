@@ -63,7 +63,11 @@ export class GameDetectionService {
   }
 
   private shouldStartGame(result: GetGameStateResult): boolean {
-    return !this._gameStarted && result.isOk()
+    return (
+      !this._gameStarted &&
+      result.isOk() &&
+      result.getValue().events.some((x) => x.eventType === 'game-started')
+    )
   }
 
   private shouldPublishGameTick(result: GetGameStateResult): boolean {

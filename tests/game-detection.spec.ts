@@ -35,6 +35,17 @@ describe('Game Detection Service', () => {
     expect(eventBus.hasAllEventsInOrder(['game-started'])).toBe(true)
   })
 
+  test('should not detect game start when game-started event is not present', async () => {
+    const { sut, eventBus, timer, dataSource } = createSut()
+
+    dataSource.gameStateWithoutEvents()
+    sut.start()
+    await timer.tick()
+
+    expect(eventBus.totalCalls).toEqual(0)
+    expect(eventBus.events.length).toEqual(0)
+  })
+
   test('should detect game end', async () => {
     const { sut, eventBus, timer, dataSource } = createSut()
 

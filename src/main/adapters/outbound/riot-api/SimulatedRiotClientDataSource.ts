@@ -353,6 +353,12 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
     return source
   }
 
+  public gameStateWithoutEvents(): void {
+    const resp = this.createSampleResponse()
+    resp.events.Events = []
+    this._response = resp
+  }
+
   public static createForTests(
     endTimer: number = 99999,
     startTimer: number = 0
