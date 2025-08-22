@@ -137,4 +137,58 @@ describe('GameObjectiveTracker', () => {
     expect(baron.isAlive).toBe(true)
     expect(baron.nextSpawn).toBe(null)
   })
+
+  test.each([['grubs'], ['herald'], ['atakhan']])(
+    'The %s should not be alive at the start of the game',
+    (objective) => {
+      const state = new GameStateBuilder().withGameTime(0)
+
+      sut.track(state.build())
+      const objectiveState = sut.getState()
+
+      expect(objectiveState[objective].isAlive).toBe(false)
+
+      sut.track(state.withGameTime(60).build())
+
+      expect(objectiveState[objective].isAlive).toBe(false)
+    }
+  )
+
+  test.each([
+    ['grubs', 480],
+    ['herald', 900],
+    ['atakhan', 1200]
+  ])('The %s should be alive after %s seconds', (objective, spawnTime) => {
+    const state = new GameStateBuilder().withGameTime(spawnTime)
+
+    sut.track(state.build())
+
+    const objectiveState = sut.getState()
+
+    expect(objectiveState[objective].isAlive).toBe(true)
+    expect(objectiveState[objective].nextSpawn).toBe(null)
+  })
+
+  test.each([
+    ['grubs', 480, 900],
+    ['herald', 900, 1500] // 1500 is baron timer, which will replace herald
+  ])(
+    'Sets %s automatically to died if the next spawn for the next related objective happened',
+    (objective, spawnTime, nextObjective) => {
+      const state = new GameStateBuilder().withGameTime(spawnTime)
+
+      sut.track(state.build()) // Now the objective is alive
+
+      sut.track(state.withGameTime(nextObjective).build())
+
+      const objectiveState = sut.getState()
+
+      expect(objectiveState[objective].isAlive).toBe(false)
+      expect(objectiveState[objective].nextSpawn).toBe(null)
+    }
+  )
+
+  test.todo('only spawns once, we need to replace X and Y')
+  // TODO: belongs somewhere else
+  test.todo('should reset per game')
 })

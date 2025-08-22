@@ -10,7 +10,7 @@ const createReminderSchema = z.object({
   interval: z.number().min(1).optional(),
   triggerAt: z.number().min(0).optional(),
   event: z.string().optional(),
-  objective: z.enum(['dragon', 'baron']).optional(),
+  objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
   beforeObjective: z.number().min(0).optional()
 })
 

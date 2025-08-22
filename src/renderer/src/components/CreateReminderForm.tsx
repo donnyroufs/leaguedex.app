@@ -9,7 +9,7 @@ type CreateReminderFormProps = {
     interval?: number
     triggerAt?: number
     event?: string
-    objective?: 'dragon' | 'baron'
+    objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
     beforeObjective?: number
   }) => Promise<void>
   onCancel: () => void
@@ -28,7 +28,9 @@ export function CreateReminderForm({
   const [interval, setInterval] = useState<string>('')
   const [triggerAt, setTriggerAt] = useState<string>('')
   const [event, setEvent] = useState<string>('')
-  const [objective, setObjective] = useState<'dragon' | 'baron'>('dragon')
+  const [objective, setObjective] = useState<'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'>(
+    'dragon'
+  )
   const [beforeObjective, setBeforeObjective] = useState<string>('')
   const [errors, setErrors] = useState<{
     text?: string
@@ -266,16 +268,14 @@ export function CreateReminderForm({
           {triggerType === 'interval' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-xl font-semibold text-text-primary">Interval Settings</h3>
-                <p className="text-sm text-text-tertiary mt-1">
-                  How often should this reminder repeat?
-                </p>
+                <h3 className="text-lg font-semibold text-text-primary">Interval Settings</h3>
+                <p className="text-sm text-text-tertiary">How often should this reminder repeat?</p>
               </div>
 
               <div>
                 <label
                   htmlFor="reminder-interval"
-                  className="block text-sm font-medium text-text-primary mb-2.5"
+                  className="block text-sm font-medium text-text-primary mb-2"
                 >
                   Interval (seconds)
                 </label>
@@ -286,19 +286,19 @@ export function CreateReminderForm({
                   onChange={(e) => setInterval(e.target.value)}
                   placeholder="60"
                   min="1"
-                  className={`w-full px-4 py-3.5 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info/40 transition-all duration-200 ${
+                  className={`w-full px-4 py-3 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info/40 transition-all duration-200 ${
                     errors.interval ? 'border-status-danger' : 'border-border-primary'
                   }`}
                 />
                 {errors.interval && (
-                  <p className="mt-2.5 text-sm text-status-danger">{errors.interval}</p>
+                  <p className="mt-2 text-sm text-status-danger">{errors.interval}</p>
                 )}
               </div>
             </div>
           )}
 
           {triggerType === 'oneTime' && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Timing Settings</h3>
                 <p className="text-sm text-text-tertiary">
@@ -332,7 +332,7 @@ export function CreateReminderForm({
           )}
 
           {triggerType === 'event' && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Event Settings</h3>
                 <p className="text-sm text-text-tertiary">
@@ -363,7 +363,7 @@ export function CreateReminderForm({
           )}
 
           {triggerType === 'objective' && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Objective Settings</h3>
                 <p className="text-sm text-text-tertiary">
@@ -382,11 +382,18 @@ export function CreateReminderForm({
                   <select
                     id="reminder-objective"
                     value={objective}
-                    onChange={(e) => setObjective(e.target.value as 'dragon' | 'baron')}
+                    onChange={(e) =>
+                      setObjective(
+                        e.target.value as 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+                      )
+                    }
                     className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-premium/20 focus:border-premium/40 transition-all duration-200"
                   >
                     <option value="dragon">Dragon</option>
                     <option value="baron">Baron</option>
+                    <option value="grubs">Grubs</option>
+                    <option value="herald">Herald</option>
+                    <option value="atakhan">Atakhan</option>
                   </select>
                 </div>
 

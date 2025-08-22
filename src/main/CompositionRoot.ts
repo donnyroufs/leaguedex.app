@@ -39,6 +39,7 @@ type AppDependencies = {
   audioPlayer: IAudioPlayer
   tts: ITextToSpeech
   endTimer: number
+  gameObjectiveTracker: GameObjectiveTracker
 }
 
 export async function createApp(
@@ -76,7 +77,7 @@ export async function createApp(
   const tts =
     overrides.tts ?? (await TextToSpeech.create(logger, path.join(dataPath, 'audio'), platform))
 
-  const gameObjectiveTracker = new GameObjectiveTracker()
+  const gameObjectiveTracker = overrides.gameObjectiveTracker ?? new GameObjectiveTracker()
   const remindersGameTickListener = new RemindersGameTickListener(
     reminderRepository,
     audioPlayer,

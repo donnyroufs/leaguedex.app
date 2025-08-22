@@ -5,7 +5,7 @@
  * - `event`: Reminder that triggers when a specific event occurs.
  */
 export type ReminderTriggerType = 'interval' | 'oneTime' | 'event' | 'objective'
-export type ReminderObjective = 'dragon' | 'baron'
+export type ReminderObjective = 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
 
 export type Reminder = {
   id: string

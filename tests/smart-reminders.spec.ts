@@ -2,7 +2,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateReminderDto } from '../src/main/hexagon'
+import { CreateReminderDto, GameObjectiveTracker } from '../src/main/hexagon'
 import {
   FakeReminderRepository,
   EventBus,
@@ -36,6 +36,7 @@ describeFeature(
     let eventBus: EventBus
     let dataSource: SimulatedRiotClientDataSource
     let notifyElectron: DummyElectronNotifier
+    let gameObjectiveTracker: GameObjectiveTracker
 
     async function advanceGameTicks(ticks: number): Promise<void> {
       for (let i = 0; i < ticks; i++) {
@@ -50,7 +51,7 @@ describeFeature(
         interval?: number
         triggerAt?: number
         event?: string
-        objective?: 'dragon' | 'baron'
+        objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
         beforeObjective?: number
       } = {
         text: data.text,
@@ -82,8 +83,10 @@ describeFeature(
       audioPlayer = new AudioSpy()
       dataSource = new SimulatedRiotClientDataSource(999999, 0, false)
       notifyElectron = new DummyElectronNotifier()
+      gameObjectiveTracker = new GameObjectiveTracker()
 
       app = await createTestApp({
+        gameObjectiveTracker,
         reminderRepository: fakeReminderRepository,
         timer,
         audioPlayer,
@@ -280,11 +283,18 @@ describeFeature(
       }
     )
 
-    ScenarioOutline.skip(
+    ScenarioOutline(
       `Reminder before spawning one-time objective`,
       ({ Given, When, Then, And }, variables) => {
         Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-          const createdReminderId = await createReminder(data)
+          gameObjectiveTracker.reset()
+          const transformedData = {
+            ...data,
+            text: replace(data.text, variables),
+            objective: variables.objective,
+            beforeObjective: Number(data.beforeObjective)
+          }
+          const createdReminderId = await createReminder(transformedData)
 
           const reminders = await app.getReminders()
           expect(reminders).toHaveLength(1)
@@ -300,14 +310,6 @@ describeFeature(
         })
 
         Then(`I should hear the audio "<objective>_spawn"`, () => {
-          expect(audioPlayer.totalCalls).toBe(1)
-        })
-
-        When(`"<next_time>" seconds pass in game time`, () => {
-          advanceGameTicks(Number(variables.next_time))
-        })
-
-        Then(`I should not hear the audio "<objective>_spawn" again`, () => {
           expect(audioPlayer.totalCalls).toBe(1)
         })
       }

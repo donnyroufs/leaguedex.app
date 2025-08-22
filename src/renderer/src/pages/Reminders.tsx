@@ -40,7 +40,7 @@ export function RemindersPage(): JSX.Element {
     return 'border-border-primary'
   }
 
-  const formatTriggerDisplay = (reminder: IReminderDto): string => {
+  const formatTriggerDisplay = (reminder: IReminderDto): JSX.Element | string => {
     if (reminder.triggerType === 'interval' && reminder.interval) {
       return `Every ${reminder.interval} seconds`
     }
@@ -56,8 +56,16 @@ export function RemindersPage(): JSX.Element {
     }
 
     if (reminder.triggerType === 'objective' && reminder.objective && reminder.beforeObjective) {
-      const objectiveName = reminder.objective === 'dragon' ? 'Dragon' : 'Baron'
-      return `${reminder.beforeObjective} seconds before ${objectiveName} spawns`
+      const objectiveName = reminder.objective.charAt(0).toUpperCase() + reminder.objective.slice(1)
+      return (
+        <>
+          {reminder.beforeObjective} seconds before{' '}
+          <span className="font-semibold text-premium bg-premium/10 px-2 py-0.5 rounded-md">
+            {objectiveName}
+          </span>{' '}
+          spawns
+        </>
+      )
     }
 
     return 'Unknown trigger'

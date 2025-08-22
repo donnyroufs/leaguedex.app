@@ -33,15 +33,17 @@ export class RemindersGameTickListener {
       }
 
       if (reminder.triggerType === 'objective') {
-        if (reminder.objective === 'dragon' || reminder.objective === 'baron') {
-          const nextSpawn = this._gameObjectiveTracker.getNextSpawn(reminder.objective)
-
-          if (!nextSpawn) {
-            return false
-          }
-
-          return gameTime === nextSpawn - reminder.beforeObjective!
+        if (!reminder.objective) {
+          return false
         }
+
+        const nextSpawn = this._gameObjectiveTracker.getNextSpawn(reminder.objective)
+
+        if (!nextSpawn) {
+          return false
+        }
+
+        return gameTime === nextSpawn - reminder.beforeObjective!
       }
 
       return false

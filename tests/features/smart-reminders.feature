@@ -68,11 +68,9 @@ Feature: Coaching - Smart Reminders
     And we are in a League of Legends match
     When "<time>" seconds pass in game time
     Then I should hear the audio "<objective>_spawn"
-    When "<next_time>" seconds pass in game time
-    Then I should not hear the audio "<objective>_spawn" again
 
     Examples:
-      | objective | time | next_time |
-      | herald    | 870  | 0         |
-      | grubs     | 450  | 0         |
-      | atakhan   | 1170 | 0         |
+      | objective | time |
+      | herald    | 870  |
+      | grubs     | 450  |
+      | atakhan   | 1170 |

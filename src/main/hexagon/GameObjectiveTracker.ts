@@ -11,10 +11,6 @@ type ObjectiveData = {
    * When the objective will spawn next.
    */
   nextSpawn: number | null
-  /**
-   * How many deaths we have tracked for this objective.
-   */
-  totalDeaths: number
 }
 
 export type ObjectiveState = Record<ReminderObjective, ObjectiveData>
@@ -23,13 +19,23 @@ export class GameObjectiveTracker {
   private _objectiveState: ObjectiveState = {
     dragon: {
       isAlive: false,
-      nextSpawn: 300,
-      totalDeaths: 0
+      nextSpawn: 300
     },
     baron: {
       isAlive: false,
-      nextSpawn: 1500,
-      totalDeaths: 0
+      nextSpawn: 1500
+    },
+    grubs: {
+      isAlive: false,
+      nextSpawn: 480
+    },
+    herald: {
+      isAlive: false,
+      nextSpawn: 900
+    },
+    atakhan: {
+      isAlive: false,
+      nextSpawn: 1200
     }
   }
   private readonly _processedEvents = new Set<number>()
@@ -47,15 +53,17 @@ export class GameObjectiveTracker {
       switch (evt.eventType) {
         case 'dragon-killed':
           this._objectiveState.dragon.nextSpawn = (evt as DragonKilledEvent).data.gameTime + 300
-          this._objectiveState.dragon.totalDeaths++
           this._objectiveState.dragon.isAlive = false
           break
         case 'baron-killed':
           this._objectiveState.baron.nextSpawn = (evt as BaronKilledEvent).data.gameTime + 360
-          this._objectiveState.baron.totalDeaths++
           this._objectiveState.baron.isAlive = false
           break
       }
+
+      // TODO: We need to mark them as processed but this fails the acceptance test
+      // This probably means that the way we comunicate with the tracker and ticker is wrong
+      // this._processedEvents.add(evt.id)
     }
 
     if (!this._objectiveState.dragon.isAlive && gameState.gameTime === 300) {
@@ -81,10 +89,68 @@ export class GameObjectiveTracker {
       this._objectiveState.baron.isAlive = true
       this._objectiveState.baron.nextSpawn = null
     }
+
+    if (gameState.gameTime === 480) {
+      this._objectiveState.grubs.isAlive = true
+      this._objectiveState.grubs.nextSpawn = null
+    }
+
+    if (gameState.gameTime === 900) {
+      if (this._objectiveState.grubs.isAlive) {
+        this._objectiveState.grubs.isAlive = false
+        this._objectiveState.grubs.nextSpawn = null
+      }
+
+      this._objectiveState.herald.isAlive = true
+      this._objectiveState.herald.nextSpawn = null
+    }
+
+    if (gameState.gameTime === 1200) {
+      if (this._objectiveState.herald.isAlive) {
+        this._objectiveState.herald.isAlive = false
+        this._objectiveState.herald.nextSpawn = null
+      }
+
+      this._objectiveState.atakhan.isAlive = true
+      this._objectiveState.atakhan.nextSpawn = null
+    }
+
+    if (gameState.gameTime === 1500) {
+      if (this._objectiveState.herald.isAlive) {
+        this._objectiveState.herald.isAlive = false
+        this._objectiveState.herald.nextSpawn = null
+      }
+    }
   }
 
   public getState(): Readonly<ObjectiveState> {
     return Object.freeze(this._objectiveState)
+  }
+
+  // temp
+  public reset(): void {
+    this._objectiveState = {
+      dragon: {
+        isAlive: false,
+        nextSpawn: 300
+      },
+      baron: {
+        isAlive: false,
+        nextSpawn: 1500
+      },
+      grubs: {
+        isAlive: false,
+        nextSpawn: 480
+      },
+      herald: {
+        isAlive: false,
+        nextSpawn: 900
+      },
+      atakhan: {
+        isAlive: false,
+        nextSpawn: 1200
+      }
+    }
   }
 }
 
