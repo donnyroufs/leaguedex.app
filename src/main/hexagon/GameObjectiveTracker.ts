@@ -1,5 +1,6 @@
 import { BaronKilledEvent, DragonKilledEvent } from './events'
 import { GameState } from './GameState'
+import { ILogger } from './ports/ILogger'
 import { ReminderObjective } from './Reminder'
 import { Team } from './Team'
 
@@ -47,6 +48,8 @@ export class GameObjectiveTracker {
     blue: 0
   }
 
+  public constructor(private readonly _logger?: ILogger) {}
+
   public getNextSpawn(objective: ReminderObjective): number | null {
     return this._objectiveState[objective].nextSpawn
   }
@@ -64,6 +67,10 @@ export class GameObjectiveTracker {
 
           // Track team dragon kills using the Team type
           this._teamDragonKills[killedByTeam]++
+
+          this._logger?.info(`Dragon killed by ${killedByTeam}`, {
+            dragonKills: this._teamDragonKills
+          })
 
           // Check if we should transition to elder
           if (this._teamDragonKills.red >= 4 || this._teamDragonKills.blue >= 4) {
@@ -143,6 +150,10 @@ export class GameObjectiveTracker {
         this._objectiveState.herald.nextSpawn = null
       }
     }
+
+    this._logger?.info('Objective state', {
+      objectiveState: this._objectiveState
+    })
   }
 
   public getState(): Readonly<ObjectiveState> {

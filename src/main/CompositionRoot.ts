@@ -76,7 +76,7 @@ export async function createApp(
   const tts =
     overrides.tts ?? (await TextToSpeech.create(logger, path.join(dataPath, 'audio'), platform))
 
-  const gameObjectiveTracker = new GameObjectiveTracker()
+  const gameObjectiveTracker = new GameObjectiveTracker(logger)
   const remindersGameTickListener = new RemindersGameTickListener(
     reminderRepository,
     audioPlayer,
