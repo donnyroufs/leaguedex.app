@@ -23,7 +23,23 @@ export const Titlebar: React.FC<TitlebarProps> = ({ title }) => {
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <div className="flex-1 flex items-center px-4 cursor-default">
-        <span className="text-sm font-medium">{title}</span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 196 193"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M127.818 63.9331L114.588 91.0092C114.314 91.5691 114.317 92.2244 114.596 92.7817L163.857 191.305C164.196 191.982 164.889 192.41 165.646 192.41H192.756C194.245 192.41 195.212 190.842 194.543 189.512L131.402 63.9129C130.659 62.4346 128.545 62.4466 127.818 63.9331Z"
+            fill="#27909D"
+          />
+          <path
+            d="M119.009 166.971L131.282 192.199C131.329 192.297 131.258 192.41 131.15 192.41H3.23607C1.7493 192.41 0.782315 190.846 1.44722 189.516L94.4558 3.49856C95.1855 2.03927 97.2613 2.02057 98.0172 3.46648L112.246 30.6865C112.542 31.2539 112.549 31.9291 112.265 32.5026L47.4745 162.957C46.8142 164.286 47.7813 165.846 49.2657 165.846H117.21C117.976 165.846 118.674 166.283 119.009 166.971Z"
+            fill="#E2E2E2"
+          />
+        </svg>
+        <span className="text-sm font-medium ml-2">{title}</span>
       </div>
 
       <div
