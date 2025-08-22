@@ -74,3 +74,12 @@ Feature: Coaching - Smart Reminders
       | grubs     | 450  |
       | herald    | 870  |
       | atakhan   | 1170 |
+
+  Scenario: Elder dragon spawns after team reaches 4 dragon kills
+    Given I have a reminder configured:
+      | text                | triggerType | objective   | beforeObjective |
+      | Elder dragon spawn | objective   | dragon    | 30              |
+    And we are in a League of Legends match
+    When the red team has killed 4 dragons
+    And "360" seconds pass in game time
+    Then I should hear the audio "elder_dragon_spawn"

@@ -3,7 +3,8 @@ import {
   DragonKilledEvent,
   GameEvent,
   GameStartedEvent,
-  GameState
+  GameState,
+  Team
 } from './../src/main/hexagon'
 
 export class GameStateBuilder {
@@ -26,10 +27,11 @@ export class GameStateBuilder {
     return this
   }
 
-  public withDragonKilledEvent(killedAt: number): GameStateBuilder {
+  public withDragonKilledEvent(killedAt: number, killedByTeam: Team = 'red'): GameStateBuilder {
     this._events.push(
       new DragonKilledEvent(this.getNextId(), {
-        gameTime: killedAt
+        gameTime: killedAt,
+        killedByTeam
       })
     )
     return this

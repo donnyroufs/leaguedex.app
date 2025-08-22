@@ -13,6 +13,7 @@ export * from './Reminder'
 export * from './ReminderDto'
 export * from './GameState'
 export * from './Player'
+export * from './Team'
 
 // Events that adapters need
 export * from './events'

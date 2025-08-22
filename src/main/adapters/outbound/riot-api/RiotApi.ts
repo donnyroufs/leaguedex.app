@@ -3,7 +3,8 @@ import {
   DragonKilledEvent,
   GameEvent,
   GameStartedEvent,
-  Player
+  Player,
+  Team
 } from '../../../hexagon'
 import { IRiotClientDataSource, LiveGameData, RiotGameEvent } from './IRiotClientDataSource'
 import { Result } from '../../../shared-kernel'
@@ -39,7 +40,9 @@ export class RiotApi {
       respawnsIn: Math.round(player.respawnTimer) || null
     }
 
-    const events = rawGameState.events.Events.map(this.transformEvent).filter(Boolean)
+    const events = rawGameState.events.Events.map((evt) =>
+      this.transformEvent(evt, rawGameState)
+    ).filter(Boolean)
 
     return new GameState(
       rawGameState.gameData.gameTime,
@@ -49,7 +52,12 @@ export class RiotApi {
   }
 
   // TODO: regression test that we pass the right gametime. It should be from the event not the state.
-  private transformEvent(evt: RiotGameEvent): GameEvent<unknown> | null {
+  private transformEvent(evt: RiotGameEvent, data: LiveGameData): GameEvent<unknown> | null {
+    const teams = data.allPlayers.map((x) => ({
+      team: (x.team === 'CHAOS' ? 'red' : 'blue') as Team,
+      summonerName: x.summonerName
+    }))
+
     switch (evt.EventName) {
       case 'GameStart':
         return new GameStartedEvent(evt.EventID, {
@@ -58,7 +66,8 @@ export class RiotApi {
         })
       case 'DragonKill':
         return new DragonKilledEvent(evt.EventID, {
-          gameTime: Math.round(evt.EventTime)
+          gameTime: Math.round(evt.EventTime),
+          killedByTeam: teams.find((x) => x.summonerName === data.activePlayer.summonerName)!.team
         })
       case 'BaronKill':
         return new BaronKilledEvent(evt.EventID, {

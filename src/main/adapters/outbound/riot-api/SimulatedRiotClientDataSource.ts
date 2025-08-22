@@ -57,6 +57,7 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
         })
         break
       default:
+        throw new Error(`Unknown objective: ${objective}`)
     }
   }
 

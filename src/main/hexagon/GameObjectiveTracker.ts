@@ -1,6 +1,7 @@
 import { BaronKilledEvent, DragonKilledEvent } from './events'
 import { GameState } from './GameState'
 import { ReminderObjective } from './Reminder'
+import { Team } from './Team'
 
 type ObjectiveData = {
   /**
@@ -40,6 +41,12 @@ export class GameObjectiveTracker {
   }
   private readonly _processedEvents = new Set<number>()
 
+  // Use the existing Team type
+  private _teamDragonKills: Record<Team, number> = {
+    red: 0,
+    blue: 0
+  }
+
   public getNextSpawn(objective: ReminderObjective): number | null {
     return this._objectiveState[objective].nextSpawn
   }
@@ -51,10 +58,25 @@ export class GameObjectiveTracker {
       }
 
       switch (evt.eventType) {
-        case 'dragon-killed':
-          this._objectiveState.dragon.nextSpawn = (evt as DragonKilledEvent).data.gameTime + 300
+        case 'dragon-killed': {
+          const dragonEvent = evt as DragonKilledEvent
+          const killedByTeam = dragonEvent.data.killedByTeam
+
+          // Track team dragon kills using the Team type
+          this._teamDragonKills[killedByTeam]++
+
+          // Check if we should transition to elder
+          if (this._teamDragonKills.red >= 4 || this._teamDragonKills.blue >= 4) {
+            // Transition to elder dragon - 6 minute spawn
+            this._objectiveState.dragon.nextSpawn = dragonEvent.data.gameTime + 360
+          } else {
+            // Regular dragon - 5 minute spawn
+            this._objectiveState.dragon.nextSpawn = dragonEvent.data.gameTime + 300
+          }
+
           this._objectiveState.dragon.isAlive = false
           break
+        }
         case 'baron-killed':
           this._objectiveState.baron.nextSpawn = (evt as BaronKilledEvent).data.gameTime + 360
           this._objectiveState.baron.isAlive = false
@@ -124,7 +146,7 @@ export class GameObjectiveTracker {
   }
 
   public getState(): Readonly<ObjectiveState> {
-    return Object.freeze(this._objectiveState)
+    return Object.freeze({ ...this._objectiveState })
   }
 
   public reset(): void {
@@ -150,38 +172,10 @@ export class GameObjectiveTracker {
         nextSpawn: 1200
       }
     }
+
+    this._teamDragonKills = {
+      red: 0,
+      blue: 0
+    }
   }
 }
-
-/**
- *  dragon: {
-    name: 'Dragon',
-    respawnTimer: 300, // 5 minutes
-    firstSpawnTime: 300, // 5 minutes
-    doesRespawn: true
-  },
-  baron: {
-    name: 'Baron',
-    respawnTimer: 360, // 6 minutes
-    firstSpawnTime: 1500, // 25 minutes
-    doesRespawn: true
-  },
-  herald: {
-    name: 'Herald',
-    respawnTimer: null,
-    firstSpawnTime: 900, // 15 minutes
-    doesRespawn: false
-  },
-  voidGrubs: {
-    name: 'Void Grubs',
-    respawnTimer: null,
-    firstSpawnTime: 480, // 8 minutes
-    doesRespawn: false
-  },
-  atakhan: {
-    name: 'Atakhan',
-    respawnTimer: null,
-    firstSpawnTime: 1200, // 20 minutes
-    doesRespawn: false
-  }
- */

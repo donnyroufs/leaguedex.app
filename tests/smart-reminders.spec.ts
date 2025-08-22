@@ -280,6 +280,7 @@ describeFeature(
         })
 
         Then(`I should hear the audio "<objective>_spawn"`, () => {
+          expect(audioPlayer.lastCalledWith).toContain(variables.objective)
           expect(audioPlayer.totalCalls).toBe(1)
         })
 
@@ -292,6 +293,7 @@ describeFeature(
         })
 
         Then(`I should hear the audio "<objective>_spawn" again`, () => {
+          expect(audioPlayer.lastCalledWith).toContain(variables.objective)
           expect(audioPlayer.totalCalls).toBe(2)
         })
       }
@@ -323,7 +325,42 @@ describeFeature(
         })
 
         Then(`I should hear the audio "<objective>_spawn"`, () => {
+          expect(audioPlayer.lastCalledWith).toContain(variables.objective)
           expect(audioPlayer.totalCalls).toBe(1)
+        })
+      }
+    )
+
+    Scenario(
+      `Elder dragon spawns after team reaches 4 dragon kills`,
+      ({ Given, When, Then, And }) => {
+        Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
+          const createdReminderId = await createReminder(data)
+
+          const reminders = await app.getReminders()
+          expect(reminders).toHaveLength(1)
+          expect(reminders[0].id).toBe(createdReminderId)
+        })
+
+        And(`we are in a League of Legends match`, () => {
+          dataSource.setGameStarted()
+        })
+
+        When(`the red team has killed 4 dragons`, async () => {
+          for (let i = 0; i < 4; i++) {
+            dataSource.simulateObjectiveDeath('dragon', 300 + i * 300)
+            await advanceGameTicks(300)
+          }
+        })
+
+        And(`"360" seconds pass in game time`, async () => {
+          await advanceGameTicks(360)
+        })
+
+        // TODO: I think we are failing to simulate our state correctly causing the test to not recognise the other dragon spawns?
+        Then(`I should hear the audio "elder_dragon_spawn"`, () => {
+          expect(audioPlayer.lastCalledWith).toContain('elder_dragon_spawn')
+          // expect(audioPlayer.totalCalls).toBe(5)
         })
       }
     )

@@ -1,5 +1,11 @@
 import { Result } from '../../../shared-kernel'
 
+/**
+ * Chaos = red
+ * Order = blue
+ */
+export type RiotTeam = 'CHAOS' | 'ORDER'
+
 export type GetGameDataResult = Result<LiveGameData, Error>
 
 /**
@@ -120,7 +126,7 @@ export type AllPlayer = {
   readonly skinID: number
   readonly summonerName: string
   readonly summonerSpells: SummonerSpells
-  readonly team: string
+  readonly team: RiotTeam
 }
 
 export type Runes = {

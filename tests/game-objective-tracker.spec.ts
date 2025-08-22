@@ -1,13 +1,12 @@
-import { beforeEach } from 'node:test'
 import { GameObjectiveTracker } from './../src/main/hexagon'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, beforeEach } from 'vitest'
 import { GameStateBuilder } from './GameStateBuilder'
 
 describe('GameObjectiveTracker', () => {
-  let sut: GameObjectiveTracker = new GameObjectiveTracker()
+  const sut: GameObjectiveTracker = new GameObjectiveTracker()
 
   beforeEach(() => {
-    sut = new GameObjectiveTracker()
+    sut.reset()
   })
 
   test.each([
@@ -188,7 +187,25 @@ describe('GameObjectiveTracker', () => {
     }
   )
 
+  test('When the dragon has been killed four times by a given team, the next dragon should be an elder drake, meaning spawn times change', () => {
+    const gameState = new GameStateBuilder()
+      .withGameTime(0)
+      .withDragonKilledEvent(300, 'red')
+      .withDragonKilledEvent(600, 'red')
+      .withDragonKilledEvent(900, 'red')
+      .withDragonKilledEvent(1200, 'red')
+      .build()
+
+    sut.track(gameState)
+
+    const state = sut.getState()
+    const dragon = state.dragon
+
+    expect(dragon.nextSpawn).toBe(1560)
+  })
+
   test.todo('only spawns once, we need to replace X and Y')
+
   // TODO: belongs somewhere else
-  test.todo('should reset per game')
+  test.skip('should reset per game')
 })
