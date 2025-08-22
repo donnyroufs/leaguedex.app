@@ -153,7 +153,6 @@ export class GameObjectiveTracker {
 
   public reset(): void {
     this._processedEvents.clear()
-    this._transitionedToElderDragon = false
     this._objectiveState = {
       dragon: {
         isAlive: false,
