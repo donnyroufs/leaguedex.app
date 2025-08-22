@@ -71,6 +71,6 @@ Feature: Coaching - Smart Reminders
 
     Examples:
       | objective | time |
-      | herald    | 870  |
       | grubs     | 450  |
+      | herald    | 870  |
       | atakhan   | 1170 |

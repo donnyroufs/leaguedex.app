@@ -9,9 +9,9 @@ import { createAppAndStart } from './CompositionRoot'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1300,
     height: 800,
-    minWidth: 1200,
+    minWidth: 1300,
     minHeight: 800,
     maxWidth: 1600,
     maxHeight: 1000,

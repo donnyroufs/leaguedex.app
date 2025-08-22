@@ -15,9 +15,6 @@ export class RemindersGameTickListener {
   public async handle(evt: GameTickEvent): Promise<void> {
     const { gameTime } = evt.data.state
 
-    // TODO: Should not be here but for now it's the easiest way
-    this._gameObjectiveTracker.track(evt.data.state)
-
     const reminders = await this._reminderRepository.all()
     const dueReminders = reminders.unwrap().filter((reminder) => {
       if (reminder.triggerType === 'interval' && reminder.interval) {

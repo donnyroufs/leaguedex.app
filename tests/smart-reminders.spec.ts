@@ -2,7 +2,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateReminderDto, GameObjectiveTracker } from '../src/main/hexagon'
+import { CreateReminderDto } from '../src/main/hexagon'
 import {
   FakeReminderRepository,
   EventBus,
@@ -36,7 +36,6 @@ describeFeature(
     let eventBus: EventBus
     let dataSource: SimulatedRiotClientDataSource
     let notifyElectron: DummyElectronNotifier
-    let gameObjectiveTracker: GameObjectiveTracker
 
     async function advanceGameTicks(ticks: number): Promise<void> {
       for (let i = 0; i < ticks; i++) {
@@ -83,10 +82,8 @@ describeFeature(
       audioPlayer = new AudioSpy()
       dataSource = new SimulatedRiotClientDataSource(999999, 0, false)
       notifyElectron = new DummyElectronNotifier()
-      gameObjectiveTracker = new GameObjectiveTracker()
 
       app = await createTestApp({
-        gameObjectiveTracker,
         reminderRepository: fakeReminderRepository,
         timer,
         audioPlayer,
@@ -104,9 +101,26 @@ describeFeature(
     BeforeEachScenario(() => {})
 
     AfterEachScenario(async () => {
-      eventBus.clear()
-      audioPlayer.clear()
-      fakeReminderRepository.clear()
+      // eventBus.clear()
+      // audioPlayer.clear()
+      // fakeReminderRepository.clear()
+
+      // Looks like there is something wrong with the cucumber package? We will just reset the entire app for now.
+      fakeReminderRepository = new FakeReminderRepository()
+      timer = new FakeTimer()
+      eventBus = new EventBus(ElectronLogger.createNull())
+      audioPlayer = new AudioSpy()
+      dataSource = new SimulatedRiotClientDataSource(999999, 0, false)
+      notifyElectron = new DummyElectronNotifier()
+
+      app = await createTestApp({
+        reminderRepository: fakeReminderRepository,
+        timer,
+        audioPlayer,
+        eventBus,
+        dataSource,
+        notifyElectron
+      })
     })
 
     Background(({ Given }) => {
@@ -287,7 +301,6 @@ describeFeature(
       `Reminder before spawning one-time objective`,
       ({ Given, When, Then, And }, variables) => {
         Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-          gameObjectiveTracker.reset()
           const transformedData = {
             ...data,
             text: replace(data.text, variables),

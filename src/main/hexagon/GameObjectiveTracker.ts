@@ -127,7 +127,6 @@ export class GameObjectiveTracker {
     return Object.freeze(this._objectiveState)
   }
 
-  // temp
   public reset(): void {
     this._objectiveState = {
       dragon: {

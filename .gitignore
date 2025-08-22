@@ -9,3 +9,4 @@ out
 data/
 
 electron-builder.env
+tmpaudio/
