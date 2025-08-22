@@ -72,12 +72,9 @@ export class GameObjectiveTracker {
             dragonKills: this._teamDragonKills
           })
 
-          // Check if we should transition to elder
           if (this._teamDragonKills.red >= 4 || this._teamDragonKills.blue >= 4) {
-            // Transition to elder dragon - 6 minute spawn
             this._objectiveState.dragon.nextSpawn = dragonEvent.data.gameTime + 360
           } else {
-            // Regular dragon - 5 minute spawn
             this._objectiveState.dragon.nextSpawn = dragonEvent.data.gameTime + 300
           }
 
@@ -90,9 +87,7 @@ export class GameObjectiveTracker {
           break
       }
 
-      // TODO: We need to mark them as processed but this fails the acceptance test
-      // This probably means that the way we comunicate with the tracker and ticker is wrong
-      // this._processedEvents.add(evt.id)
+      this._processedEvents.add(evt.id)
     }
 
     if (!this._objectiveState.dragon.isAlive && gameState.gameTime === 300) {
@@ -150,10 +145,6 @@ export class GameObjectiveTracker {
         this._objectiveState.herald.nextSpawn = null
       }
     }
-
-    this._logger?.info('Objective state', {
-      objectiveState: this._objectiveState
-    })
   }
 
   public getState(): Readonly<ObjectiveState> {
@@ -161,6 +152,8 @@ export class GameObjectiveTracker {
   }
 
   public reset(): void {
+    this._processedEvents.clear()
+    this._transitionedToElderDragon = false
     this._objectiveState = {
       dragon: {
         isAlive: false,
