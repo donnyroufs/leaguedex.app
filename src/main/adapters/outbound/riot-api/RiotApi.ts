@@ -54,7 +54,7 @@ export class RiotApi {
   // TODO: regression test that we pass the right gametime. It should be from the event not the state.
   private transformEvent(evt: RiotGameEvent, data: LiveGameData): GameEvent<unknown> | null {
     const teams = data.allPlayers.map((x) => ({
-      team: (x.team === 'CHAOS' ? 'red' : 'blue') as Team,
+      team: (x.team.toLowerCase() === 'chaos' ? 'red' : 'blue') as Team,
       summonerName: x.summonerName
     }))
 

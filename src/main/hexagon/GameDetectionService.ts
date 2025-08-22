@@ -8,7 +8,6 @@ import { ILogger } from './ports/ILogger'
 import { GetGameStateResult, IRiotApi } from './ports/IRiotApi'
 
 export class GameDetectionService {
-  private _internalEventIdCounter = 10_000
   private _gameStarted = false
 
   public constructor(
@@ -75,7 +74,7 @@ export class GameDetectionService {
   }
 
   private endGame(): void {
-    this._eventBus.publish('game-ended', new GameEndedEvent(++this._internalEventIdCounter, null))
+    this._eventBus.publish('game-ended', new GameEndedEvent(this.createEventId(), null))
     this._gameStarted = false
   }
 
@@ -85,7 +84,7 @@ export class GameDetectionService {
     if (gameState.gameTime === 0) {
       this._eventBus.publish(
         'game-started',
-        new GameStartedEvent(++this._internalEventIdCounter, { gameTime: 0 })
+        new GameStartedEvent(this.createEventId(), { gameTime: 0 })
       )
     } else {
       this.publishGameTick(gameState)
@@ -95,9 +94,13 @@ export class GameDetectionService {
   private publishGameTick(gameState: GameState): void {
     this._eventBus.publish(
       'game-tick',
-      new GameTickEvent(++this._internalEventIdCounter, {
+      new GameTickEvent(this.createEventId(), {
         state: gameState
       })
     )
+  }
+
+  private createEventId(): number {
+    return Date.now() + Math.floor(Math.random() * 1000)
   }
 }

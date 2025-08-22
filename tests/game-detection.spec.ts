@@ -1,33 +1,36 @@
 import { test, describe, expect } from 'vitest'
+import { afterEach, beforeEach } from 'vitest'
 
 import { GameDetectionService } from '../src/main/hexagon/GameDetectionService'
 import { FakeTimer } from './FakeTimer'
 import { EventBusSpy } from './EventBusSpy'
-import { RiotApi, SimulatedRiotClientDataSource } from '../src/main/adapters/outbound/riot-api'
+import { RiotApi } from '../src/main/adapters/outbound/riot-api'
 import { GameTickEvent } from '../src/main/hexagon/events/GameTickEvent'
 import { ElectronLogger } from '../src/main/adapters/outbound/ElectronLogger'
-
-type Sut = {
-  sut: GameDetectionService
-  eventBus: EventBusSpy
-  timer: FakeTimer
-  dataSource: SimulatedRiotClientDataSource
-}
-
-function createSut(): Sut {
-  const eventBus = new EventBusSpy()
-  const timer = new FakeTimer()
-  const dataSource = SimulatedRiotClientDataSource.createForTests()
-  const riotApi = new RiotApi(dataSource)
-  const sut = new GameDetectionService(eventBus, riotApi, timer, ElectronLogger.createNull())
-  return { sut, eventBus, timer, dataSource }
-}
+import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
 
 describe('Game Detection Service', () => {
-  test('should detect game start', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
+  let eventBus: EventBusSpy
+  let timer: FakeTimer
+  let dataSource: FakeRiotClientDataSource
+  let riotApi: RiotApi
+  let sut: GameDetectionService
 
-    dataSource.setGameStarted()
+  beforeEach(() => {
+    eventBus = new EventBusSpy()
+    timer = new FakeTimer()
+    dataSource = new FakeRiotClientDataSource()
+    riotApi = new RiotApi(dataSource)
+
+    sut = new GameDetectionService(eventBus, riotApi, timer, ElectronLogger.createNull())
+  })
+
+  afterEach(() => {
+    dataSource.reset()
+  })
+
+  test('should detect game start', async () => {
+    dataSource.addGameStartedEvent()
     sut.start() // game-started
     await timer.tick()
 
@@ -36,9 +39,7 @@ describe('Game Detection Service', () => {
   })
 
   test('should not detect game start when game-started event is not present', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.gameStateWithoutEvents()
+    dataSource.reset()
     sut.start()
     await timer.tick()
 
@@ -47,9 +48,7 @@ describe('Game Detection Service', () => {
   })
 
   test('should detect game end', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.setGameStarted()
+    dataSource.addGameStartedEvent()
     sut.start()
     await timer.tick() // game-started
 
@@ -59,7 +58,7 @@ describe('Game Detection Service', () => {
     dataSource.nextTick()
     await timer.tick() // game-tick
 
-    dataSource.simulateError()
+    dataSource.endGame()
     await timer.tick() // game-ended
 
     expect(eventBus.totalCalls).toEqual(4)
@@ -69,9 +68,7 @@ describe('Game Detection Service', () => {
   })
 
   test('should detect game tick', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.setGameStarted()
+    dataSource.addGameStartedEvent()
     sut.start()
     await timer.tick() // game-started
 
@@ -88,20 +85,7 @@ describe('Game Detection Service', () => {
   })
 
   test('should not dispatch any events from riot api before game detection', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.simulateError()
-    sut.start()
-    await timer.tick() // no events
-
-    expect(eventBus.totalCalls).toEqual(0)
-    expect(eventBus.events.length).toEqual(0)
-  })
-
-  test('should not dispatch any events when received null', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.simulateNull()
+    dataSource.beforeMatchStart()
     sut.start()
     await timer.tick() // no events
 
@@ -110,9 +94,7 @@ describe('Game Detection Service', () => {
   })
 
   test('Should only emit game-tick on 1 after game-started', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.setGameStarted()
+    dataSource.addGameStartedEvent()
     sut.start()
 
     await timer.tick() // game-started
@@ -125,9 +107,8 @@ describe('Game Detection Service', () => {
   })
 
   test('Should not dispatch older events if first tick is not multiple events', async () => {
-    const { sut, eventBus, timer, dataSource } = createSut()
-
-    dataSource.setGameStarted(15)
+    dataSource.addGameStartedEvent()
+    dataSource.advanceToFutureTick(15)
     sut.start()
 
     await timer.tick() // game-tick

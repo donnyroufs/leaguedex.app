@@ -9,6 +9,8 @@ import { createAppAndStart } from './CompositionRoot'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
+    roundedCorners: false,
+    title: 'Leaguedex',
     width: 1300,
     height: 800,
     minWidth: 1300,
