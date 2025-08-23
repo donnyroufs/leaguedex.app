@@ -4,28 +4,8 @@ import { Outlet } from 'react-router'
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
-import {
-  Layers,
-  Settings as SettingsIcon,
-  Bell,
-  Clock,
-  Download,
-  RefreshCw,
-  Book
-} from 'lucide-react'
-
-type Matchup = {
-  you: {
-    championName: string
-    role: string
-    team: 'blue' | 'red'
-  }
-  enemy: {
-    championName: string
-    role: string
-    team: 'blue' | 'red'
-  }
-}
+import { Settings as SettingsIcon, Bell, Download, RefreshCw } from 'lucide-react'
+import { Contracts } from 'src/main/shared-kernel'
 
 type UpdateStatus = {
   status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
@@ -35,29 +15,23 @@ type UpdateStatus = {
   error?: string
 }
 
+export type AppContext = {
+  gameData: Contracts.GameDataDto | null
+}
+
 export function Layout(): JSX.Element {
-  const [gameTime, setGameTime] = useState<number | null>(null)
-  const [matchup, setMatchup] = useState<Matchup | null>(null)
   const [version, setVersion] = useState<string | null>(null)
-  const [insights, setInsights] = useState<string | null>(null)
-  const [generalInsights, setGeneralInsights] = useState<string | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false)
-  const [totalPlayed, setTotalPlayed] = useState<number>(0)
-  const [lastPlayed, setLastPlayed] = useState<Date | null>(null)
+  const [gameData, setGameData] = useState<Contracts.GameDataDto | null>(null)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
   }, [])
 
   useEffect(() => {
-    const unsubscribe = window.api.gameAssistant.onGameData((data) => {
-      setGameTime(data.gameTime)
-      setInsights(data.insights)
-      setMatchup(data.matchup)
-      setGeneralInsights(data.generalInsights)
-      setTotalPlayed(data.totalPlayed)
-      setLastPlayed(data.lastPlayed)
+    const unsubscribe = window.api.app.onGameData((data) => {
+      setGameData(data)
     })
 
     return () => unsubscribe()
@@ -140,11 +114,15 @@ export function Layout(): JSX.Element {
     }
   }
 
+  const ctx: AppContext = {
+    gameData
+  }
+
   return (
     <div className="w-full h-full flex flex-col bg-bg-primary" style={{ height: '100vh' }}>
       <header className="flex-shrink-0">
         <Titlebar title="Leaguedex" />
-        <Statusbar gameTime={gameTime} />
+        <Statusbar gameTime={gameData?.time ?? null} />
       </header>
 
       <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary min-h-0">
@@ -153,16 +131,7 @@ export function Layout(): JSX.Element {
           <nav>
             <ul className="flex flex-col mt-2">
               <li>
-                <SidebarNavItem to="/" label="Home" icon={Book} />
-              </li>
-              <li>
-                <SidebarNavItem to="/match" label="Match" icon={Layers} />
-              </li>
-              <li>
-                <SidebarNavItem to="/reminders" label="Reminders" icon={Bell} />
-              </li>
-              <li>
-                <SidebarNavItem to="/match-history" label="Match History" icon={Clock} />
+                <SidebarNavItem to="/" label="Reminders" icon={Bell} />
               </li>
               <li>
                 <SidebarNavItem to="/settings" label="Settings" icon={SettingsIcon} />
@@ -184,7 +153,7 @@ export function Layout(): JSX.Element {
           </div>
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden min-h-0">
-          <Outlet context={{ matchup, insights, generalInsights, totalPlayed, lastPlayed }} />
+          <Outlet context={ctx} />
         </main>
       </div>
     </div>

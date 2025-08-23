@@ -1,0 +1,63 @@
+@startuml Game Detection
+!theme bluegray
+
+title Game Detection - Functional Flow
+
+participant "App" as App
+participant "GameDetectionService" as GDS
+participant "RiotAPI" as API
+participant "EventBus" as EB
+participant "CoachingModule" as CM
+
+== App Startup ==
+App -> GDS: start()
+activate GDS
+GDS -> GDS: startTimer(polling every 1000ms)
+
+== Game Detection Loop ==
+loop Every 1000ms
+    GDS -> API: getGameState()
+    API --> GDS: Result<GameState> | Err
+
+    alt Game Running (Result.isOk())
+        alt First time detecting game (!_gameStarted)
+            GDS -> GDS: _gameStarted = true
+        end
+
+        GDS -> GDS: Filter unprocessed events
+        GDS -> GDS: Check if first tick with multiple events
+
+        alt Not first tick with multiple events
+            GDS -> EB: publish(eventType, event) for each unprocessed event
+            GDS -> GDS: Mark events as processed
+        end
+
+        GDS -> EB: publish('game-tick', GameTickEvent)
+
+    else No Game (Result.isErr())
+        alt Was previously running (_gameStarted)
+            GDS -> GDS: _gameStarted = false
+            GDS -> EB: publish('game-ended', GameEndedEvent)
+        end
+    end
+end
+
+== Event Handling ==
+note over GDS, EB : Events are published directly to EventBus
+
+alt Game Started (first detection)
+    GDS -> GDS: _gameStarted = true
+    GDS -> EB: publish individual game events
+    GDS -> EB: publish('game-tick', GameTickEvent)
+else Game Ended
+    GDS -> GDS: _gameStarted = false
+    GDS -> EB: publish('game-ended', GameEndedEvent)
+end
+
+== Shutdown ==
+App -> GDS: stop()
+deactivate GDS
+GDS -> GDS: stopTimer()
+
+
+@enduml

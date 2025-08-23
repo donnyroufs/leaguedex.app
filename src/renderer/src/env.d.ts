@@ -1,21 +1,8 @@
 /// <reference types="vite/client" />
 
-type Game = {
-  id: string
-  matchupId: string
-  createdAt: string
-  status: 'in-progress' | 'completed' | 'reviewed'
-  notes: MatchupNote[]
-}
-
-type MatchupNote = {
-  id: string
-  content: string
-  matchupId: string
-  gameId: string
-  createdAt: string
-  type: 'matchup' | 'general'
-}
+import { Contracts } from '../../main/shared-kernel'
+import { CreateReminderDto } from '../../main/app/coaching'
+import { IReminderDto } from '../../main/hexagon/ReminderDto'
 
 declare global {
   interface Window {
@@ -23,30 +10,16 @@ declare global {
       minimizeWindow: () => void
       maximizeWindow: () => void
       closeWindow: () => void
-      gameAssistant: {
-        onGameData: (
-          callback: (data: {
-            playing: boolean
-            gameTime: number | null
-            matchup: Matchup | null
-            insights: string | null
-            generalInsights: string | null
-            totalPlayed: number
-            lastPlayed: Date | null
-          }) => void
-        ) => () => void
-        getReminders: () => Promise<Reminder[]>
-        addReminder: (reminder: Reminder) => Promise<void>
-        removeReminder(id: string): Promise<void>
+      app: {
+        onGameData: (callback: (data: Contracts.GameDataDto) => void) => () => void
+        addReminder: (data: CreateReminderDto) => Promise<string>
+        getReminders: () => Promise<IReminderDto[]>
+        removeReminder: (id: string) => Promise<void>
+        updateLicense: (key: string) => Promise<void>
+        getLicense: () => Promise<string>
       }
+
       getVersion: () => Promise<string>
-      updateConfig: (config: UserConfig) => Promise<UserConfig>
-      getConfig: () => Promise<UserConfig>
-      getGames: () => Promise<Game[]>
-      reviewGame: (
-        gameId: string,
-        notes: { matchupNotes: string; generalNotes: string }
-      ) => Promise<void>
       updater: {
         onUpdateStatus: (
           callback: (data: {
@@ -66,9 +39,6 @@ declare global {
         checkForUpdates: () => Promise<void>
         downloadUpdate: () => Promise<void>
         installUpdate: () => Promise<void>
-      }
-      dex: {
-        all: () => Promise<Dex>
       }
     }
   }

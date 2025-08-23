@@ -1,187 +1,224 @@
-import { JSX, useEffect, useState } from 'react'
-import { Plus, X, Bell } from 'lucide-react'
-import { AddReminderModal } from '../components/AddReminderModal'
-import { useModal } from '../hooks'
+import { JSX, useState } from 'react'
+import { Bell, Plus, Clock, Zap, Target, Timer, X } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
+import { Button } from '../components/Button'
+import { Modal } from '../components/Modal'
+import { CreateReminderForm } from '../components/CreateReminderForm'
+// @ts-expect-error we need to fix sharing contracts
+import { IReminderDto, CreateReminderDto } from '../../../main/app/coaching/ReminderDto'
+import { useModal, useToast } from '../hooks'
+import { EmptyState } from '@renderer/components/EmptyState'
+import { useLoaderData, useRevalidator } from 'react-router'
+import { ConfirmDialog } from '@renderer/components/ConfirmDialog'
 
-type Reminder = {
-  id: string
-  message: string
-  triggerTime?: number
-  interval?: number
-}
-
-function formatTime(seconds: number): string {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-
-  if (minutes === 0) {
-    return `${seconds}s`
-  } else if (remainingSeconds === 0) {
-    return `${minutes}m`
-  } else {
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
-  }
-}
-
-function formatTimeForDisplay(seconds: number): string {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-
-  if (minutes === 0) {
-    return `${seconds}s`
-  } else if (remainingSeconds === 0) {
-    return `${minutes}:00`
-  } else {
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
-  }
-}
-
-type ReminderCardProps = {
-  reminder: Reminder
-  onDelete: (id: string) => void
-}
-
-function ReminderCard({ reminder, onDelete }: ReminderCardProps): JSX.Element {
-  const isRecurring = reminder.interval !== undefined
-  const timeValue = reminder.triggerTime ?? reminder.interval ?? 0
-
-  return (
-    <div className="group bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] rounded-[10px] p-4 transition-all duration-200 relative hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(255,255,255,0.15)] hover:-translate-y-0.5">
-      <div className="flex items-center justify-between gap-4">
-        <h3 className="text-sm text-text-primary">{reminder.message}</h3>
-
-        <div className="flex items-center gap-2">
-          <div
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-opacity duration-200 group-hover:opacity-0 ${
-              isRecurring
-                ? 'bg-[rgba(0,255,136,0.15)] text-success'
-                : 'bg-[rgba(0,212,255,0.15)] text-info'
-            }`}
-          >
-            {isRecurring ? `Every ${formatTime(timeValue)}` : formatTimeForDisplay(timeValue)}
-          </div>
-
-          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete(reminder.id)
-              }}
-              className="w-6 h-6 flex items-center justify-center bg-[rgba(255,255,255,0.1)] rounded-[6px] text-text-secondary hover:bg-[rgba(255,71,87,0.2)] hover:text-urgent transition-all duration-200"
-            >
-              <X size={12} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-type SectionHeaderProps = {
-  title: string
-}
-
-function SectionHeader({ title }: SectionHeaderProps): JSX.Element {
-  return (
-    <div className="col-span-full flex items-center justify-between pb-2 border-b border-[rgba(255,255,255,0.05)] mb-2">
-      <span className="text-sm uppercase tracking-wider text-text-tertiary font-medium">
-        {title}
-      </span>
-    </div>
-  )
-}
-
-type EmptyStateProps = {
-  title: string
-  subtitle: string
-}
-
-function EmptyState({ title, subtitle }: EmptyStateProps): JSX.Element {
-  return (
-    <div className="flex flex-col items-center justify-center text-center">
-      <div className="w-16 h-16 bg-[rgba(255,255,255,0.05)] rounded-[16px] flex items-center justify-center mb-6 text-2xl">
-        <Bell size={32} className="text-text-tertiary" />
-      </div>
-      <h3 className="text-lg text-text-secondary mb-2">{title}</h3>
-      <p className="text-sm text-text-tertiary max-w-96 mb-6">{subtitle}</p>
-    </div>
-  )
+type LoaderData = {
+  reminders: IReminderDto[]
 }
 
 export function RemindersPage(): JSX.Element {
-  const [reminders, setReminders] = useState<Reminder[]>([])
-  const modal = useModal()
+  const [isCreating, setIsCreating] = useState<boolean>(false)
+  const [reminderToDelete, setReminderToDelete] = useState<string | null>(null)
+  const { isOpen, onOpen, onClose } = useModal()
+  const { reminders } = useLoaderData<LoaderData>()
+  const { revalidate } = useRevalidator()
+  const toast = useToast()
 
-  useEffect(() => {
-    window.api.gameAssistant.getReminders().then(setReminders)
-  }, [])
-
-  function refreshReminders(): void {
-    window.api.gameAssistant.getReminders().then(setReminders)
-  }
-
-  async function handleDelete(id: string): Promise<void> {
-    try {
-      await window.api.gameAssistant.removeReminder(id)
-      refreshReminders()
-    } catch (err) {
-      console.error('Error deleting reminder:', err)
+  const getReminderIcon = (triggerType: IReminderDto['triggerType']): JSX.Element => {
+    switch (triggerType) {
+      case 'interval':
+        return <Timer className="w-4 h-4 text-info" />
+      case 'oneTime':
+        return <Clock className="w-4 h-4 text-success" />
+      case 'event':
+        return <Zap className="w-4 h-4 text-warning" />
+      case 'objective':
+        return <Target className="w-4 h-4 text-premium" />
+      default:
+        return <Bell className="w-4 h-4 text-neutral" />
     }
   }
 
-  const oneTimeReminders = reminders.filter((r) => r.triggerTime !== undefined)
-  const recurringReminders = reminders.filter((r) => r.interval !== undefined)
+  const getReminderColor = (): string => {
+    return 'border-border-primary'
+  }
 
-  const sortedOneTime = oneTimeReminders.sort((a, b) => (a.triggerTime ?? 0) - (b.triggerTime ?? 0))
-  const sortedRecurring = recurringReminders.sort((a, b) => (a.interval ?? 0) - (b.interval ?? 0))
+  const formatTriggerDisplay = (reminder: IReminderDto): JSX.Element | string => {
+    if (reminder.triggerType === 'interval' && reminder.interval) {
+      return `Every ${reminder.interval} seconds`
+    }
 
-  const hasReminders = reminders.length > 0
+    if (reminder.triggerType === 'oneTime' && reminder.triggerAt) {
+      const minutes = Math.floor(reminder.triggerAt / 60)
+      const seconds = reminder.triggerAt % 60
+      return `At ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    if (reminder.triggerType === 'event' && reminder.event) {
+      return `On ${reminder.event}`
+    }
+
+    if (reminder.triggerType === 'objective' && reminder.objective && reminder.beforeObjective) {
+      const objectiveName = reminder.objective.charAt(0).toUpperCase() + reminder.objective.slice(1)
+      return (
+        <>
+          {reminder.beforeObjective} seconds before{' '}
+          <span className="font-semibold text-premium bg-premium/10 px-2 py-0.5 rounded-md">
+            {objectiveName}
+          </span>{' '}
+          spawns
+        </>
+      )
+    }
+
+    return 'Unknown trigger'
+  }
+
+  const getTriggerTypeLabel = (triggerType: IReminderDto['triggerType']): string => {
+    switch (triggerType) {
+      case 'interval':
+        return 'Interval'
+      case 'oneTime':
+        return 'One-time'
+      case 'event':
+        return 'Event'
+      case 'objective':
+        return 'Objective'
+      default:
+        return 'Unknown'
+    }
+  }
+
+  const handleCreateReminder = async (data: CreateReminderDto): Promise<void> => {
+    setIsCreating(true)
+    try {
+      await window.api.app.addReminder(data)
+      toast.success('Reminder created successfully!')
+      onClose()
+    } catch (error) {
+      console.error('Failed to create reminder:', error)
+      toast.error('Failed to create reminder')
+    } finally {
+      setIsCreating(false)
+      revalidate()
+    }
+  }
+
+  const handleRemoveReminder = async (id: string): Promise<void> => {
+    try {
+      await window.api.app.removeReminder(id)
+      toast.success('Reminder removed successfully!')
+    } catch (error) {
+      console.error('Failed to remove reminder:', error)
+      toast.error('Failed to remove reminder')
+    } finally {
+      revalidate()
+    }
+  }
+
+  const openDeleteConfirmation = (id: string): void => {
+    setReminderToDelete(id)
+  }
+
+  const closeDeleteConfirmation = (): void => {
+    setReminderToDelete(null)
+  }
+
+  const confirmDelete = (): void => {
+    if (reminderToDelete) {
+      handleRemoveReminder(reminderToDelete)
+    }
+  }
 
   return (
     <PageWrapper>
-      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
+      <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
         <h1 className="text-2xl font-semibold text-text-primary">Reminders</h1>
-        <button
-          onClick={modal.onOpen}
-          className="flex items-center gap-2 px-6 py-3 bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.3)] rounded-lg text-success text-sm font-medium transition-all duration-200 hover:bg-[rgba(0,255,136,0.15)] hover:-translate-y-0.5"
-        >
-          <Plus size={16} />
+        <Button onClick={onOpen} size="md">
+          <Plus size={16} className="mr-2" />
           Add Reminder
-        </button>
+        </Button>
       </div>
-      {!hasReminders ? (
-        <div className="flex-1 flex items-center justify-center pb-12">
-          <EmptyState
-            title="No reminders yet"
-            subtitle="Create your first reminder to help you stay on top of your game timing and improve your gameplay."
-          />
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto min-h-0 p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedOneTime.length > 0 && (
-              <>
-                <SectionHeader title="One Time" />
-                {sortedOneTime.map((reminder) => (
-                  <ReminderCard key={reminder.id} reminder={reminder} onDelete={handleDelete} />
-                ))}
-              </>
-            )}
-
-            {sortedRecurring.length > 0 && (
-              <>
-                <SectionHeader title="Recurring" />
-                {sortedRecurring.map((reminder) => (
-                  <ReminderCard key={reminder.id} reminder={reminder} onDelete={handleDelete} />
-                ))}
-              </>
-            )}
+      <div className="flex-1 overflow-y-auto min-h-0 p-8">
+        {reminders.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <EmptyState
+              title="No reminders"
+              subtitle="Add a reminder to get started"
+              icon={<Bell size={32} className="text-text-tertiary" />}
+            />
           </div>
-        </div>
-      )}
-      <AddReminderModal isOpen={modal.isOpen} onClose={modal.onClose} onCreate={refreshReminders} />
+        ) : (
+          <div className="w-full max-w-7xl mx-auto">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {reminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  className={`relative border rounded-lg bg-bg-secondary ${getReminderColor()}`}
+                >
+                  <button
+                    onClick={() => openDeleteConfirmation(reminder.id)}
+                    className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors"
+                    aria-label="Remove reminder"
+                  >
+                    <X className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
+                  </button>
+                  <div className="p-5">
+                    <div className="flex items-center space-x-4 mb-6">
+                      <div className="flex-shrink-0 w-12 h-12 bg-bg-primary rounded-xl flex items-center justify-center border border-border-primary/20">
+                        {getReminderIcon(reminder.triggerType)}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">
+                          {getTriggerTypeLabel(reminder.triggerType)}
+                        </span>
+                        <div className="w-6 h-px bg-current opacity-30 mt-1.5"></div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-text-primary font-semibold text-lg leading-tight">
+                        {reminder.text}
+                      </h3>
+                      <div className="flex items-center space-x-2.5 text-text-secondary">
+                        <Timer className="w-3.5 h-3.5 text-text-tertiary" />
+                        <span className="text-sm font-medium">
+                          {formatTriggerDisplay(reminder)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-border-primary/20">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-info/80"></div>
+                        <span className="text-xs text-text-tertiary font-medium">Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Modal isOpen={isOpen} onClose={onClose} title="Create New Reminder">
+        <CreateReminderForm
+          onSubmit={handleCreateReminder}
+          onCancel={onClose}
+          isLoading={isCreating}
+        />
+      </Modal>
+
+      <ConfirmDialog
+        isOpen={reminderToDelete !== null}
+        onClose={closeDeleteConfirmation}
+        onConfirm={confirmDelete}
+        title="Delete Reminder"
+        message="Are you sure you want to delete this reminder? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </PageWrapper>
   )
 }

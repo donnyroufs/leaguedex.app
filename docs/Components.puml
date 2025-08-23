@@ -1,0 +1,66 @@
+@startuml Module Communication
+!theme plain
+skinparam backgroundColor transparent
+skinparam componentStyle rectangle
+
+' Main Process Components
+package "Main Process" {
+  [App] as app
+  [CoachingModule] as coaching
+  [Shared Kernel] as sharedKernel
+}
+
+' Renderer Process Components
+package "Renderer Process" {
+  [React App] as reactApp
+}
+
+' Preload Bridge
+package "Preload Bridge" {
+  [API Bridge] as apiBridge
+  [IPC Communication] as ipc
+}
+
+' External Services
+package "External" {
+  [Riot Games API] as riotAPI
+  [DataDragon] as dataDragon
+  [Google TTS] as googleTTS
+}
+
+' Main Process Relationships
+app --> coaching : "depends on"
+coaching --> sharedKernel : "uses"
+app --> sharedKernel : "uses"
+
+' Main to Renderer Communication
+app --> ipc : "activates/deactivates"
+ipc --> apiBridge : "bridges"
+apiBridge --> reactApp : "exposes API"
+
+' External API Calls
+app --> riotAPI : "fetches game data"
+app --> dataDragon : "fetches champion data"
+app --> googleTTS : "generates audio feedback"
+
+' Communication Flow
+note right of app
+  Activates/deactivates modules
+end note
+
+note right of apiBridge
+  Exposes safe APIs
+  to renderer process
+end note
+
+note right of reactApp
+  React application
+  with routing
+end note
+
+@enduml
+
+
+
+
+
