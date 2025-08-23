@@ -44,8 +44,8 @@ export class RemindersGameTickListener {
 
     this._logger.info('Processing reminders', {
       gameTime,
-      dueRemindersLen: dueReminders.length,
-      audioUrls: dueReminders.map((x) => x.audioUrl)
+      reminders: reminders.unwrap().map((x) => x.id),
+      dueReminders: dueReminders.map((x) => x.id)
     })
 
     for (const reminder of dueReminders) {
