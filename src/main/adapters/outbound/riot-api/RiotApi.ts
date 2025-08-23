@@ -67,7 +67,7 @@ export class RiotApi {
       case 'DragonKill':
         return new DragonKilledEvent(evt.EventID, {
           gameTime: Math.round(evt.EventTime),
-          killedByTeam: teams.find((x) => x.summonerName === evt.KillerName)!.team // TODO: If we hardcode this then it works else not
+          killedByTeam: teams.find((x) => x.summonerName.includes(evt.KillerName!))!.team // TODO: Test against the includes. Apparently KillerName is never with #uniqueId
         })
       case 'BaronKill':
         return new BaronKilledEvent(evt.EventID, {
