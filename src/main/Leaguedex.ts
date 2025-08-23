@@ -16,7 +16,7 @@ import {
 } from './hexagon'
 import { app } from 'electron'
 import path, { join } from 'path'
-import { access, readFile, writeFile } from 'fs/promises'
+import { access, constants, readFile, writeFile } from 'fs/promises'
 import { getLicenseKey, revalidateLicenseKey } from './getLicenseKey'
 
 export class App {
@@ -79,7 +79,7 @@ export class App {
     const licenseKeyPath = join(dataPath, 'settings.json')
 
     try {
-      await access(licenseKeyPath)
+      await access(licenseKeyPath, constants.F_OK)
     } catch {
       await writeFile(licenseKeyPath, JSON.stringify({ license: key }))
     } finally {
