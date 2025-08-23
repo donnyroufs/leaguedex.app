@@ -28,6 +28,8 @@ import { ITimer } from './hexagon'
 import { CreateReminderUseCase } from './hexagon'
 import { GetRemindersUseCase } from './hexagon'
 import { RemindersGameTickListener } from './hexagon'
+import { RealVoiceLikeTTS } from './adapters/outbound/RealVoiceLikeTTS'
+import axios from 'axios'
 
 type AppDependencies = {
   eventBus: IEventBus
@@ -43,10 +45,13 @@ type AppDependencies = {
 
 export async function createApp(
   overrides: Partial<AppDependencies> = {},
-  isPackaged: boolean = false,
-  platform: 'win32' | 'darwin' = 'win32'
+  isPackaged: boolean = false
 ): Promise<App> {
   const isProd = isPackaged || process.env.NODE_ENV === 'production'
+
+  const axiosInstance = axios.create({
+    baseURL: 'http://api.donnyroufs.com'
+  })
 
   // Cross cutting concerns
   const dataPath = isPackaged ? app.getPath('userData') : path.join(process.cwd(), 'data')
@@ -73,8 +78,16 @@ export async function createApp(
   }
 
   const audioPlayer = overrides.audioPlayer ?? new AudioPlayer(logger)
-  const tts =
-    overrides.tts ?? (await TextToSpeech.create(logger, path.join(dataPath, 'audio'), platform))
+  const audioDir = path.join(dataPath, 'audio')
+  let tts: ITextToSpeech
+
+  if (isProd) {
+    tts = RealVoiceLikeTTS.create(axiosInstance, audioDir)
+  } else {
+    tts = await TextToSpeech.create(logger, audioDir, os.platform() as 'win32' | 'darwin')
+  }
+
+  tts = overrides.tts ?? tts
 
   const gameObjectiveTracker = new GameObjectiveTracker(logger)
   const remindersGameTickListener = new RemindersGameTickListener(
@@ -130,7 +143,7 @@ export async function createTestApp(overrides: Partial<AppDependencies> = {}): P
 }
 
 export async function createAppAndStart(ipcMain?: IpcMain): Promise<void> {
-  const leaguedex = await createApp({}, app.isPackaged, os.platform() as 'win32' | 'darwin')
+  const leaguedex = await createApp({}, app.isPackaged)
 
   if (ipcMain) {
     await ElectronAdapter.setup(leaguedex, ipcMain)

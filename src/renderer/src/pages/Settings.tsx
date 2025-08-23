@@ -1,6 +1,8 @@
-import { JSX } from 'react'
-import { Cloud } from 'lucide-react'
+import { JSX, useState } from 'react'
+import { Cloud, Eye, EyeOff } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
+import { useLoaderData, useRevalidator } from 'react-router'
+import { Button } from '@renderer/components/Button'
 
 type SettingsSectionProps = {
   title: string
@@ -30,16 +32,57 @@ export type ToggleSwitchProps = {
 }
 
 export function Settings(): JSX.Element {
+  const { license } = useLoaderData<{ license: string | null }>()
+  const { revalidate } = useRevalidator()
+  const [licenseKey, setLicenseKey] = useState<string>(license ?? '')
+  const [showLicenseKey, setShowLicenseKey] = useState<boolean>(false)
+
+  const handleUpdateLicense = async (): Promise<void> => {
+    console.log('update license', licenseKey)
+    await window.api.app.updateLicense(licenseKey)
+    await revalidate()
+  }
+
+  const notChanged = licenseKey === license
+
   return (
     <PageWrapper>
-      <div className="flex items-center justify-between h-[88px] px-8 bg-[rgba(255,255,255,0.02)] border-b border-[rgba(255,255,255,0.1)] flex-shrink-0">
+      <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
         <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
       </div>
       <div className="flex-1 overflow-y-auto min-h-0 p-8 space-y-8">
         <SettingsSection title="General" icon={Cloud}>
-          <div className="space-y-2">
-            <div className="text-sm text-text-tertiary leading-5">
-              There are no settings for this app for now.
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <label htmlFor="licenseKey" className="block text-sm font-medium text-text-primary">
+                License Key
+              </label>
+              <div className="relative">
+                <input
+                  id="licenseKey"
+                  type={showLicenseKey ? 'text' : 'password'}
+                  value={licenseKey}
+                  onChange={(e) => setLicenseKey(e.target.value)}
+                  placeholder="Enter your license key"
+                  className="w-full px-3 py-3 pr-10 bg-bg-primary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLicenseKey(!showLicenseKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary transition-colors"
+                >
+                  {showLicenseKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <p className="text-sm text-text-tertiary leading-5">
+                Close friends / trusted members can request one to test the latest features for
+                free.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleUpdateLicense} disabled={notChanged}>
+                Update License
+              </Button>
             </div>
           </div>
         </SettingsSection>

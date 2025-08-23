@@ -14,6 +14,10 @@ import {
   GameObjectiveTracker,
   IEventBus
 } from './hexagon'
+import { app } from 'electron'
+import path, { join } from 'path'
+import { access, readFile, writeFile } from 'fs/promises'
+import { getLicenseKey, revalidateLicenseKey } from './getLicenseKey'
 
 export class App {
   public constructor(
@@ -61,6 +65,36 @@ export class App {
   public async removeReminder(id: string): Promise<void> {
     this._logger.info('removeReminder', { id })
     return this._removeReminderUseCase.execute(id)
+  }
+
+  public async getLicense(): Promise<string> {
+    this._logger.info('getLicense')
+    return getLicenseKey()
+  }
+
+  // temporary solution
+  public async updateLicense(key: string): Promise<void> {
+    this._logger.info('updateLicense')
+    const dataPath = app.isPackaged ? app.getPath('userData') : path.join(process.cwd(), 'data')
+    const licenseKeyPath = join(dataPath, 'settings.json')
+
+    try {
+      await access(licenseKeyPath)
+    } catch {
+      await writeFile(licenseKeyPath, JSON.stringify({ license: key }))
+    } finally {
+      try {
+        const settings = JSON.parse(await readFile(licenseKeyPath, 'utf-8'))
+        settings.license = key
+
+        await writeFile(licenseKeyPath, JSON.stringify(settings))
+        this._logger.info('license updated')
+      } catch (err) {
+        this._logger.error('error updating license', { err })
+      }
+
+      await revalidateLicenseKey()
+    }
   }
 
   private async onGameStarted(evt: GameStartedEvent): Promise<void> {

@@ -131,7 +131,7 @@ export function RemindersPage(): JSX.Element {
 
   return (
     <PageWrapper>
-      <div className="flex items-center justify-between p-8 border-b border-border-primary">
+      <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
         <h1 className="text-2xl font-semibold text-text-primary">Reminders</h1>
         <Button onClick={onOpen} size="md">
           <Plus size={16} className="mr-2" />

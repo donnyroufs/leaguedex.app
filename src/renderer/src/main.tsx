@@ -27,7 +27,11 @@ const router = createHashRouter([
     children: [
       {
         path: '/settings',
-        element: <Settings />
+        element: <Settings />,
+        loader: async () => {
+          const license = await window.api.app.getLicense()
+          return { license }
+        }
       },
       {
         path: '/',

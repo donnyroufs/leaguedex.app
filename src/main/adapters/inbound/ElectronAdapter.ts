@@ -18,5 +18,13 @@ export class ElectronAdapter {
     ipcMain.handle('remove-reminder', async (_, id: string) => {
       return app.removeReminder(id)
     })
+
+    ipcMain.handle('update-license', async (_, key: string) => {
+      return app.updateLicense(key)
+    })
+
+    ipcMain.handle('get-license', async () => {
+      return app.getLicense()
+    })
   }
 }

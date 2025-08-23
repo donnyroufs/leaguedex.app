@@ -15,6 +15,8 @@ declare global {
         addReminder: (data: CreateReminderDto) => Promise<string>
         getReminders: () => Promise<IReminderDto[]>
         removeReminder: (id: string) => Promise<void>
+        updateLicense: (key: string) => Promise<void>
+        getLicense: () => Promise<string>
       }
 
       getVersion: () => Promise<string>
