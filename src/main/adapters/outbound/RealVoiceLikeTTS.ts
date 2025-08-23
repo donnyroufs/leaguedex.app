@@ -5,6 +5,7 @@ import { ITextToSpeech } from '../../hexagon'
 import { Result } from '../../shared-kernel'
 import { getLicenseKey } from '../../getLicenseKey'
 
+// TODO: test this
 export class RealVoiceLikeTTS implements ITextToSpeech {
   private constructor(
     private readonly _axios: AxiosInstance,
