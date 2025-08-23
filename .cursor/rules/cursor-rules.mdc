@@ -1,3 +1,8 @@
+---
+description:
+globs:
+alwaysApply: false
+---
 # Cursor Rules for leaguedex
 
 ## Project Overview
@@ -7,7 +12,7 @@ This is an electron app that uses React & Typescript and its purpose is to help 
 ## Code Style & Patterns
 
 - Never add comments
-- We always want to try and add access modifiers in classes. So a method will be prefixed with public,protected,private etc.
+- We always want to try and add access modifiers in classes. So a method will be prefixed with public, protected, private etc.
 - We always try to add the return type to a method. This creates a strict contract and helps us understand boundaries.
 
 
@@ -15,13 +20,14 @@ This is an electron app that uses React & Typescript and its purpose is to help 
 
 - We work closely with Uncle bob, Martin Fowler and alistair cockburn. We love the ideas of Ports & Adapters, Clean Architecture
   but we are also very pragmatic. This is afterall a hobby project, but we do value a good development environment and the option to test
-  hard to test features. This does not mean that we will always do this but we will definitely think about it! When we start working on a completely
-  new feature that doesn't fall under the current domain then we might just put it in the root until it makes sense for us where it should live.
+  hard to test features. At this stage of the project we have not defined any bounded contexts(domains) because it's in an early stage but behind
+  the scenes we are actively thinking about this.
 
 - For frontend related things (React) we should recognise common patterns and move these out. So for example if we have to add the same classes for a button
   everytime then we will check if we have a button component, if not, we create one and start building our own design system. So we can use our own button component
   with default styles and variant option for example. But if something looks like its only used once or twice, we don't really bother. BUT, we should always
-  be aware.
+  be aware. Not to mention that we try to build on top of shadcn components and heavily utilize tailwind and its design tokens.
 
-- We as engineers really value boundaries over anything. As long as the app shows us the domains we are working on then we are good. How we architect the inside
-  isn't something we are too concered about. Again, we are pragmatic but we understand and know all the patterns!
+- We as engineers really value boundaries over anything but this doesn't always have to be applied through folder structure. As long as we can make sense of the design decisions then it's good.
+
+- For every change we make we should see if there are docs available and update it. If its not available then we just ignore it. The developer writing the code is responsible for deciding whether there should be docs.
