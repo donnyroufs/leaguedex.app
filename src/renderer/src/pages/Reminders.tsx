@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Bell, Plus, Clock, Zap, Target, Timer } from 'lucide-react'
+import { Bell, Plus, Clock, Zap, Target, Timer, X } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -9,6 +9,7 @@ import { IReminderDto, CreateReminderDto } from '../../../main/app/coaching/Remi
 import { useModal, useToast } from '../hooks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { useLoaderData, useRevalidator } from 'react-router'
+import { ConfirmDialog } from '@renderer/components/ConfirmDialog'
 
 type LoaderData = {
   reminders: IReminderDto[]
@@ -16,6 +17,7 @@ type LoaderData = {
 
 export function RemindersPage(): JSX.Element {
   const [isCreating, setIsCreating] = useState<boolean>(false)
+  const [reminderToDelete, setReminderToDelete] = useState<string | null>(null)
   const { isOpen, onOpen, onClose } = useModal()
   const { reminders } = useLoaderData<LoaderData>()
   const { revalidate } = useRevalidator()
@@ -101,6 +103,32 @@ export function RemindersPage(): JSX.Element {
     }
   }
 
+  const handleRemoveReminder = async (id: string): Promise<void> => {
+    try {
+      await window.api.app.removeReminder(id)
+      toast.success('Reminder removed successfully!')
+    } catch (error) {
+      console.error('Failed to remove reminder:', error)
+      toast.error('Failed to remove reminder')
+    } finally {
+      revalidate()
+    }
+  }
+
+  const openDeleteConfirmation = (id: string): void => {
+    setReminderToDelete(id)
+  }
+
+  const closeDeleteConfirmation = (): void => {
+    setReminderToDelete(null)
+  }
+
+  const confirmDelete = (): void => {
+    if (reminderToDelete) {
+      handleRemoveReminder(reminderToDelete)
+    }
+  }
+
   return (
     <PageWrapper>
       <div className="flex items-center justify-between p-8 border-b border-border-primary">
@@ -127,6 +155,13 @@ export function RemindersPage(): JSX.Element {
                   key={reminder.id}
                   className={`relative border rounded-lg bg-bg-secondary ${getReminderColor()}`}
                 >
+                  <button
+                    onClick={() => openDeleteConfirmation(reminder.id)}
+                    className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors"
+                    aria-label="Remove reminder"
+                  >
+                    <X className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
+                  </button>
                   <div className="p-5">
                     <div className="flex items-center space-x-4 mb-6">
                       <div className="flex-shrink-0 w-12 h-12 bg-bg-primary rounded-xl flex items-center justify-center border border-border-primary/20">
@@ -173,6 +208,17 @@ export function RemindersPage(): JSX.Element {
           isLoading={isCreating}
         />
       </Modal>
+
+      <ConfirmDialog
+        isOpen={reminderToDelete !== null}
+        onClose={closeDeleteConfirmation}
+        onConfirm={confirmDelete}
+        title="Delete Reminder"
+        message="Are you sure you want to delete this reminder? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </PageWrapper>
   )
 }

@@ -14,6 +14,7 @@ declare global {
         onGameData: (callback: (data: Contracts.GameDataDto) => void) => () => void
         addReminder: (data: CreateReminderDto) => Promise<string>
         getReminders: () => Promise<IReminderDto[]>
+        removeReminder: (id: string) => Promise<void>
       }
 
       getVersion: () => Promise<string>

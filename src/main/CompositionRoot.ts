@@ -3,7 +3,7 @@ import path from 'path'
 import { app, type IpcMain } from 'electron'
 
 import { FileSystemReminderRepository, FakeReminderRepository } from './adapters/outbound'
-import { GameObjectiveTracker, IReminderRepository } from './hexagon'
+import { GameObjectiveTracker, IReminderRepository, RemoveReminderUseCase } from './hexagon'
 import { App } from './Leaguedex'
 import { ElectronAdapter } from './adapters/inbound'
 import { EventBus } from './adapters/outbound'
@@ -85,6 +85,7 @@ export async function createApp(
   )
   const createReminderUseCase = new CreateReminderUseCase(tts, reminderRepository)
   const getRemindersUseCase = new GetRemindersUseCase(reminderRepository)
+  const removeReminderUseCase = new RemoveReminderUseCase(reminderRepository)
 
   if (isPackaged) {
     const os = await import('os')
@@ -106,6 +107,7 @@ export async function createApp(
     logger,
     createReminderUseCase,
     getRemindersUseCase,
+    removeReminderUseCase,
     remindersGameTickListener,
     gameObjectiveTracker
   )

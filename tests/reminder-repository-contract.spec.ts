@@ -44,7 +44,7 @@ describe.each(instances)('$name Contract Tests', (x) => {
     const sut = await x.create()
 
     const reminder = new ReminderBuilder().withText('test').build()
-    const reminder2 = new ReminderBuilder().withText('test2').build()
+    const reminder2 = new ReminderBuilder().build()
 
     await sut.save(reminder)
     await sut.save(reminder2)
@@ -56,4 +56,20 @@ describe.each(instances)('$name Contract Tests', (x) => {
 
   test.todo('returns an error when saving a reminder fails')
   test.todo('overwrites a reminder if same id is used')
+
+  test('removes a reminder', async () => {
+    const sut = await x.create()
+    const reminder = new ReminderBuilder().build()
+    const reminder2 = new ReminderBuilder().build()
+
+    await sut.save(reminder)
+    await sut.save(reminder2)
+
+    const result = await sut.remove(reminder.id)
+    expect(result.isOk()).toBe(true)
+
+    const reminders = await sut.all()
+
+    expect(reminders.unwrap()).toEqual([reminder2])
+  })
 })

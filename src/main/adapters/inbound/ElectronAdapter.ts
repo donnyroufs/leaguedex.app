@@ -14,5 +14,9 @@ export class ElectronAdapter {
     ipcMain.handle('get-reminders', async () => {
       return app.getReminders()
     })
+
+    ipcMain.handle('remove-reminder', async (_, id: string) => {
+      return app.removeReminder(id)
+    })
   }
 }

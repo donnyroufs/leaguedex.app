@@ -21,6 +21,7 @@ export * from './events'
 // Use cases that adapters need
 export * from './CreateReminderUseCase'
 export * from './GetRemindersUseCase'
+export * from './RemoveReminderUseCase'
 export * from './RemindersGameTickListener'
 export * from './GameDetectionService'
 

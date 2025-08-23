@@ -45,4 +45,19 @@ export class FileSystemReminderRepository implements IReminderRepository {
 
     return new FileSystemReminderRepository(filePath)
   }
+
+  public async remove(id: string): Promise<Result<void, Error>> {
+    const remindersResult = await this.all()
+    const reminders = remindersResult.unwrap()
+
+    const reminder = reminders.find((x) => x.id === id)
+
+    if (!reminder) {
+      return Result.err(new Error('Reminder not found'))
+    }
+
+    const filteredReminders = reminders.filter((x) => x.id !== id)
+    await fs.writeFile(this._path, JSON.stringify(filteredReminders, null, 2))
+    return Result.ok(undefined)
+  }
 }

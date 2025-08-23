@@ -1,13 +1,19 @@
-import { GameObjectiveTracker, IReminderDto } from './hexagon'
-import { IEventBus, GameTickEvent, GameStartedEvent } from './hexagon'
 import { createGameDataDto } from './shared-kernel/contracts'
-import { GameDetectionService } from './hexagon'
-import { ILogger } from './hexagon'
-import { INotifyElectron } from './hexagon'
-import { CreateReminderDto } from './hexagon'
-import { CreateReminderUseCase } from './hexagon'
-import { GetRemindersUseCase } from './hexagon'
-import { RemindersGameTickListener } from './hexagon'
+import {
+  ILogger,
+  INotifyElectron,
+  CreateReminderUseCase,
+  CreateReminderDto,
+  GetRemindersUseCase,
+  RemindersGameTickListener,
+  RemoveReminderUseCase,
+  IReminderDto,
+  GameDetectionService,
+  GameStartedEvent,
+  GameTickEvent,
+  GameObjectiveTracker,
+  IEventBus
+} from './hexagon'
 
 export class App {
   public constructor(
@@ -17,6 +23,7 @@ export class App {
     private readonly _logger: ILogger,
     private readonly _createReminderUseCase: CreateReminderUseCase,
     private readonly _getRemindersUseCase: GetRemindersUseCase,
+    private readonly _removeReminderUseCase: RemoveReminderUseCase,
     private readonly _remindersGameTickListener: RemindersGameTickListener,
     private readonly _gameObjectiveTracker: GameObjectiveTracker
   ) {}
@@ -49,6 +56,11 @@ export class App {
   public async addReminder(data: CreateReminderDto): Promise<string> {
     this._logger.info('addReminder', { data })
     return this._createReminderUseCase.execute(data)
+  }
+
+  public async removeReminder(id: string): Promise<void> {
+    this._logger.info('removeReminder', { id })
+    return this._removeReminderUseCase.execute(id)
   }
 
   private async onGameStarted(evt: GameStartedEvent): Promise<void> {

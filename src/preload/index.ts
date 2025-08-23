@@ -15,7 +15,8 @@ const api = {
       }
     },
     addReminder: (data: CreateReminderDto) => ipcRenderer.invoke('add-reminder', data),
-    getReminders: () => ipcRenderer.invoke('get-reminders')
+    getReminders: () => ipcRenderer.invoke('get-reminders'),
+    removeReminder: (id: string) => ipcRenderer.invoke('remove-reminder', id)
   },
 
   minimizeWindow: () => ipcRenderer.send('window-minimize'),

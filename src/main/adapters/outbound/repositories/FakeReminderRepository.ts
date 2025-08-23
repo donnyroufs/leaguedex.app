@@ -17,6 +17,11 @@ export class FakeReminderRepository implements IReminderRepository {
     return Result.ok(Array.from(this._reminders.values()))
   }
 
+  public async remove(id: string): Promise<Result<void, Error>> {
+    this._reminders.delete(id)
+    return Result.ok(undefined)
+  }
+
   public clear(): void {
     this._reminders.clear()
   }
