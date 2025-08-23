@@ -119,7 +119,7 @@ describeFeature(
       })
     })
 
-    Scenario.skip(`No reminder when no game is running`, ({ Given, When, Then, And }) => {
+    Scenario(`No reminder when no game is running`, ({ Given, When, Then, And }) => {
       Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
         const createdReminderId = await createReminder(data)
 
@@ -141,7 +141,7 @@ describeFeature(
       })
     })
 
-    Scenario.skip(`Repeating interval reminder`, ({ Given, When, Then, And }) => {
+    Scenario(`Repeating interval reminder`, ({ Given, When, Then, And }) => {
       Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
         const createdReminderId = await createReminder(data)
 
@@ -173,7 +173,7 @@ describeFeature(
       })
     })
 
-    Scenario.skip(`One-time reminder at specific time`, ({ Given, When, Then, And }) => {
+    Scenario(`One-time reminder at specific time`, ({ Given, When, Then, And }) => {
       Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
         const createdReminderId = await createReminder(data)
 
@@ -204,7 +204,7 @@ describeFeature(
       })
     })
 
-    Scenario.skip(`Reminder on respawn event`, ({ Given, When, Then, And }) => {
+    Scenario(`Reminder on respawn event`, ({ Given, When, Then, And }) => {
       Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
         const createdReminderId = await createReminder(data)
 
@@ -275,6 +275,8 @@ describeFeature(
         })
 
         When(`the <objective> has died at "<death_time>" seconds`, async () => {
+          const matchTime = Number(variables.death_time) - Number(variables.time)
+          await dataSource.tickMultipleTimes(timer, matchTime)
           dataSource.addObjectiveDeathEvent(variables.objective, Number(variables.death_time))
         })
 
@@ -289,7 +291,7 @@ describeFeature(
       }
     )
 
-    ScenarioOutline.skip(
+    ScenarioOutline(
       `Reminder before spawning one-time objective`,
       ({ Given, When, Then, And }, variables) => {
         Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
@@ -322,7 +324,7 @@ describeFeature(
     )
 
     // Probably add variable for both teams to be sure they both work
-    Scenario.skip(
+    Scenario(
       `Elder dragon spawns after team reaches 4 dragon kills`,
       ({ Given, When, Then, And }) => {
         Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
@@ -338,18 +340,23 @@ describeFeature(
         })
 
         When(`the red team has killed 4 dragons`, async () => {
-          const buffer = 5
           await dataSource.tickMultipleTimes(timer, 300)
-          dataSource.addDragonKilledEvent(300)
+
+          await dataSource.tickMultipleTimes(timer, 4)
+          dataSource.addDragonKilledEvent(305)
+          await dataSource.nextTick(timer)
 
           await dataSource.tickMultipleTimes(timer, 300)
-          dataSource.addDragonKilledEvent(600 + buffer * 2)
+          dataSource.addDragonKilledEvent(610)
+          await dataSource.nextTick(timer)
 
           await dataSource.tickMultipleTimes(timer, 300)
-          dataSource.addDragonKilledEvent(900 + buffer * 3)
+          dataSource.addDragonKilledEvent(915)
+          await dataSource.nextTick(timer)
 
           await dataSource.tickMultipleTimes(timer, 300)
-          dataSource.addDragonKilledEvent(1200 + buffer * 4)
+          dataSource.addDragonKilledEvent(1220)
+          await dataSource.nextTick(timer)
         })
 
         And(`"360" seconds pass in game time`, async () => {

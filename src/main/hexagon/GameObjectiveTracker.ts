@@ -18,6 +18,7 @@ type ObjectiveData = {
 export type ObjectiveState = Record<ReminderObjective, ObjectiveData>
 
 export class GameObjectiveTracker {
+  private _processedTick = new Set<number>()
   private _objectiveState: ObjectiveState = {
     dragon: {
       isAlive: false,
@@ -55,6 +56,12 @@ export class GameObjectiveTracker {
   }
 
   public track(gameState: GameState): void {
+    if (this._processedTick.has(gameState.gameTime)) {
+      return
+    }
+
+    this._processedTick.add(gameState.gameTime)
+
     for (const evt of gameState.events) {
       if (this._processedEvents.has(evt.id)) {
         continue
@@ -180,5 +187,7 @@ export class GameObjectiveTracker {
       red: 0,
       blue: 0
     }
+
+    this._processedTick.clear()
   }
 }

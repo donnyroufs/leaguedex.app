@@ -29,11 +29,7 @@ export class RemindersGameTickListener {
         return evt.data.state.activePlayer.respawnsIn === 1
       }
 
-      if (reminder.triggerType === 'objective') {
-        if (!reminder.objective) {
-          return false
-        }
-
+      if (reminder.triggerType === 'objective' && reminder.objective != null) {
         const nextSpawn = this._gameObjectiveTracker.getNextSpawn(reminder.objective)
 
         if (!nextSpawn) {
@@ -48,7 +44,8 @@ export class RemindersGameTickListener {
 
     this._logger.info('Processing reminders', {
       gameTime,
-      dueRemindersLen: dueReminders.length
+      dueRemindersLen: dueReminders.length,
+      audioUrls: dueReminders.map((x) => x.audioUrl)
     })
 
     for (const reminder of dueReminders) {

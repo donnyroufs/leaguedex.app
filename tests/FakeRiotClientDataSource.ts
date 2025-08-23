@@ -38,7 +38,6 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
    */
   public advanceToFutureTick(tick: number): void {
     if (this._state == null) {
-      console.warn('Game not started, skipping advanceToFutureTick')
       return
     }
 
@@ -58,7 +57,9 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
     this._state!.events.Events.push({
       EventID: this.createUniqueEventId(),
       EventName: 'DragonKill',
-      EventTime: deathTime
+      EventTime: deathTime,
+      KillerName: 'test#1234',
+      Assisters: []
     })
   }
 
@@ -66,23 +67,29 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
    * A More generic method to add an objective death event
    */
   public addObjectiveDeathEvent(objective: string, deathTime: number): void {
+    if (this._state == null) {
+      return
+    }
+
     switch (objective) {
       case 'dragon':
-        this._state!.events.Events.push({
+        this._state.events.Events.push({
           EventID: this.createUniqueEventId(),
           EventName: 'DragonKill',
-          EventTime: deathTime
+          EventTime: deathTime,
+          DragonType: 'TODO',
+          KillerName: 'test#1234',
+          Assisters: []
         })
         break
       case 'baron':
-        this._state!.events.Events.push({
+        this._state.events.Events.push({
           EventID: this.createUniqueEventId(),
           EventName: 'BaronKill',
           EventTime: deathTime
         })
         break
       default:
-        console.warn(`Unknown objective: ${objective}`)
         throw new Error(`Unknown objective: ${objective}`)
     }
   }
@@ -109,7 +116,6 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
    */
   public async nextTick(ticker?: IGameTicker): Promise<void> {
     if (this._state == null) {
-      console.warn('Game not started, skipping nextTick')
       return
     }
 
@@ -126,6 +132,20 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
 
   public reset(): void {
     this._state = this.createNewGameState()
+  }
+
+  private onUpdate(): void {
+    if (this._state == null) {
+      return
+    }
+
+    if (this._state.allPlayers) {
+      for (const player of this._state.allPlayers) {
+        if (player.isDead && player.respawnTimer > 0) {
+          player.respawnTimer = Math.max(0, player.respawnTimer - 1)
+        }
+      }
+    }
   }
 
   private createNewGameState(): WriteableDeep<LiveGameData> {
@@ -275,6 +295,8 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
       },
       allPlayers: [
         {
+          summonerName: 'test#1234',
+          team: 'CHAOS',
           championName: 'Annie',
           isBot: false,
           isDead: false,
@@ -311,7 +333,6 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
             wardScore: 0
           },
           skinID: 0,
-          summonerName: 'test#1234',
           summonerSpells: {
             summonerSpellOne: {
               displayName: 'Flash',
@@ -323,8 +344,7 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
               rawDescription: 'GeneratedTip_SummonerSpell_SummonerDot_Description',
               rawDisplayName: 'GeneratedTip_SummonerSpell_SummonerDot_DisplayName'
             }
-          },
-          team: 'Order'
+          }
         }
       ],
       events: { Events: [] },
@@ -334,20 +354,6 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
         mapName: 'Map11',
         mapNumber: 11,
         mapTerrain: 'Default'
-      }
-    }
-  }
-
-  private onUpdate(): void {
-    if (this._state == null) {
-      return
-    }
-
-    if (this._state.allPlayers) {
-      for (const player of this._state.allPlayers) {
-        if (player.isDead && player.respawnTimer > 0) {
-          player.respawnTimer = Math.max(0, player.respawnTimer - 1)
-        }
       }
     }
   }

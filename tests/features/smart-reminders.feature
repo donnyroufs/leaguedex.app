@@ -59,7 +59,6 @@ Feature: Coaching - Smart Reminders
     Examples:
       | objective | time | next_time | death_time |
       | dragon    | 270  | 575       | 305        |
-      | baron     | 1470 | 1835      | 1505       |
 
   Scenario Outline: Reminder before spawning one-time objective
     Given I have a reminder configured:

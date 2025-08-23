@@ -11,12 +11,10 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
 
   public constructor(
     private readonly _endTimer: number,
-    private _startTimer: number,
-    private readonly _isTestSuite: boolean
+    private _startTimer: number
   ) {}
 
   public async getGameData(): Promise<GetGameDataResult> {
-    console.log(this._isTestSuite)
     // TODO: match contract
     if (this._response == null) {
       return Result.err(new Error('Game not started 404'))
@@ -350,7 +348,7 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
     endTimer: number,
     startTimer: number = 0
   ): IRiotClientDataSource {
-    const source = new SimulatedRiotClientDataSource(endTimer, startTimer, false)
+    const source = new SimulatedRiotClientDataSource(endTimer, startTimer)
     source.startGame()
     return source
   }
@@ -365,7 +363,7 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
     endTimer: number = 99999,
     startTimer: number = 0
   ): SimulatedRiotClientDataSource {
-    const source = new SimulatedRiotClientDataSource(endTimer, startTimer, true)
+    const source = new SimulatedRiotClientDataSource(endTimer, startTimer)
     return source
   }
 

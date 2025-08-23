@@ -11,7 +11,6 @@ import { Result } from '../../../shared-kernel'
 import { GameState } from '../../../hexagon'
 import { GetGameStateResult } from '../../../hexagon'
 
-// https://static.developer.riotgames.com/docs/lol/liveclientdata_events.json
 export class RiotApi {
   public constructor(private readonly _dataSource: IRiotClientDataSource) {}
 
@@ -52,6 +51,7 @@ export class RiotApi {
   }
 
   // TODO: regression test that we pass the right gametime. It should be from the event not the state.
+  // TODO: test against different teams (this makes sure we transform the data correctly)
   private transformEvent(evt: RiotGameEvent, data: LiveGameData): GameEvent<unknown> | null {
     const teams = data.allPlayers.map((x) => ({
       team: (x.team.toLowerCase() === 'chaos' ? 'red' : 'blue') as Team,
@@ -67,7 +67,7 @@ export class RiotApi {
       case 'DragonKill':
         return new DragonKilledEvent(evt.EventID, {
           gameTime: Math.round(evt.EventTime),
-          killedByTeam: teams.find((x) => x.summonerName === data.activePlayer.summonerName)!.team
+          killedByTeam: teams.find((x) => x.summonerName === evt.KillerName)!.team // TODO: If we hardcode this then it works else not
         })
       case 'BaronKill':
         return new BaronKilledEvent(evt.EventID, {

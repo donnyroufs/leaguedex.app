@@ -27,6 +27,11 @@ export type RiotGameEvent = {
    * Seems like riot sends a floating point number, but we should just floor it and use it as seconds.
    */
   readonly EventTime: number
+
+  // Dragon specific
+  DragonType?: string // need to type, I assume Elder, Earth etc.
+  KillerName?: string
+  Assisters?: Array<string>
 }
 
 export type LiveGameData = {
