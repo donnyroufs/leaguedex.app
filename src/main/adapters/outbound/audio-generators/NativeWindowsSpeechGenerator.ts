@@ -2,16 +2,14 @@ import { spawn, exec } from 'child_process'
 import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 import { promisify } from 'util'
-import { ILogger } from '../../hexagon'
-import { ITextToSpeech } from '../../hexagon'
+import { ILogger, ITextToSpeechGenerator } from '../../../hexagon'
 
-import { Result } from '../../shared-kernel'
+import { Result } from '../../../shared-kernel'
 
 const execAsync = promisify(exec)
 
-
 // TODO: test this
-export class TextToSpeech implements ITextToSpeech {
+export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
   private constructor(
     private readonly _logger: ILogger,
     private readonly _audioDir: string,
@@ -61,7 +59,7 @@ export class TextToSpeech implements ITextToSpeech {
     logger: ILogger,
     audioDir: string,
     platform: 'win32' | 'darwin'
-  ): Promise<ITextToSpeech> {
+  ): Promise<NativeWindowsSpeechGenerator> {
     try {
       if (!existsSync(audioDir)) {
         mkdirSync(audioDir, { recursive: true })
@@ -71,7 +69,7 @@ export class TextToSpeech implements ITextToSpeech {
       throw new Error(`Failed to create audio directory: ${audioDir}`)
     }
 
-    return new TextToSpeech(logger, audioDir, platform)
+    return new NativeWindowsSpeechGenerator(logger, audioDir, platform)
   }
 
   private createFileName(text: string): string {

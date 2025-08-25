@@ -1,12 +1,12 @@
 import { AxiosInstance } from 'axios'
 import { join } from 'path'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
-import { ITextToSpeech } from '../../hexagon'
-import { Result } from '../../shared-kernel'
-import { getLicenseKey } from '../../getLicenseKey'
+import { Result } from '../../../shared-kernel'
+import { getLicenseKey } from '../../../getLicenseKey'
+import { ITextToSpeechGenerator } from '../../../hexagon'
 
 // TODO: test this
-export class RealVoiceLikeTTS implements ITextToSpeech {
+export class OpenAISpeechGenerator implements ITextToSpeechGenerator {
   private constructor(
     private readonly _axios: AxiosInstance,
     private readonly _audioDir: string
@@ -53,7 +53,7 @@ export class RealVoiceLikeTTS implements ITextToSpeech {
       .trim()
   }
 
-  public static create(axios: AxiosInstance, audioDir: string): RealVoiceLikeTTS {
-    return new RealVoiceLikeTTS(axios, audioDir)
+  public static create(axios: AxiosInstance, audioDir: string): OpenAISpeechGenerator {
+    return new OpenAISpeechGenerator(axios, audioDir)
   }
 }

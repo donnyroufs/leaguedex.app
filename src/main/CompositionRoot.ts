@@ -2,7 +2,12 @@ import os from 'os'
 import path from 'path'
 import { app, type IpcMain } from 'electron'
 
-import { FileSystemReminderRepository, FakeReminderRepository } from './adapters/outbound'
+import {
+  FileSystemReminderRepository,
+  FakeReminderRepository,
+  NativeWindowsSpeechGenerator,
+  OpenAISpeechGenerator
+} from './adapters/outbound'
 import { GameObjectiveTracker, IReminderRepository, RemoveReminderUseCase } from './hexagon'
 import { App } from './Leaguedex'
 import { ElectronAdapter } from './adapters/inbound'
@@ -14,7 +19,6 @@ import { NotifyElectron } from './adapters/outbound'
 import { Timer } from './adapters/outbound'
 import { ILogger } from './hexagon'
 import { IAudioPlayer } from './hexagon'
-import { TextToSpeech } from './adapters/outbound'
 import { AudioPlayer } from './adapters/outbound'
 import { ElectronLogger } from './adapters/outbound'
 import {
@@ -23,12 +27,11 @@ import {
   SimulatedRiotClientDataSource,
   RiotLiveClientApi
 } from './adapters/outbound/game-data'
-import { ITextToSpeech } from './hexagon'
+import { ITextToSpeechGenerator } from './hexagon'
 import { ITimer } from './hexagon'
 import { CreateReminderUseCase } from './hexagon'
 import { GetRemindersUseCase } from './hexagon'
 import { RemindersGameTickListener } from './hexagon'
-import { RealVoiceLikeTTS } from './adapters/outbound/RealVoiceLikeTTS'
 import axios from 'axios'
 
 type AppDependencies = {
@@ -39,7 +42,7 @@ type AppDependencies = {
   reminderRepository: IReminderRepository
   logger: ILogger
   audioPlayer: IAudioPlayer
-  tts: ITextToSpeech
+  tts: ITextToSpeechGenerator
   endTimer: number
 }
 
@@ -79,12 +82,16 @@ export async function createApp(
 
   const audioPlayer = overrides.audioPlayer ?? new AudioPlayer(logger)
   const audioDir = path.join(dataPath, 'audio')
-  let tts: ITextToSpeech
+  let tts: ITextToSpeechGenerator
 
   if (isProd) {
-    tts = RealVoiceLikeTTS.create(axiosInstance, audioDir)
+    tts = OpenAISpeechGenerator.create(axiosInstance, audioDir)
   } else {
-    tts = await TextToSpeech.create(logger, audioDir, os.platform() as 'win32' | 'darwin')
+    tts = await NativeWindowsSpeechGenerator.create(
+      logger,
+      audioDir,
+      os.platform() as 'win32' | 'darwin'
+    )
   }
 
   tts = overrides.tts ?? tts
@@ -132,7 +139,7 @@ export async function createTestApp(overrides: Partial<AppDependencies> = {}): P
   }
 
   if (overrides.tts == null) {
-    overrides.tts = await TextToSpeech.create(
+    overrides.tts = await NativeWindowsSpeechGenerator.create(
       ElectronLogger.createNull(),
       path.join('tmpaudio'),
       'darwin'

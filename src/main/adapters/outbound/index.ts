@@ -6,10 +6,10 @@ export * from './NotifyElectron'
 
 // Feature-specific adapters
 export * from './AudioPlayer'
-export * from './TextToSpeech'
-
 // Repositories
 export * from './repositories'
 
 // Riot API adapters
 export * from './game-data'
+
+export * from './audio-generators'

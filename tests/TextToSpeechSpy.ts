@@ -1,7 +1,7 @@
-import { ITextToSpeech } from '../src/main/hexagon/ports/ITextToSpeech'
+import { ITextToSpeechGenerator } from '../src/main/hexagon'
 import { Result } from '../src/main/shared-kernel'
 
-export class TextToSpeechSpy implements ITextToSpeech {
+export class TextToSpeechSpy implements ITextToSpeechGenerator {
   public totalCalls: number = 0
   public lastCalledWith: string | undefined
 
