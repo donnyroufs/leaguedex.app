@@ -6,7 +6,7 @@ export * from './ports/IReminderRepository'
 export * from './ports/ITextToSpeech'
 export * from './ports/ITimer'
 export * from './ports/IEventBus'
-export * from './ports/IRiotApi'
+export * from './ports/IGameDataProvider'
 
 // Domain models that adapters need
 export * from './Reminder'

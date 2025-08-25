@@ -5,14 +5,14 @@ import { GameStartedEvent } from './events/GameStartedEvent'
 import { ITimer } from './ports/ITimer'
 import { GameState } from './GameState'
 import { ILogger } from './ports/ILogger'
-import { GetGameStateResult, IRiotApi } from './ports/IRiotApi'
+import { GetGameStateResult, IGameDataProvider } from './ports/IGameDataProvider'
 
 export class GameDetectionService {
   private _gameStarted = false
 
   public constructor(
     private readonly _eventBus: IEventBus,
-    private readonly _riotApi: IRiotApi,
+    private readonly _gameDataProvider: IGameDataProvider,
     private readonly _timer: ITimer,
     private readonly _logger: ILogger
   ) {}
@@ -29,7 +29,7 @@ export class GameDetectionService {
 
   private async processGameState(): Promise<void> {
     try {
-      const result = await this._riotApi.getGameState()
+      const result = await this._gameDataProvider.getGameData()
 
       if (this.shouldSkipProcessing(result)) {
         return

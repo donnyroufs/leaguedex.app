@@ -12,4 +12,4 @@ export * from './TextToSpeech'
 export * from './repositories'
 
 // Riot API adapters
-export * from './riot-api'
+export * from './game-data'

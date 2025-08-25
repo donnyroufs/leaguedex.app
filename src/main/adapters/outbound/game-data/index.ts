@@ -1,4 +1,4 @@
-export { RiotApi } from './RiotApi'
+export { RiotLiveClientApi } from './RiotLiveClientApi'
 export type {
   IRiotClientDataSource,
   LiveGameData,

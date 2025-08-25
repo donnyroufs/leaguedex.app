@@ -3,6 +3,7 @@ import {
   DragonKilledEvent,
   GameEvent,
   GameStartedEvent,
+  IGameDataProvider,
   Player,
   Team
 } from '../../../hexagon'
@@ -11,10 +12,13 @@ import { Result } from '../../../shared-kernel'
 import { GameState } from '../../../hexagon'
 import { GetGameStateResult } from '../../../hexagon'
 
-export class RiotApi {
+/**
+ * Riot Client exposes an API on localhost
+ */
+export class RiotLiveClientApi implements IGameDataProvider {
   public constructor(private readonly _dataSource: IRiotClientDataSource) {}
 
-  public async getGameState(): Promise<GetGameStateResult> {
+  public async getGameData(): Promise<GetGameStateResult> {
     const result = await this._dataSource.getGameData()
 
     if (result.isErr()) {
@@ -59,6 +63,7 @@ export class RiotApi {
     }))
 
     switch (evt.EventName) {
+      // TODO: probably shouldnt be an event anymore
       case 'GameStart':
         return new GameStartedEvent(evt.EventID, {
           // TODO: check if we should floor/round or even ceil this

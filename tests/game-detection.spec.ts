@@ -4,7 +4,7 @@ import { afterEach, beforeEach } from 'vitest'
 import { GameDetectionService } from '../src/main/hexagon/GameDetectionService'
 import { FakeTimer } from './FakeTimer'
 import { EventBusSpy } from './EventBusSpy'
-import { RiotApi } from '../src/main/adapters/outbound/riot-api'
+import { RiotLiveClientApi } from '../src/main/adapters/outbound/game-data'
 import { GameTickEvent } from '../src/main/hexagon/events/GameTickEvent'
 import { ElectronLogger } from '../src/main/adapters/outbound/ElectronLogger'
 import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
@@ -13,16 +13,16 @@ describe('Game Detection Service', () => {
   let eventBus: EventBusSpy
   let timer: FakeTimer
   let dataSource: FakeRiotClientDataSource
-  let riotApi: RiotApi
+  let gameDataProvider: RiotLiveClientApi
   let sut: GameDetectionService
 
   beforeEach(() => {
     eventBus = new EventBusSpy()
     timer = new FakeTimer()
     dataSource = new FakeRiotClientDataSource()
-    riotApi = new RiotApi(dataSource)
+    gameDataProvider = new RiotLiveClientApi(dataSource)
 
-    sut = new GameDetectionService(eventBus, riotApi, timer, ElectronLogger.createNull())
+    sut = new GameDetectionService(eventBus, gameDataProvider, timer, ElectronLogger.createNull())
   })
 
   afterEach(() => {

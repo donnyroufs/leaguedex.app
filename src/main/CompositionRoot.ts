@@ -21,8 +21,8 @@ import {
   IRiotClientDataSource,
   RiotClientDataSource,
   SimulatedRiotClientDataSource,
-  RiotApi
-} from './adapters/outbound/riot-api'
+  RiotLiveClientApi
+} from './adapters/outbound/game-data'
 import { ITextToSpeech } from './hexagon'
 import { ITimer } from './hexagon'
 import { CreateReminderUseCase } from './hexagon'
@@ -62,11 +62,11 @@ export async function createApp(
     (isProd
       ? new RiotClientDataSource()
       : SimulatedRiotClientDataSource.createAndStartGame(overrides.endTimer ?? 600))
-  const riotApi = new RiotApi(dataSource)
+  const gameDataProvider = new RiotLiveClientApi(dataSource)
   const notifyElectron = overrides.notifyElectron ?? new NotifyElectron()
 
   const timer = overrides.timer ?? new Timer()
-  const gameDetectionService = new GameDetectionService(eventBus, riotApi, timer, logger)
+  const gameDetectionService = new GameDetectionService(eventBus, gameDataProvider, timer, logger)
 
   // Modules
   let reminderRepository: IReminderRepository

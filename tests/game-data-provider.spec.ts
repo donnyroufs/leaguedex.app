@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'vitest'
-import { RiotApi } from '../src/main/adapters/outbound/riot-api'
+import { RiotLiveClientApi } from '../src/main/adapters/outbound/game-data'
 import { SimulatedRiotClientDataSource } from '../src/main/adapters/outbound'
 
-describe('Riot Api', () => {
+describe('Game Data Provider', () => {
   test('should transform game state', async () => {
     const fakeApi = SimulatedRiotClientDataSource.createForTests()
-    const sut = new RiotApi(fakeApi)
+    const sut = new RiotLiveClientApi(fakeApi)
 
     fakeApi.setGameStarted()
-    const result = await sut.getGameState()
+    const result = await sut.getGameData()
 
     expect(result.isOk()).toBe(true)
     expect(result.getValue()).toEqual({
