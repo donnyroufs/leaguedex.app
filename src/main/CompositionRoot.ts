@@ -92,15 +92,12 @@ export async function createApp(
   )
 
   if (isPackaged) {
-    const os = await import('os')
-
     logger.info('app created', {
       dataPath,
       isPackaged,
       overrides,
       version: app.getVersion(),
       locale: app.getSystemLocale(),
-      os: os.platform(),
       using: [
         tts.constructor.name,
         audioPlayer.constructor.name,
