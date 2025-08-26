@@ -3,7 +3,7 @@ import { RiotLiveClientApi } from '../src/main/adapters/outbound/game-data'
 import { SimulatedRiotClientDataSource } from '../src/main/adapters/outbound'
 
 describe('Game Data Provider', () => {
-  test('should transform game state', async () => {
+  test('should transform game state but not include game started event', async () => {
     const fakeApi = SimulatedRiotClientDataSource.createForTests()
     const sut = new RiotLiveClientApi(fakeApi)
 
@@ -12,15 +12,8 @@ describe('Game Data Provider', () => {
 
     expect(result.isOk()).toBe(true)
     expect(result.getValue()).toEqual({
-      events: [
-        {
-          eventType: 'game-started',
-          data: {
-            gameTime: 0
-          },
-          id: expect.any(Number)
-        }
-      ],
+      hasStarted: true,
+      events: [],
       gameTime: 0,
       activePlayer: {
         summonerName: 'test#1234',
@@ -29,4 +22,7 @@ describe('Game Data Provider', () => {
       }
     })
   })
+
+  test.todo('Should transform dragon kill event')
+  test.todo('Should transform baron kill event')
 })

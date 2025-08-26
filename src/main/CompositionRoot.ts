@@ -45,12 +45,7 @@ export async function createApp(
   const notifyElectron = overrides.notifyElectron ?? new Outbound.NotifyElectron()
 
   const timer = overrides.timer ?? new Outbound.Timer()
-  const gameDetectionService = new Hexagon.GameDetectionService(
-    eventBus,
-    gameDataProvider,
-    timer,
-    logger
-  )
+  const gameMonitor = new Hexagon.GameMonitor(logger, timer, eventBus, gameDataProvider)
 
   // Modules
   let reminderRepository: Hexagon.IReminderRepository
@@ -110,7 +105,7 @@ export async function createApp(
   }
 
   return new App(
-    gameDetectionService,
+    gameMonitor,
     eventBus,
     notifyElectron,
     logger,

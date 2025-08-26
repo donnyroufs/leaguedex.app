@@ -5,6 +5,19 @@ Example generating a spec from a feature:
 
 ## Todos
 
+- [ ] Create our new GameMonitor
+  - This means we turn the game event game started into a domain event and never include it to the game events in state
+  - The gamedetectionservice gets removed
+  - we emit:
+    - GameStartedEvent
+    - GameStoppedEvent
+    - GameTickEvent
+      - Has current game state
+      - Has a dependency on GameStateAssembler
+- [ ] We make our game state assembler functional
+  - This means that our GameObjectiveTracker will be used here. And also renamed to DragonTracker/DragonProcessor I think.
+
+
 ## **Phase 3: Service Extraction (Dependencies Matter)**
 5. **Create Missing Domain Service**
    - Extract reminder logic from `RemindersGameTickListener` into new `ReminderEngine` class

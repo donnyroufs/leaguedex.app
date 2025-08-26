@@ -12,17 +12,19 @@ export * from './ports/IGameDataProvider'
 export * from './Reminder'
 export * from './ReminderDto'
 export * from './GameState'
-export * from './Player'
+export * from './ActivePlayer'
 export * from './Team'
+export * from './GameData'
 
 // Events that adapters need
-export * from './events'
+export * from './game-events'
+export * from './domain-events'
 
 // Use cases that adapters need
 export * from './CreateReminderUseCase'
 export * from './GetRemindersUseCase'
 export * from './RemoveReminderUseCase'
 export * from './RemindersGameTickListener'
-export * from './GameDetectionService'
+export * from './GameMonitor'
 
 export * from './GameObjectiveTracker'

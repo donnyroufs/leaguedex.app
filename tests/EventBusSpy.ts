@@ -1,8 +1,8 @@
-import { IEventBus, EventKey, EventMap, GameEvent } from '../src/main/hexagon'
+import { IEventBus, EventKey, EventMap, DomainEvent } from '../src/main/hexagon'
 
 export class EventBusSpy implements IEventBus {
-  public events: GameEvent<unknown>[] = []
-  public lastEvent: GameEvent<unknown> | null = null
+  public events: DomainEvent[] = []
+  public lastEvent: DomainEvent | null = null
   public lastEventType: EventKey | null = null
   public totalCalls: number = 0
 
@@ -22,6 +22,10 @@ export class EventBusSpy implements IEventBus {
     return events.length === eventTypes.length
   }
 
+  public getEventTypes(): EventKey[] {
+    return this.events.map((event) => event.eventType)
+  }
+
   public hasAllEventsInOrder(eventTypes: EventKey[]): boolean {
     for (let i = 0; i < eventTypes.length; i++) {
       if (this.events[i]?.eventType !== eventTypes[i]) {
@@ -30,6 +34,10 @@ export class EventBusSpy implements IEventBus {
     }
 
     return true
+  }
+
+  public hasEventOnce(eventType: EventKey): boolean {
+    return this.events.filter((event) => event.eventType === eventType).length === 1
   }
 
   public subscribe(): void {

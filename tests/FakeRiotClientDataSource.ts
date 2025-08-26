@@ -2,7 +2,7 @@ import {
   GetGameDataResult,
   IRiotClientDataSource,
   LiveGameData
-} from '../src/main/adapters/outbound/riot-api/IRiotClientDataSource'
+} from '../src/main/adapters/outbound'
 import { Result } from '../src/main/shared-kernel'
 
 interface IGameTicker {

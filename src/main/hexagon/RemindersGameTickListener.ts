@@ -1,4 +1,4 @@
-import { GameTickEvent } from './events/GameTickEvent'
+import { GameTickEvent } from './domain-events/GameTickEvent'
 import { GameObjectiveTracker } from './GameObjectiveTracker'
 import { IAudioPlayer } from './ports/IAudioPlayer'
 import { ILogger } from './ports/ILogger'
@@ -13,7 +13,7 @@ export class RemindersGameTickListener {
   ) {}
 
   public async handle(evt: GameTickEvent): Promise<void> {
-    const { gameTime } = evt.data.state
+    const { gameTime } = evt.payload.state
 
     const reminders = await this._reminderRepository.all()
     const dueReminders = reminders.unwrap().filter((reminder) => {
@@ -26,7 +26,7 @@ export class RemindersGameTickListener {
       }
 
       if (reminder.triggerType === 'event' && reminder.event === 'respawn') {
-        return evt.data.state.activePlayer.respawnsIn === 1
+        return evt.payload.state.activePlayer.respawnsIn === 1
       }
 
       if (reminder.triggerType === 'objective' && reminder.objective != null) {

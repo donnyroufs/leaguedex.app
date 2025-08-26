@@ -8,20 +8,22 @@ import {
   RemindersGameTickListener,
   RemoveReminderUseCase,
   IReminderDto,
-  GameDetectionService,
   GameStartedEvent,
   GameTickEvent,
   GameObjectiveTracker,
-  IEventBus
+  IEventBus,
+  GameMonitor
 } from './hexagon'
 import { app } from 'electron'
 import path, { join } from 'path'
 import { access, constants, readFile, writeFile } from 'fs/promises'
 import { getLicenseKey, revalidateLicenseKey } from './getLicenseKey'
 
+// TODO: This file is going to be pretty much removed. We will have our composition root that will initialize all the dependencies and that's it.
+// Then we have controllers exposed as ports from the hexagon, and we can create adapters on top of them to hook it all up. This is becoming a god class.
 export class App {
   public constructor(
-    private readonly _gameDetectionService: GameDetectionService,
+    private readonly _gameMonitor: GameMonitor,
     private readonly _eventBus: IEventBus,
     private readonly _notifyElectron: INotifyElectron,
     private readonly _logger: ILogger,
@@ -36,19 +38,20 @@ export class App {
     this._logger.info('app starting')
 
     this._eventBus.subscribe('game-started', this.onGameStarted.bind(this))
-    this._eventBus.subscribe('game-ended', this.onGameEnded.bind(this))
+    this._eventBus.subscribe('game-stopped', this.onGameEnded.bind(this))
     this._eventBus.subscribe('game-tick', this.onGameTick.bind(this))
 
-    this._gameDetectionService.start()
+    this._gameMonitor.start()
 
     this._logger.info('app started')
   }
 
   public async stop(): Promise<void> {
     this._eventBus.unsubscribe('game-started', this.onGameStarted.bind(this))
-    this._eventBus.unsubscribe('game-ended', this.onGameEnded.bind(this))
+    this._eventBus.unsubscribe('game-stopped', this.onGameEnded.bind(this))
+    this._eventBus.unsubscribe('game-tick', this.onGameTick.bind(this))
 
-    this._gameDetectionService.stop()
+    this._gameMonitor.stop()
     this._logger.info('app stopped')
   }
 
@@ -99,7 +102,7 @@ export class App {
 
   private async onGameStarted(evt: GameStartedEvent): Promise<void> {
     this._logger.info('onGameStarted')
-    const data = createGameDataDto(true, evt.data.gameTime)
+    const data = createGameDataDto(true, evt.payload.gameTime)
     this._notifyElectron.notify(data.type, data)
   }
 
@@ -113,10 +116,10 @@ export class App {
 
   private async onGameTick(evt: GameTickEvent): Promise<void> {
     this._logger.info('onGameTick')
-    const data = createGameDataDto(true, evt.data.state.gameTime)
+    const data = createGameDataDto(true, evt.payload.state.gameTime)
     this._notifyElectron.notify(data.type, data)
 
-    this._gameObjectiveTracker.track(evt.data.state)
+    this._gameObjectiveTracker.track(evt.payload.state)
 
     await this._remindersGameTickListener.handle(evt)
   }

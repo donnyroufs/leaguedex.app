@@ -1,4 +1,4 @@
-import { BaronKilledEvent, DragonKilledEvent } from './events'
+import { BaronKilledEvent, DragonKilledEvent } from './game-events'
 import { GameState } from './GameState'
 import { ILogger } from './ports/ILogger'
 import { ReminderObjective } from './Reminder'
@@ -41,7 +41,6 @@ export class GameObjectiveTracker {
       nextSpawn: 1200
     }
   }
-  private readonly _processedEvents = new Set<number>()
 
   // Use the existing Team type
   private _teamDragonKills: Record<Team, number> = {
@@ -63,12 +62,8 @@ export class GameObjectiveTracker {
     this._processedTick.add(gameState.gameTime)
 
     for (const evt of gameState.events) {
-      if (this._processedEvents.has(evt.id)) {
-        continue
-      }
-
-      switch (evt.eventType) {
-        case 'dragon-killed': {
+      switch (evt.constructor.name) {
+        case DragonKilledEvent.name: {
           const dragonEvent = evt as DragonKilledEvent
           const killedByTeam = dragonEvent.data.killedByTeam
 
@@ -88,13 +83,12 @@ export class GameObjectiveTracker {
           this._objectiveState.dragon.isAlive = false
           break
         }
-        case 'baron-killed':
+        case BaronKilledEvent.name: {
           this._objectiveState.baron.nextSpawn = (evt as BaronKilledEvent).data.gameTime + 360
           this._objectiveState.baron.isAlive = false
           break
+        }
       }
-
-      this._processedEvents.add(evt.id)
     }
 
     if (!this._objectiveState.dragon.isAlive && gameState.gameTime === 300) {
@@ -159,7 +153,6 @@ export class GameObjectiveTracker {
   }
 
   public reset(): void {
-    this._processedEvents.clear()
     this._objectiveState = {
       dragon: {
         isAlive: false,

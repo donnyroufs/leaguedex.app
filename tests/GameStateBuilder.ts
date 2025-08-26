@@ -2,7 +2,6 @@ import {
   BaronKilledEvent,
   DragonKilledEvent,
   GameEvent,
-  GameStartedEvent,
   GameState,
   Team
 } from './../src/main/hexagon'
@@ -18,11 +17,8 @@ export class GameStateBuilder {
   }
 
   public withGameStartedEvent(): GameStateBuilder {
-    this._events.push(
-      new GameStartedEvent(this.getNextId(), {
-        gameTime: this._gameTime
-      })
-    )
+    // TODO: this is broken
+    this._events.push()
 
     return this
   }
