@@ -98,7 +98,13 @@ export async function createApp(
       overrides,
       version: app.getVersion(),
       locale: app.getSystemLocale(),
-      os: os.platform()
+      os: os.platform(),
+      using: [
+        tts.constructor.name,
+        audioPlayer.constructor.name,
+        dataSource.constructor.name,
+        reminderRepository.constructor.name
+      ]
     })
   }
 
