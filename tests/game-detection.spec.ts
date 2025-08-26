@@ -6,7 +6,7 @@ import { FakeTimer } from './FakeTimer'
 import { EventBusSpy } from './EventBusSpy'
 import { RiotLiveClientApi } from '../src/main/adapters/outbound/game-data'
 import { GameTickEvent } from '../src/main/hexagon/events/GameTickEvent'
-import { ElectronLogger } from '../src/main/adapters/outbound/ElectronLogger'
+import { NullLogger } from '../src/main/adapters/outbound/NullLogger'
 import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
 
 describe('Game Detection Service', () => {
@@ -22,7 +22,7 @@ describe('Game Detection Service', () => {
     dataSource = new FakeRiotClientDataSource()
     gameDataProvider = new RiotLiveClientApi(dataSource)
 
-    sut = new GameDetectionService(eventBus, gameDataProvider, timer, ElectronLogger.createNull())
+    sut = new GameDetectionService(eventBus, gameDataProvider, timer, new NullLogger())
   })
 
   afterEach(() => {

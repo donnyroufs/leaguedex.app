@@ -117,7 +117,7 @@ export async function createApp(
 
 export async function createTestApp(overrides: Partial<AppDependencies> = {}): Promise<App> {
   if (overrides?.logger == null) {
-    overrides.logger = Outbound.ElectronLogger.createNull()
+    overrides.logger = new Outbound.NullLogger()
   }
 
   if (overrides.tts == null) {

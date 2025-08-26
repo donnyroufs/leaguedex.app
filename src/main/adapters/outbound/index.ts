@@ -3,6 +3,7 @@ export * from './EventBus'
 export * from './Timer'
 export * from './ElectronLogger'
 export * from './NotifyElectron'
+export * from './NullLogger'
 
 // Feature-specific adapters
 export * from './AudioPlayer'

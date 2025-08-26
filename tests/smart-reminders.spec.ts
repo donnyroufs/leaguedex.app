@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import { expect } from 'vitest'
 
 import { CreateReminderDto } from '../src/main/hexagon'
-import { FakeReminderRepository, EventBus, ElectronLogger } from '../src/main/adapters/outbound'
+import { FakeReminderRepository, EventBus, NullLogger } from '../src/main/adapters/outbound'
 import { App } from '../src/main/Leaguedex'
 import { createTestApp } from '../src/main/CompositionRoot'
 
@@ -68,7 +68,7 @@ describeFeature(
     BeforeAllScenarios(async () => {
       fakeReminderRepository = new FakeReminderRepository()
       timer = new FakeTimer()
-      eventBus = new EventBus(ElectronLogger.createNull())
+      eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
       notifyElectron = new DummyElectronNotifier()
@@ -98,7 +98,7 @@ describeFeature(
       // Looks like there is something wrong with the cucumber package? We will just reset the entire app for now.
       fakeReminderRepository = new FakeReminderRepository()
       timer = new FakeTimer()
-      eventBus = new EventBus(ElectronLogger.createNull())
+      eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
       notifyElectron = new DummyElectronNotifier()
