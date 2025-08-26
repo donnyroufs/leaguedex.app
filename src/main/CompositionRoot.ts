@@ -73,11 +73,6 @@ export async function createApp(
 
   tts = overrides.tts ?? tts
 
-  const remindersGameTickListener = new Hexagon.RemindersGameTickListener(
-    reminderRepository,
-    audioPlayer,
-    logger
-  )
   const createReminderUseCase = new Hexagon.CreateReminderUseCase(tts, reminderRepository)
   const getRemindersUseCase = new Hexagon.GetRemindersUseCase(reminderRepository)
   const removeReminderUseCase = new Hexagon.RemoveReminderUseCase(reminderRepository)
@@ -86,8 +81,10 @@ export async function createApp(
     createReminderUseCase,
     getRemindersUseCase,
     removeReminderUseCase,
-    remindersGameTickListener,
-    eventBus
+    eventBus,
+    audioPlayer,
+    logger,
+    reminderRepository
   )
 
   if (isPackaged) {

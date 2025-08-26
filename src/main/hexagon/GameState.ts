@@ -35,4 +35,3 @@ export type ObjectiveState = {
   herald: ObjectiveData
   atakhan: ObjectiveData
 }
-

@@ -1,9 +1,12 @@
 import { CreateReminderDto, CreateReminderUseCase } from './CreateReminderUseCase'
 import { GameTickEvent } from './domain-events'
 import { GetRemindersUseCase } from './GetRemindersUseCase'
+import { IAudioPlayer } from './ports/IAudioPlayer'
 import { IEventBus } from './ports/IEventBus'
+import { ILogger } from './ports/ILogger'
+import { IReminderRepository } from './ports/IReminderRepository'
 import { IReminderDto } from './ReminderDto'
-import { RemindersGameTickListener } from './RemindersGameTickListener'
+import { ReminderEngine } from './ReminderEngine'
 import { RemoveReminderUseCase } from './RemoveReminderUseCase'
 
 export class ReminderService {
@@ -11,8 +14,10 @@ export class ReminderService {
     private readonly _createReminderUseCase: CreateReminderUseCase,
     private readonly _getRemindersUseCase: GetRemindersUseCase,
     private readonly _removeReminderUseCase: RemoveReminderUseCase,
-    private readonly _remindersGameTickListener: RemindersGameTickListener,
-    private readonly _eventBus: IEventBus
+    private readonly _eventBus: IEventBus,
+    private readonly _audioPlayer: IAudioPlayer,
+    private readonly _logger: ILogger,
+    private readonly _reminderRepository: IReminderRepository
   ) {}
 
   public async start(): Promise<void> {
@@ -36,6 +41,19 @@ export class ReminderService {
   }
 
   protected async onGameTick(evt: GameTickEvent): Promise<void> {
-    return this._remindersGameTickListener.handle(evt)
+    const { gameTime } = evt.payload.state
+
+    const reminders = await this._reminderRepository.all()
+    const dueReminders = ReminderEngine.getDueReminders(evt.payload.state, reminders.unwrap())
+
+    this._logger.info('Processing reminders', {
+      gameTime,
+      reminders: reminders.unwrap().map((x) => x.id),
+      dueReminders: dueReminders.map((x) => x.id)
+    })
+
+    for (const reminder of dueReminders) {
+      await this._audioPlayer.play(reminder.audioUrl)
+    }
   }
 }
