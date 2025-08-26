@@ -1,7 +1,6 @@
 // Ports - what adapters can depend on
 export * from './ports/IAudioPlayer'
 export * from './ports/ILogger'
-export * from './ports/INotifyElectron'
 export * from './ports/IReminderRepository'
 export * from './ports/ITextToSpeechGenerator'
 export * from './ports/ITimer'
