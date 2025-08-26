@@ -103,7 +103,8 @@ export async function createApp(
         tts.constructor.name,
         audioPlayer.constructor.name,
         dataSource.constructor.name,
-        reminderRepository.constructor.name
+        reminderRepository.constructor.name,
+        timer.constructor.name
       ]
     })
   }
