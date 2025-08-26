@@ -1,24 +1,15 @@
-# Leaguedex App
+# 🎮 Leaguedex
 
-Example generating a spec from a feature:
-> npx @amiceli/vitest-cucumber --feature tests/features/coaching.feature --space tests/features/coaching.spec.ts --spec tests/coaching.spec.ts
+<div align="center">
+  <img src="build/icon.png" alt="Leaguedex Logo" width="200" height="200">
 
+  [![Version](https://img.shields.io/badge/version-0.0.52-blue.svg)](https://github.com/donnyroufs/leaguedex-app/releases)
+  [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+  [![Electron](https://img.shields.io/badge/Electron-37.2.3-9FEAF9.svg?logo=electron)](https://electronjs.org/)
+  [![React](https://img.shields.io/badge/React-19.1.0-61DAFB.svg?logo=react)](https://reactjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6.svg?logo=typescript)](https://www.typescriptlang.org/)
+</div>
 
-## **Phase 3: Service Extraction (Dependencies Matter)**
-5. **Create Missing Domain Service**
-   - Extract reminder logic from `RemindersGameTickListener` into new `ReminderEngine` class
-   - Move `ReminderEngine` to domain layer (blue in your diagram)
+## 🚀 What is Leaguedex?
 
-6. **Create Missing Application Service**
-   - Create `ReminderService` class in application layer (red in your diagram)
-   - Move orchestration logic from `RemindersGameTickListener` to `ReminderService`
-
-## **Phase 4: Integration & Testing**
-8. **Update Composition Root**
-   - Wire up the new `ReminderEngine` and `ReminderService`
-   - Update dependency injection for renamed components
-
-9. **Update Tests**
-   - Fix broken imports from renames
-   - Update test setup for new service structure
-   - Test that adapters create directories when needed
+**Leaguedex** is a powerful desktop application designed specifically for League of Legends players to track their games and analyze their performance. Built with modern web technologies and packaged as a native desktop app, it provides an intuitive interface for managing game reminders, tracking objectives, and optimizing your gameplay experience.
