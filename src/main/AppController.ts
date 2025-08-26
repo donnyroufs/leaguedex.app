@@ -1,49 +1,34 @@
-import { createGameDataDto } from './shared-kernel/contracts'
 import {
   ILogger,
-  INotifyElectron,
   CreateReminderDto,
   IReminderDto,
-  GameStartedEvent,
-  GameTickEvent,
-  IEventBus,
   GameMonitor,
-  ReminderService
+  ReminderService,
+  IAppController,
+  IEventBus
 } from './hexagon'
 import { app } from 'electron'
 import path, { join } from 'path'
 import { access, constants, readFile, writeFile } from 'fs/promises'
 import { getLicenseKey, revalidateLicenseKey } from './getLicenseKey'
+import { createGameDataDto, GameDataDto } from './shared-kernel/contracts'
 
-// TODO: This file is going to be pretty much removed. We will have our composition root that will initialize all the dependencies and that's it.
-// Then we have controllers exposed as ports from the hexagon, and we can create adapters on top of them to hook it all up. This is becoming a god class.
-export class App {
+export class AppController implements IAppController {
   public constructor(
     private readonly _gameMonitor: GameMonitor,
-    private readonly _eventBus: IEventBus,
-    private readonly _notifyElectron: INotifyElectron,
     private readonly _logger: ILogger,
-    private readonly _reminderService: ReminderService
+    private readonly _reminderService: ReminderService,
+    private readonly _eventBus: IEventBus
   ) {}
 
   public async start(): Promise<void> {
-    this._logger.info('app starting')
-
-    this._eventBus.subscribe('game-started', this.onGameStarted.bind(this))
-    this._eventBus.subscribe('game-stopped', this.onGameEnded.bind(this))
-    this._eventBus.subscribe('game-tick', this.onGameTick.bind(this))
-
-    this._gameMonitor.start()
-    this._reminderService.start()
+    await this._gameMonitor.start()
+    await this._reminderService.start()
 
     this._logger.info('app started')
   }
 
   public async stop(): Promise<void> {
-    this._eventBus.unsubscribe('game-started', this.onGameStarted.bind(this))
-    this._eventBus.unsubscribe('game-stopped', this.onGameEnded.bind(this))
-    this._eventBus.unsubscribe('game-tick', this.onGameTick.bind(this))
-
     this._gameMonitor.stop()
     this._reminderService.stop()
     this._logger.info('app stopped')
@@ -94,22 +79,24 @@ export class App {
     }
   }
 
-  private async onGameStarted(evt: GameStartedEvent): Promise<void> {
-    this._logger.info('onGameStarted')
-    const data = createGameDataDto(true, evt.payload.gameTime)
-    this._notifyElectron.notify(data.type, data)
+  public onGameTick(callback: (gameData: GameDataDto) => void): void {
+    this._eventBus.subscribe('game-tick', (evt) => {
+      const data = createGameDataDto(true, evt.payload.state.gameTime)
+      callback(data)
+    })
   }
 
-  private async onGameEnded(): Promise<void> {
-    this._logger.info('onGameEnded')
-    const data = createGameDataDto(false, null)
-
-    this._notifyElectron.notify(data.type, data)
+  public onGameStarted(callback: (gameData: GameDataDto) => void): void {
+    this._eventBus.subscribe('game-started', (evt) => {
+      const data = createGameDataDto(true, evt.payload.gameTime)
+      callback(data)
+    })
   }
 
-  private async onGameTick(evt: GameTickEvent): Promise<void> {
-    this._logger.info('onGameTick')
-    const data = createGameDataDto(true, evt.payload.state.gameTime)
-    this._notifyElectron.notify(data.type, data)
+  public onGameStopped(callback: (gameData: GameDataDto) => void): void {
+    this._eventBus.subscribe('game-stopped', () => {
+      const data = createGameDataDto(false, null)
+      callback(data)
+    })
   }
 }

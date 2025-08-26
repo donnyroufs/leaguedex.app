@@ -4,12 +4,11 @@ import { expect } from 'vitest'
 
 import { CreateReminderDto } from '../src/main/hexagon'
 import { FakeReminderRepository, EventBus, NullLogger } from '../src/main/adapters/outbound'
-import { App } from '../src/main/Leaguedex'
+import { AppController } from '../src/main/AppController'
 import { createTestApp } from '../src/main/CompositionRoot'
 
 import { FakeTimer } from './FakeTimer'
 import { AudioSpy } from './AudioSpy'
-import { DummyElectronNotifier } from './DummyElectronNotifier'
 import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
 
 const feature = await loadFeature('tests/features/smart-reminders.feature')
@@ -25,13 +24,12 @@ describeFeature(
     Scenario,
     ScenarioOutline
   }) => {
-    let app!: App
+    let app!: AppController
     let fakeReminderRepository!: FakeReminderRepository
     let timer: FakeTimer
     let audioPlayer: AudioSpy
     let eventBus: EventBus
     let dataSource: FakeRiotClientDataSource
-    let notifyElectron: DummyElectronNotifier
 
     async function createReminder(data: CreateReminderDto): Promise<string> {
       const reminderData: {
@@ -71,15 +69,13 @@ describeFeature(
       eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
-      notifyElectron = new DummyElectronNotifier()
 
       app = await createTestApp({
         reminderRepository: fakeReminderRepository,
         timer,
         audioPlayer,
         eventBus,
-        dataSource,
-        notifyElectron
+        dataSource
       })
     })
 
@@ -101,15 +97,13 @@ describeFeature(
       eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
-      notifyElectron = new DummyElectronNotifier()
 
       app = await createTestApp({
         reminderRepository: fakeReminderRepository,
         timer,
         audioPlayer,
         eventBus,
-        dataSource,
-        notifyElectron
+        dataSource
       })
     })
 

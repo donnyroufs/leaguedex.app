@@ -5,7 +5,7 @@ import { autoUpdater } from 'electron-updater'
 
 import icon from '../../resources/icon.png?asset'
 
-import { createAppAndStart } from './CompositionRoot'
+import { createElectronAppAndStart } from './CompositionRoot'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -52,7 +52,7 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  await createAppAndStart(ipcMain)
+  await createElectronAppAndStart(ipcMain)
 
   ipcMain.handle('get-version', async () => {
     return app.getVersion()
