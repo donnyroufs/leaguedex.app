@@ -2,6 +2,7 @@ import { GameTickEvent } from './domain-events/GameTickEvent'
 import { IAudioPlayer } from './ports/IAudioPlayer'
 import { ILogger } from './ports/ILogger'
 import { IReminderRepository } from './ports/IReminderRepository'
+import { ReminderEngine } from './ReminderEngine'
 
 export class RemindersGameTickListener {
   public constructor(
@@ -14,31 +15,7 @@ export class RemindersGameTickListener {
     const { gameTime } = evt.payload.state
 
     const reminders = await this._reminderRepository.all()
-    const dueReminders = reminders.unwrap().filter((reminder) => {
-      if (reminder.triggerType === 'interval' && reminder.interval) {
-        return gameTime % reminder.interval === 0
-      }
-
-      if (reminder.triggerType === 'oneTime' && reminder.triggerAt) {
-        return gameTime === reminder.triggerAt
-      }
-
-      if (reminder.triggerType === 'event' && reminder.event === 'respawn') {
-        return evt.payload.state.activePlayer.respawnsIn === 1
-      }
-
-      if (reminder.triggerType === 'objective' && reminder.objective != null) {
-        const nextSpawn = evt.payload.state.objectives[reminder.objective]?.nextSpawn
-
-        if (!nextSpawn) {
-          return false
-        }
-
-        return gameTime === nextSpawn - reminder.beforeObjective!
-      }
-
-      return false
-    })
+    const dueReminders = ReminderEngine.getDueReminders(evt.payload.state, reminders.unwrap())
 
     this._logger.info('Processing reminders', {
       gameTime,
