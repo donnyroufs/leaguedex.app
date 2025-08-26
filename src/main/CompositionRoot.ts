@@ -82,6 +82,14 @@ export async function createApp(
   const getRemindersUseCase = new Hexagon.GetRemindersUseCase(reminderRepository)
   const removeReminderUseCase = new Hexagon.RemoveReminderUseCase(reminderRepository)
 
+  const reminderService = new Hexagon.ReminderService(
+    createReminderUseCase,
+    getRemindersUseCase,
+    removeReminderUseCase,
+    remindersGameTickListener,
+    eventBus
+  )
+
   if (isPackaged) {
     const os = await import('os')
 
@@ -102,16 +110,7 @@ export async function createApp(
     })
   }
 
-  return new App(
-    gameMonitor,
-    eventBus,
-    notifyElectron,
-    logger,
-    createReminderUseCase,
-    getRemindersUseCase,
-    removeReminderUseCase,
-    remindersGameTickListener
-  )
+  return new App(gameMonitor, eventBus, notifyElectron, logger, reminderService)
 }
 
 export async function createTestApp(overrides: Partial<AppDependencies> = {}): Promise<App> {

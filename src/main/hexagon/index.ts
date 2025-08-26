@@ -26,5 +26,5 @@ export * from './GetRemindersUseCase'
 export * from './RemoveReminderUseCase'
 export * from './RemindersGameTickListener'
 export * from './GameMonitor'
-
+export * from './ReminderService'
 export * from './GameObjectiveTracker'

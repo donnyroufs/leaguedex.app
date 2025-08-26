@@ -2,16 +2,13 @@ import { createGameDataDto } from './shared-kernel/contracts'
 import {
   ILogger,
   INotifyElectron,
-  CreateReminderUseCase,
   CreateReminderDto,
-  GetRemindersUseCase,
-  RemindersGameTickListener,
-  RemoveReminderUseCase,
   IReminderDto,
   GameStartedEvent,
   GameTickEvent,
   IEventBus,
-  GameMonitor
+  GameMonitor,
+  ReminderService
 } from './hexagon'
 import { app } from 'electron'
 import path, { join } from 'path'
@@ -26,10 +23,7 @@ export class App {
     private readonly _eventBus: IEventBus,
     private readonly _notifyElectron: INotifyElectron,
     private readonly _logger: ILogger,
-    private readonly _createReminderUseCase: CreateReminderUseCase,
-    private readonly _getRemindersUseCase: GetRemindersUseCase,
-    private readonly _removeReminderUseCase: RemoveReminderUseCase,
-    private readonly _remindersGameTickListener: RemindersGameTickListener
+    private readonly _reminderService: ReminderService
   ) {}
 
   public async start(): Promise<void> {
@@ -40,6 +34,7 @@ export class App {
     this._eventBus.subscribe('game-tick', this.onGameTick.bind(this))
 
     this._gameMonitor.start()
+    this._reminderService.start()
 
     this._logger.info('app started')
   }
@@ -50,22 +45,23 @@ export class App {
     this._eventBus.unsubscribe('game-tick', this.onGameTick.bind(this))
 
     this._gameMonitor.stop()
+    this._reminderService.stop()
     this._logger.info('app stopped')
   }
 
   public getReminders(): Promise<IReminderDto[]> {
     this._logger.info('getReminders')
-    return this._getRemindersUseCase.execute()
+    return this._reminderService.getReminders()
   }
 
   public async addReminder(data: CreateReminderDto): Promise<string> {
     this._logger.info('addReminder', { data })
-    return this._createReminderUseCase.execute(data)
+    return this._reminderService.addReminder(data)
   }
 
   public async removeReminder(id: string): Promise<void> {
     this._logger.info('removeReminder', { id })
-    return this._removeReminderUseCase.execute(id)
+    return this._reminderService.removeReminder(id)
   }
 
   public async getLicense(): Promise<string> {
@@ -115,7 +111,5 @@ export class App {
     this._logger.info('onGameTick')
     const data = createGameDataDto(true, evt.payload.state.gameTime)
     this._notifyElectron.notify(data.type, data)
-
-    await this._remindersGameTickListener.handle(evt)
   }
 }
