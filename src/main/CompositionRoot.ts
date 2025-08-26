@@ -6,7 +6,8 @@ import {
   FileSystemReminderRepository,
   FakeReminderRepository,
   NativeWindowsSpeechGenerator,
-  OpenAISpeechGenerator
+  OpenAISpeechGenerator,
+  DevSpeechGenerator
 } from './adapters/outbound'
 import { GameObjectiveTracker, IReminderRepository, RemoveReminderUseCase } from './hexagon'
 import { App } from './Leaguedex'
@@ -33,6 +34,7 @@ import { CreateReminderUseCase } from './hexagon'
 import { GetRemindersUseCase } from './hexagon'
 import { RemindersGameTickListener } from './hexagon'
 import axios from 'axios'
+import { getLicenseKey } from './getLicenseKey'
 
 type AppDependencies = {
   eventBus: IEventBus
@@ -84,14 +86,22 @@ export async function createApp(
   const audioDir = path.join(dataPath, 'audio')
   let tts: ITextToSpeechGenerator
 
-  if (isProd) {
+  const licenseKey = await getLicenseKey()
+
+  // TODO: if we enter a license key we might have to update, or restart the app.
+  if (isProd && licenseKey.length > 0) {
+    console.log('using openai')
     tts = OpenAISpeechGenerator.create(axiosInstance, audioDir)
-  } else {
+  } else if (isProd && !licenseKey) {
+    console.log('using native windows speech')
     tts = await NativeWindowsSpeechGenerator.create(
       logger,
       audioDir,
       os.platform() as 'win32' | 'darwin'
     )
+  } else {
+    console.log('using dev speech generator')
+    tts = new DevSpeechGenerator()
   }
 
   tts = overrides.tts ?? tts
