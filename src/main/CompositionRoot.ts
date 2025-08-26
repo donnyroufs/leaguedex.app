@@ -1,4 +1,3 @@
-import os from 'os'
 import path from 'path'
 import { app, type IpcMain } from 'electron'
 
@@ -82,7 +81,7 @@ export async function createApp(
     reminderRepository = overrides.reminderRepository ?? new FakeReminderRepository()
   }
 
-  const audioPlayer = overrides.audioPlayer ?? new AudioPlayer(logger)
+  const audioPlayer = overrides.audioPlayer ?? new AudioPlayer(logger, isProd)
   const audioDir = path.join(dataPath, 'audio')
   let tts: ITextToSpeechGenerator
 
@@ -90,17 +89,10 @@ export async function createApp(
 
   // TODO: if we enter a license key we might have to update, or restart the app.
   if (isProd && licenseKey.length > 0) {
-    console.log('using openai')
     tts = OpenAISpeechGenerator.create(axiosInstance, audioDir)
   } else if (isProd && !licenseKey) {
-    console.log('using native windows speech')
-    tts = await NativeWindowsSpeechGenerator.create(
-      logger,
-      audioDir,
-      os.platform() as 'win32' | 'darwin'
-    )
+    tts = await NativeWindowsSpeechGenerator.create(logger, audioDir)
   } else {
-    console.log('using dev speech generator')
     tts = new DevSpeechGenerator()
   }
 
@@ -149,11 +141,7 @@ export async function createTestApp(overrides: Partial<AppDependencies> = {}): P
   }
 
   if (overrides.tts == null) {
-    overrides.tts = await NativeWindowsSpeechGenerator.create(
-      ElectronLogger.createNull(),
-      path.join('tmpaudio'),
-      'darwin'
-    )
+    overrides.tts = new DevSpeechGenerator()
   }
 
   return createApp(overrides, false)

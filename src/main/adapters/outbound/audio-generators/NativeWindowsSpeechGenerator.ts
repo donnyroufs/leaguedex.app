@@ -1,51 +1,38 @@
-import { spawn, exec } from 'child_process'
+import { spawn } from 'child_process'
 import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
-import { promisify } from 'util'
 import { ILogger, ITextToSpeechGenerator } from '../../../hexagon'
 
 import { Result } from '../../../shared-kernel'
 
-const execAsync = promisify(exec)
-
-// TODO: test this
 export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
   private constructor(
     private readonly _logger: ILogger,
-    private readonly _audioDir: string,
-    private readonly _platform: 'win32' | 'darwin'
+    private readonly _audioDir: string
   ) {}
 
   public async generate(text: string): Promise<Result<string, Error>> {
     try {
       const filename = this.createFileName(text)
-      const ext = this._platform === 'win32' ? 'wav' : this._platform === 'darwin' ? 'aiff' : 'wav'
-      const outputPath = join(this._audioDir, `${filename}.${ext}`)
+      const outputPath = join(this._audioDir, `${filename}.wav`)
 
-      if (this._platform === 'darwin') {
-        const cmd = `say -o "${outputPath}" "${text}"`
-        await execAsync(cmd)
-      } else if (this._platform === 'win32') {
-        const psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.SetOutputToWaveFile('${outputPath}');$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()`
-        const ps = spawn('powershell', ['-Command', psCommand], { shell: true })
+      const psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.SetOutputToWaveFile('${outputPath}');$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()`
+      const ps = spawn('powershell', ['-Command', psCommand], { shell: true })
 
-        return new Promise((resolve, reject) => {
-          ps.on('error', reject)
-          ps.on('close', (code) => {
-            if (code === 0) {
-              this._logger.info(`TTS audio saved to ${outputPath}`)
-              resolve(Result.ok(outputPath))
-            } else {
-              reject(new Error(`PowerShell exited with code ${code}`))
-            }
-          })
-
-          ps.stdin.write(text)
-          ps.stdin.end()
+      await new Promise((resolve, reject) => {
+        ps.on('error', reject)
+        ps.on('close', (code) => {
+          if (code === 0) {
+            this._logger.info(`TTS audio saved to ${outputPath}`)
+            resolve(Result.ok(outputPath))
+          } else {
+            reject(new Error(`PowerShell exited with code ${code}`))
+          }
         })
-      } else {
-        throw new Error(`Unsupported platform: ${this._platform}`)
-      }
+
+        ps.stdin.write(text)
+        ps.stdin.end()
+      })
 
       this._logger.info('TTS audio saved to', { outputPath })
       return Result.ok(outputPath)
@@ -57,8 +44,7 @@ export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
 
   public static async create(
     logger: ILogger,
-    audioDir: string,
-    platform: 'win32' | 'darwin'
+    audioDir: string
   ): Promise<NativeWindowsSpeechGenerator> {
     try {
       if (!existsSync(audioDir)) {
@@ -69,7 +55,7 @@ export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
       throw new Error(`Failed to create audio directory: ${audioDir}`)
     }
 
-    return new NativeWindowsSpeechGenerator(logger, audioDir, platform)
+    return new NativeWindowsSpeechGenerator(logger, audioDir)
   }
 
   private createFileName(text: string): string {

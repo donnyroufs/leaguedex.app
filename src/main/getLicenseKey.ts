@@ -6,7 +6,14 @@ let cache: string | null = null
 
 // Temporary solution to get the license key from the settings file
 export async function getLicenseKey(): Promise<string> {
-  const dataPath = app.isPackaged ? app.getPath('userData') : path.join(process.cwd(), 'data')
+  let dataPath!: string
+
+  if (app != null) {
+    dataPath = app.isPackaged ? app.getPath('userData') : path.join(process.cwd(), 'data')
+  } else {
+    dataPath = path.join(process.cwd(), 'data')
+  }
+
   const licenseKeyPath = join(dataPath, 'settings.json')
 
   try {
