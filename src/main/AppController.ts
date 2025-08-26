@@ -29,8 +29,8 @@ export class AppController implements IAppController {
   }
 
   public async stop(): Promise<void> {
-    this._gameMonitor.stop()
-    this._reminderService.stop()
+    await this._gameMonitor.stop()
+    await this._reminderService.stop()
     this._logger.info('app stopped')
   }
 
