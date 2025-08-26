@@ -11,7 +11,8 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
 
   public constructor(
     private readonly _endTimer: number,
-    private _startTimer: number
+    private _startTimer: number,
+    private readonly _simulateGameTime: boolean = false
   ) {}
 
   public async getGameData(): Promise<GetGameDataResult> {
@@ -22,6 +23,10 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
 
     if (this._response instanceof Error) {
       return Result.err(this._response)
+    }
+
+    if (this._simulateGameTime) {
+      this._response.gameData.gameTime += 1
     }
 
     return Result.ok(this._response)
@@ -346,9 +351,10 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
 
   public static createAndStartGame(
     endTimer: number,
-    startTimer: number = 0
+    startTimer: number = 0,
+    simulateGameTime: boolean = false
   ): IRiotClientDataSource {
-    const source = new SimulatedRiotClientDataSource(endTimer, startTimer)
+    const source = new SimulatedRiotClientDataSource(endTimer, startTimer, simulateGameTime)
     source.startGame()
     return source
   }

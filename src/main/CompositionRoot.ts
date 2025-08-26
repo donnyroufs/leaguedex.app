@@ -40,7 +40,11 @@ export async function createApp(
     overrides.dataSource ??
     (isProd
       ? new Outbound.RiotClientDataSource()
-      : Outbound.SimulatedRiotClientDataSource.createAndStartGame(overrides.endTimer ?? 600))
+      : Outbound.SimulatedRiotClientDataSource.createAndStartGame(
+          overrides.endTimer ?? 600,
+          0,
+          true
+        ))
   const gameDataProvider = new Outbound.RiotLiveClientApi(dataSource)
   const notifyElectron = overrides.notifyElectron ?? new Outbound.NotifyElectron()
 
