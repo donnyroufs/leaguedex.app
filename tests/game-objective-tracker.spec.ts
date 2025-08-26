@@ -1,14 +1,9 @@
+import { describe, expect, test } from 'vitest'
+
 import { GameObjectiveTracker } from './../src/main/hexagon'
-import { describe, expect, test, beforeEach } from 'vitest'
-import { GameStateBuilder } from './GameStateBuilder'
+import { TestGameDataBuilder } from './TestGameDataBuilder'
 
 describe('GameObjectiveTracker', () => {
-  const sut: GameObjectiveTracker = new GameObjectiveTracker()
-
-  beforeEach(() => {
-    sut.reset()
-  })
-
   test.each([
     [0, false],
     [299, false],
@@ -16,11 +11,10 @@ describe('GameObjectiveTracker', () => {
   ])(
     'When we have not passed the 300s time mark, the dragon should not be alive',
     (gameTime, isAlive) => {
-      const gameState = GameStateBuilder.asNewGame().withGameTime(gameTime).build()
+      const gameData = new TestGameDataBuilder().withGameTime(gameTime).hasStarted().build()
 
-      sut.track(gameState)
+      const state = GameObjectiveTracker.track(null, gameData)
 
-      const state = sut.getState()
       const dragon = state.dragon
 
       expect(dragon.isAlive).toBe(isAlive)
@@ -33,11 +27,13 @@ describe('GameObjectiveTracker', () => {
   ])(
     'When the dragon is killed, the next spawn time should be set to 300 seconds from the kill time',
     (killedAt, nextSpawn) => {
-      const gameState = GameStateBuilder.asNewGame().withDragonKilledEvent(killedAt).build()
+      const gameData = new TestGameDataBuilder()
+        .hasStarted()
+        .withDragonKilledEvent(killedAt)
+        .build()
 
-      sut.track(gameState)
+      const state = GameObjectiveTracker.track(null, gameData)
 
-      const state = sut.getState()
       const dragon = state.dragon
 
       expect(dragon.nextSpawn).toBe(nextSpawn)
@@ -45,11 +41,10 @@ describe('GameObjectiveTracker', () => {
   )
 
   test('When the dragon is killed and we have not surpassed the next spawn time, the dragon should still be dead', () => {
-    const gameState = new GameStateBuilder().withGameTime(400).withDragonKilledEvent(350).build()
+    const gameData = new TestGameDataBuilder().withGameTime(400).withDragonKilledEvent(350).build()
 
-    sut.track(gameState)
+    const state = GameObjectiveTracker.track(null, gameData)
 
-    const state = sut.getState()
     const dragon = state.dragon
 
     expect(dragon.isAlive).toBe(false)
@@ -57,15 +52,8 @@ describe('GameObjectiveTracker', () => {
   })
 
   test('When the dragon is killed and we have surpassed the next spawn time, the dragon should be alive', () => {
-    const gameState = new GameStateBuilder().withGameTime(350).withDragonKilledEvent(350)
-
-    sut.track(gameState.build())
-
-    const gameState2 = gameState.withGameTime(650).build()
-
-    sut.track(gameState2)
-
-    const state = sut.getState()
+    const gameData = new TestGameDataBuilder().withGameTime(650).withDragonKilledEvent(350).build()
+    const state = GameObjectiveTracker.track(null, gameData)
     const dragon = state.dragon
 
     expect(dragon.isAlive).toBe(true)
@@ -81,11 +69,10 @@ describe('GameObjectiveTracker', () => {
   ])(
     'When we have not passed the 1500s time mark, the baron should not be alive',
     (gameTime, isAlive) => {
-      const gameState = GameStateBuilder.asNewGame().withGameTime(gameTime).build()
+      const gameData = new TestGameDataBuilder().withGameTime(gameTime).hasStarted().build()
 
-      sut.track(gameState)
+      const state = GameObjectiveTracker.track(null, gameData)
 
-      const state = sut.getState()
       const baron = state.baron
 
       expect(baron.isAlive).toBe(isAlive)
@@ -93,16 +80,18 @@ describe('GameObjectiveTracker', () => {
   )
 
   test.each([
-    [1500, 1860],
-    [1505, 1865]
+    [1505, 1865],
+    [1510, 1870]
   ])(
     'When the baron is killed, the next spawn time should be set to 360 seconds from the kill time',
     (killedAt, nextSpawn) => {
-      const gameState = GameStateBuilder.asNewGame().withBaronKilledEvent(killedAt).build()
+      const gameData = new TestGameDataBuilder()
+        .withGameTime(killedAt)
+        .withBaronKilledEvent(killedAt)
+        .build()
 
-      sut.track(gameState)
+      const state = GameObjectiveTracker.track(null, gameData)
 
-      const state = sut.getState()
       const baron = state.baron
 
       expect(baron.nextSpawn).toBe(nextSpawn)
@@ -110,11 +99,10 @@ describe('GameObjectiveTracker', () => {
   )
 
   test('When the baron is killed and we have not surpassed the next spawn time, the baron should still be dead', () => {
-    const gameState = new GameStateBuilder().withGameTime(1600).withBaronKilledEvent(1505).build()
+    const gameData = new TestGameDataBuilder().withGameTime(1600).withBaronKilledEvent(1505).build()
 
-    sut.track(gameState)
+    const state = GameObjectiveTracker.track(null, gameData)
 
-    const state = sut.getState()
     const baron = state.baron
 
     expect(baron.isAlive).toBe(false)
@@ -122,50 +110,42 @@ describe('GameObjectiveTracker', () => {
   })
 
   test('When the baron is killed and we have surpassed the next spawn time, the baron should be alive', () => {
-    const gameState = new GameStateBuilder().withGameTime(1505).withBaronKilledEvent(1505)
+    const gameData = new TestGameDataBuilder().withGameTime(1865).withBaronKilledEvent(1505).build()
 
-    sut.track(gameState.build())
+    const state = GameObjectiveTracker.track(null, gameData)
 
-    const gameState2 = gameState.withGameTime(1865).build()
-
-    sut.track(gameState2)
-
-    const state = sut.getState()
     const baron = state.baron
 
     expect(baron.isAlive).toBe(true)
     expect(baron.nextSpawn).toBe(null)
   })
 
-  test.each([['grubs'], ['herald'], ['atakhan']])(
-    'The %s should not be alive at the start of the game',
-    (objective) => {
-      const state = new GameStateBuilder().withGameTime(0)
+  test.each([
+    ['grubs', 0],
+    ['grubs', 30],
+    ['herald', 0],
+    ['herald', 30],
+    ['atakhan', 0],
+    ['atakhan', 30]
+  ])('The %s should not be alive at the start of the game', (objective, gameTime) => {
+    const gameData = new TestGameDataBuilder().withGameTime(gameTime).hasStarted().build()
 
-      sut.track(state.build())
-      const objectiveState = sut.getState()
+    const state = GameObjectiveTracker.track(null, gameData)
 
-      expect(objectiveState[objective].isAlive).toBe(false)
-
-      sut.track(state.withGameTime(60).build())
-
-      expect(objectiveState[objective].isAlive).toBe(false)
-    }
-  )
+    expect(state[objective].isAlive).toBe(false)
+  })
 
   test.each([
     ['grubs', 480],
     ['herald', 900],
     ['atakhan', 1200]
   ])('The %s should be alive after %s seconds', (objective, spawnTime) => {
-    const state = new GameStateBuilder().withGameTime(spawnTime)
+    const gameData = new TestGameDataBuilder().withGameTime(spawnTime).hasStarted().build()
 
-    sut.track(state.build())
+    const state = GameObjectiveTracker.track(null, gameData)
 
-    const objectiveState = sut.getState()
-
-    expect(objectiveState[objective].isAlive).toBe(true)
-    expect(objectiveState[objective].nextSpawn).toBe(null)
+    expect(state[objective].isAlive).toBe(true)
+    expect(state[objective].nextSpawn).toBe(null)
   })
 
   test.each([
@@ -174,21 +154,22 @@ describe('GameObjectiveTracker', () => {
   ])(
     'Sets %s automatically to died if the next spawn for the next related objective happened',
     (objective, spawnTime, nextObjective) => {
-      const state = new GameStateBuilder().withGameTime(spawnTime)
+      const previousGameData = new TestGameDataBuilder()
+        .withGameTime(spawnTime)
+        .hasStarted()
+        .build()
+      const newGameData = new TestGameDataBuilder().withGameTime(nextObjective).hasStarted().build()
 
-      sut.track(state.build()) // Now the objective is alive
+      const oldState = GameObjectiveTracker.track(null, previousGameData)
+      const newState = GameObjectiveTracker.track(oldState, newGameData)
 
-      sut.track(state.withGameTime(nextObjective).build())
-
-      const objectiveState = sut.getState()
-
-      expect(objectiveState[objective].isAlive).toBe(false)
-      expect(objectiveState[objective].nextSpawn).toBe(null)
+      expect(newState[objective].isAlive).toBe(false)
+      expect(newState[objective].nextSpawn).toBe(null)
     }
   )
 
   test('When the dragon has been killed four times by a given team, the next dragon should be an elder drake, meaning spawn times change', () => {
-    const gameState = new GameStateBuilder()
+    const gameData = new TestGameDataBuilder()
       .withGameTime(0)
       .withDragonKilledEvent(300, 'red')
       .withDragonKilledEvent(600, 'red')
@@ -196,16 +177,35 @@ describe('GameObjectiveTracker', () => {
       .withDragonKilledEvent(1200, 'red')
       .build()
 
-    sut.track(gameState)
+    const state = GameObjectiveTracker.track(null, gameData)
 
-    const state = sut.getState()
     const dragon = state.dragon
 
     expect(dragon.nextSpawn).toBe(1560)
   })
 
-  test.todo('only spawns once, we need to replace X and Y')
+  // Probably want to test this more but im writing this at a stage where I know Im going to be
+  // rewriting the tracker anyway.
+  test('should track objectives across multiple game states', () => {
+    const firstGameData = new TestGameDataBuilder()
+      .withGameTime(300)
+      .withDragonKilledEvent(300)
+      .hasStarted()
+      .build()
 
-  // TODO: belongs somewhere else
-  test.skip('should reset per game')
+    const secondGameData = new TestGameDataBuilder()
+      .withGameTime(600)
+      .withDragonKilledEvent(600)
+      .hasStarted()
+      .build()
+
+    const firstState = GameObjectiveTracker.track(null, firstGameData)
+    const secondState = GameObjectiveTracker.track(firstState, secondGameData)
+
+    expect(secondState.dragon.teamStats.red).toBe(2)
+    expect(secondState.dragon.isAlive).toBe(false)
+    expect(secondState.dragon.nextSpawn).toBe(900)
+  })
+
+  test.todo('only spawns once, we need to replace X and Y')
 })

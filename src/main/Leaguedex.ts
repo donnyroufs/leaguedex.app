@@ -10,7 +10,6 @@ import {
   IReminderDto,
   GameStartedEvent,
   GameTickEvent,
-  GameObjectiveTracker,
   IEventBus,
   GameMonitor
 } from './hexagon'
@@ -30,8 +29,7 @@ export class App {
     private readonly _createReminderUseCase: CreateReminderUseCase,
     private readonly _getRemindersUseCase: GetRemindersUseCase,
     private readonly _removeReminderUseCase: RemoveReminderUseCase,
-    private readonly _remindersGameTickListener: RemindersGameTickListener,
-    private readonly _gameObjectiveTracker: GameObjectiveTracker
+    private readonly _remindersGameTickListener: RemindersGameTickListener
   ) {}
 
   public async start(): Promise<void> {
@@ -110,7 +108,6 @@ export class App {
     this._logger.info('onGameEnded')
     const data = createGameDataDto(false, null)
 
-    this._gameObjectiveTracker.reset()
     this._notifyElectron.notify(data.type, data)
   }
 
@@ -118,8 +115,6 @@ export class App {
     this._logger.info('onGameTick')
     const data = createGameDataDto(true, evt.payload.state.gameTime)
     this._notifyElectron.notify(data.type, data)
-
-    this._gameObjectiveTracker.track(evt.payload.state)
 
     await this._remindersGameTickListener.handle(evt)
   }

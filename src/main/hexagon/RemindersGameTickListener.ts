@@ -1,5 +1,4 @@
 import { GameTickEvent } from './domain-events/GameTickEvent'
-import { GameObjectiveTracker } from './GameObjectiveTracker'
 import { IAudioPlayer } from './ports/IAudioPlayer'
 import { ILogger } from './ports/ILogger'
 import { IReminderRepository } from './ports/IReminderRepository'
@@ -8,8 +7,7 @@ export class RemindersGameTickListener {
   public constructor(
     private readonly _reminderRepository: IReminderRepository,
     private readonly _audioPlayer: IAudioPlayer,
-    private readonly _logger: ILogger,
-    private readonly _gameObjectiveTracker: GameObjectiveTracker
+    private readonly _logger: ILogger
   ) {}
 
   public async handle(evt: GameTickEvent): Promise<void> {
@@ -30,7 +28,7 @@ export class RemindersGameTickListener {
       }
 
       if (reminder.triggerType === 'objective' && reminder.objective != null) {
-        const nextSpawn = this._gameObjectiveTracker.getNextSpawn(reminder.objective)
+        const nextSpawn = evt.payload.state.objectives[reminder.objective]?.nextSpawn
 
         if (!nextSpawn) {
           return false
