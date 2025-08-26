@@ -5,5 +5,5 @@ pre-commit:
       run: yarn typecheck
       stage_fixed: true
     tests:
-      run: yarn test
+      run: yarn vitest run
       stage_fixed: true
