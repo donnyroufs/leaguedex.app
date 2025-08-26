@@ -1,0 +1,9 @@
+pre-commit:
+  parallel: true
+  commands:
+    typecheck:
+      run: yarn typecheck
+      stage_fixed: true
+    tests:
+      run: yarn test
+      stage_fixed: true
