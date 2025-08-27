@@ -30,52 +30,41 @@ export class CompositionRoot {
       throw new Error('Root already created')
     }
 
-    const axiosInstance = axios.create({
-      baseURL: isProd ? 'https://api.leaguedex.app' : 'http://localhost:5005'
-    })
-
     this._dataPath = isProd ? app.getPath('userData') : path.join(process.cwd(), 'data')
     this._isProd = isProd
 
+    const licenseKey = await getLicenseKey()
     const logger =
       this._dependencies.logger ??
       new Outbound.ElectronLogger(path.join(this._dataPath, 'logs.log'), 'info')
     const eventBus = this._dependencies.eventBus ?? new Outbound.EventBus(logger)
+
     const dataSource =
-      this._dependencies.dataSource ??
-      (isProd
-        ? new Outbound.RiotClientDataSource()
-        : Outbound.SimulatedRiotClientDataSource.createAndStartGame(600, 0, true))
+      this._dependencies.dataSource ?? (await Outbound.DataSourceFactory.create(isProd))
     const gameDataProvider = new Outbound.RiotLiveClientApi(dataSource)
 
     const timer = this._dependencies.timer ?? new Outbound.Timer()
     const gameMonitor = new Hexagon.GameMonitor(logger, timer, eventBus, gameDataProvider)
 
-    let reminderRepository: Hexagon.IReminderRepository
-
-    if (isProd && this._dependencies.reminderRepository == null) {
-      reminderRepository = await Outbound.FileSystemReminderRepository.create(this._dataPath)
-    } else {
-      reminderRepository =
-        this._dependencies.reminderRepository ?? new Outbound.FakeReminderRepository()
-    }
+    const reminderRepository =
+      this._dependencies.reminderRepository ??
+      (await Outbound.ReminderRepositoryFactory.create(isProd, this._dataPath))
 
     const audioPlayer = this._dependencies.audioPlayer ?? new Outbound.AudioPlayer(logger, isProd)
     const audioDir = path.join(this._dataPath, 'audio')
-    let tts: Hexagon.ITextToSpeechGenerator
 
-    const licenseKey = await getLicenseKey()
-
-    // TODO: if we enter a license key we might have to update, or restart the app.
-    if (isProd && licenseKey.length > 0) {
-      tts = Outbound.OpenAISpeechGenerator.create(axiosInstance, audioDir)
-    } else if (isProd && !licenseKey) {
-      tts = await Outbound.NativeWindowsSpeechGenerator.create(logger, audioDir)
-    } else {
-      tts = new Outbound.DevSpeechGenerator()
-    }
-
-    tts = this._dependencies.tts ?? tts
+    const axiosInstance = axios.create({
+      baseURL: isProd ? 'https://api.leaguedex.app' : 'http://localhost:5005'
+    })
+    const tts =
+      this._dependencies.tts ??
+      (await Outbound.AudioGeneratorFactory.create(
+        isProd,
+        audioDir,
+        licenseKey,
+        axiosInstance,
+        logger
+      ))
 
     const createReminderUseCase = new Hexagon.CreateReminderUseCase(tts, reminderRepository)
     const getRemindersUseCase = new Hexagon.GetRemindersUseCase(reminderRepository)

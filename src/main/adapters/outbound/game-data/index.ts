@@ -6,3 +6,4 @@ export type {
 } from './IRiotClientDataSource'
 export { SimulatedRiotClientDataSource } from './SimulatedRiotClientDataSource'
 export { RiotClientDataSource } from './RiotClientDataSource'
+export { DataSourceFactory } from './DataSourceFactory'
