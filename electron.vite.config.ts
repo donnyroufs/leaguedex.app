@@ -6,15 +6,29 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        '@contracts': resolve('src/contracts/index.ts'),
+        '@hexagon': resolve('src/main/hexagon')
+      }
+    }
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        '@contracts': resolve('src/contracts/index.ts'),
+        '@hexagon': resolve('src/main/hexagon')
+      }
+    }
   },
   renderer: {
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src')
+        '@renderer': resolve('src/renderer/src'),
+        '@contracts': resolve('src/contracts/index.ts'),
+        '@hexagon': resolve('src/main/hexagon')
       }
     },
     plugins: [react(), tailwindcss()]

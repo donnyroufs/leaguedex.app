@@ -11,7 +11,7 @@ import { app } from 'electron'
 import path, { join } from 'path'
 import { access, constants, readFile, writeFile } from 'fs/promises'
 import { getLicenseKey, revalidateLicenseKey } from './getLicenseKey'
-import { createGameDataDto, GameDataDto } from './shared-kernel/contracts'
+import { GameDataDto } from '@contracts'
 
 export class AppController implements IAppController {
   public constructor(
@@ -81,22 +81,31 @@ export class AppController implements IAppController {
 
   public onGameTick(callback: (gameData: GameDataDto) => void): void {
     this._eventBus.subscribe('game-tick', (evt) => {
-      const data = createGameDataDto(true, evt.payload.state.gameTime)
-      callback(data)
+      callback({
+        type: 'game-data',
+        started: true,
+        time: evt.payload.state.gameTime
+      })
     })
   }
 
   public onGameStarted(callback: (gameData: GameDataDto) => void): void {
     this._eventBus.subscribe('game-started', (evt) => {
-      const data = createGameDataDto(true, evt.payload.gameTime)
-      callback(data)
+      callback({
+        type: 'game-data',
+        started: true,
+        time: evt.payload.gameTime
+      })
     })
   }
 
   public onGameStopped(callback: (gameData: GameDataDto) => void): void {
     this._eventBus.subscribe('game-stopped', () => {
-      const data = createGameDataDto(false, null)
-      callback(data)
+      callback({
+        type: 'game-data',
+        started: false,
+        time: null
+      })
     })
   }
 }

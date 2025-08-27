@@ -5,7 +5,7 @@ import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
 import { Settings as SettingsIcon, Bell, Download, RefreshCw } from 'lucide-react'
-import { Contracts } from 'src/main/shared-kernel'
+import { GameDataDto } from '@contracts'
 
 type UpdateStatus = {
   status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
@@ -16,14 +16,14 @@ type UpdateStatus = {
 }
 
 export type AppContext = {
-  gameData: Contracts.GameDataDto | null
+  gameData: GameDataDto | null
 }
 
 export function Layout(): JSX.Element {
   const [version, setVersion] = useState<string | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false)
-  const [gameData, setGameData] = useState<Contracts.GameDataDto | null>(null)
+  const [gameData, setGameData] = useState<GameDataDto | null>(null)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))

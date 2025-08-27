@@ -1,4 +1,4 @@
-import { GameDataDto } from '../../shared-kernel/contracts'
+import { GameDataDto } from '@contracts'
 import { CreateReminderDto } from '../CreateReminderUseCase'
 import { IReminderDto } from '../ReminderDto'
 

@@ -71,8 +71,6 @@ export class RiotLiveClientApi implements IGameDataProvider {
           gameTime: Math.round(evt.EventTime)
         })
       default:
-        // TODO: handle other events
-        console.warn(`Unknown event: ${evt.EventName}`)
         return null
     }
   }
