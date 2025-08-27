@@ -13,6 +13,13 @@ if [ "$TYPE" != "major" ] && [ "$TYPE" != "minor" ] && [ "$TYPE" != "patch" ]; t
     exit 1
 fi
 
+# Check if we're on main branch
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "main" ]; then
+    echo "Error: Must be on main branch to bump version"
+    exit 1
+fi
+
 # Update package.json version
 npm version $TYPE --no-git-tag-version
 
