@@ -5,7 +5,7 @@ import { app, IpcMain } from 'electron'
 import * as Hexagon from './hexagon'
 import * as Outbound from './adapters/outbound'
 
-import { AppController } from './AppController'
+import { AppController } from './adapters/inbound/AppController'
 import { getLicenseKey } from './getLicenseKey'
 import { ElectronAdapter } from './adapters/inbound'
 

@@ -6,11 +6,11 @@ import {
   ReminderService,
   IAppController,
   IEventBus
-} from './hexagon'
+} from '../../hexagon'
 import { app } from 'electron'
 import path, { join } from 'path'
 import { access, constants, readFile, writeFile } from 'fs/promises'
-import { getLicenseKey, revalidateLicenseKey } from './getLicenseKey'
+import { getLicenseKey, revalidateLicenseKey } from '../../getLicenseKey'
 import { GameDataDto } from '@contracts'
 
 export class AppController implements IAppController {

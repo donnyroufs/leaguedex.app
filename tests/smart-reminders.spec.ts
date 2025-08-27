@@ -4,7 +4,7 @@ import { expect } from 'vitest'
 
 import { CreateReminderDto } from '../src/main/hexagon'
 import { FakeReminderRepository, EventBus, NullLogger } from '../src/main/adapters/outbound'
-import { AppController } from '../src/main/AppController'
+import { AppController } from '../src/main/adapters/inbound/AppController'
 import { createTestApp } from '../src/main/CompositionRoot'
 
 import { FakeTimer } from './FakeTimer'
