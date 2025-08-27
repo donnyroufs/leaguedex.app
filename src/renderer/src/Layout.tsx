@@ -121,7 +121,7 @@ export function Layout(): JSX.Element {
   return (
     <div className="w-full h-full flex flex-col bg-bg-primary" style={{ height: '100vh' }}>
       <header className="flex-shrink-0">
-        <Titlebar title="Leaguedex" />
+        <Titlebar title="Leaguedex" version={version} />
         <Statusbar gameTime={gameData?.time ?? null} />
       </header>
 
@@ -147,7 +147,7 @@ export function Layout(): JSX.Element {
                 className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-bg-secondary hover:bg-bg-tertiary text-text-primary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RefreshCw className={`w-3 h-3 ${isCheckingUpdates ? 'animate-spin' : ''}`} />
-                {isCheckingUpdates ? 'Checking...' : `Check for Updates (v${version || '...'})`}
+                {isCheckingUpdates ? 'Checking...' : `Check for Updates`}
               </button>
             </div>
           </div>

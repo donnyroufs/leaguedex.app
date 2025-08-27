@@ -2,9 +2,10 @@ import React from 'react'
 
 type TitlebarProps = {
   title?: string
+  version: string | null
 }
 
-export const Titlebar: React.FC<TitlebarProps> = ({ title }) => {
+export const Titlebar: React.FC<TitlebarProps> = ({ title, version }) => {
   const handleMinimize = (): void => {
     window.api?.minimizeWindow?.()
   }
@@ -39,7 +40,8 @@ export const Titlebar: React.FC<TitlebarProps> = ({ title }) => {
             fill="#E2E2E2"
           />
         </svg>
-        <span className="text-sm font-medium ml-2">{title}</span>
+        <span className="text-sm font-medium ml-3">{title}</span>
+        {version && <span className="text-xs text-text-tertiary ml-2">v{version}</span>}
       </div>
 
       <div
