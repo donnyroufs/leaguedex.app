@@ -1,7 +1,13 @@
 import path from 'path'
 import fs from 'fs/promises'
 import { Result } from '../../../shared-kernel'
-import { IReminderRepository, Reminder } from '../../../hexagon'
+import {
+  AudioFileName,
+  IReminderRepository,
+  Reminder,
+  ReminderObjective,
+  ReminderTriggerType
+} from '../../../hexagon'
 
 export class FileSystemReminderRepository implements IReminderRepository {
   private readonly _path: string
@@ -26,7 +32,15 @@ export class FileSystemReminderRepository implements IReminderRepository {
   public async all(): Promise<Result<Reminder[], Error>> {
     try {
       const file = await fs.readFile(this._path, 'utf-8')
-      return Result.ok(JSON.parse(file))
+      const parsed = JSON.parse(file) as FSReminder[]
+      return Result.ok(
+        parsed.map(
+          (x: FSReminder): Reminder => ({
+            ...x,
+            audioUrl: AudioFileName.fromJSON(x.audioUrl)
+          })
+        )
+      )
     } catch (err) {
       return Result.err(err as Error)
     }
@@ -60,4 +74,20 @@ export class FileSystemReminderRepository implements IReminderRepository {
     await fs.writeFile(this._path, JSON.stringify(filteredReminders, null, 2))
     return Result.ok(undefined)
   }
+}
+
+type FSReminder = {
+  id: string
+  text: string
+  audioUrl: {
+    fileName: string
+    extension: 'mp3' | 'wav'
+    path: string
+  }
+  triggerType: ReminderTriggerType
+  interval?: number
+  triggerAt?: number
+  event?: string
+  objective?: ReminderObjective
+  beforeObjective?: number
 }

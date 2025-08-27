@@ -5,6 +5,7 @@ import path from 'path'
 import { FakeReminderRepository } from '../src/main/adapters/outbound/repositories/FakeReminderRepository'
 import { FileSystemReminderRepository } from '../src/main/adapters/outbound/repositories/FileSystemReminderRepository'
 import { ReminderBuilder } from './ReminderBuilder'
+import { AudioFileName } from '@hexagon/AudioFileName'
 
 const fsPath = path.join(process.cwd(), crypto.randomUUID())
 
@@ -52,6 +53,17 @@ describe.each(instances)('$name Contract Tests', (x) => {
     const reminders = await sut.all()
 
     expect(reminders.unwrap()).toEqual([reminder, reminder2])
+  })
+
+  test('serializes audioUrl correctly', async () => {
+    const sut = await x.create()
+    const reminder = new ReminderBuilder().build()
+    await sut.save(reminder)
+    const reminders = await sut.all()
+    const confirmation = reminders.unwrap()[0]
+    expect(confirmation.audioUrl).toBeDefined()
+    expect(confirmation.audioUrl).toEqual(reminder.audioUrl)
+    expect(confirmation.audioUrl).toBeInstanceOf(AudioFileName)
   })
 
   test.todo('returns an error when saving a reminder fails')

@@ -32,4 +32,24 @@ export class AudioFileName {
   public static createWAV(text: string, path: string = ''): AudioFileName {
     return new AudioFileName(text, 'wav', path)
   }
+
+  public static fromJSON(json: {
+    fileName: string
+    extension: 'mp3' | 'wav'
+    path: string
+  }): AudioFileName {
+    return new AudioFileName(json.fileName, json.extension as 'mp3' | 'wav', json.path)
+  }
+
+  public toJSON(): {
+    fileName: string
+    extension: 'mp3' | 'wav'
+    path: string
+  } {
+    return {
+      fileName: this._fileName,
+      extension: this._extension,
+      path: this._path
+    }
+  }
 }
