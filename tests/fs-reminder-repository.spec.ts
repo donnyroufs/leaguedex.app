@@ -23,4 +23,17 @@ describe('FileSystemReminderRepository', () => {
 
     expect(readFile).not.toBeUndefined()
   })
+
+  test('should not replace _ in filename', async () => {
+    const sut = await FileSystemReminderRepository.create(fsPath)
+
+    const reminder = new ReminderBuilder().withText('test my apple').build()
+
+    await sut.save(reminder)
+
+    const reminders = await sut.all()
+    const confirmation = reminders.unwrap().at(-1)!
+
+    expect(confirmation.audioUrl.fullPath).toContain('test_my_apple.mp3')
+  })
 })

@@ -20,7 +20,7 @@ export class AudioFileName {
     const stripped = text.replace(/\.(mp3|wav)$/i, '').trim()
 
     return stripped
-      .replace(/[^a-zA-Z0-9\s]/g, '')
+      .replace(/[^a-zA-Z0-9\s_]/g, '')
       .replace(/\s+/g, '_')
       .toLowerCase()
   }
