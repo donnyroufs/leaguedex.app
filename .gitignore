@@ -10,3 +10,4 @@ data/
 
 electron-builder.env
 tmpaudio/
+coverage/
