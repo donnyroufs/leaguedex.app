@@ -7,11 +7,7 @@ export class GameStateAssembler {
   private _processedEvents = new Set<number>()
   private _lastGameState: GameState | null = null
 
-  public assemble(data: GameData): GameState | null {
-    if (data === null) {
-      return null
-    }
-
+  public assemble(data: GameData): GameState {
     const events = this.getAndTrackUnprocessedEvents(data)
     const objectives = GameObjectiveTracker.track(this._lastGameState?.objectives ?? null, data)
 
