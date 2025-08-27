@@ -1,6 +1,6 @@
 {
   "name": "leaguedex-app",
-  "version": "0.0.56",
+  "version": "0.0.57",
   "description": "Leaguedex is a tool for League of Legends players to track their games and analyze their performance.",
   "main": "./out/main/index.js",
   "author": "Donny Roufs",
