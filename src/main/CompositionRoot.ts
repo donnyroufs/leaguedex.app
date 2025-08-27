@@ -5,7 +5,6 @@ import { app, IpcMain } from 'electron'
 import * as Hexagon from './hexagon'
 import * as Outbound from './adapters/outbound'
 
-import { AppController } from './adapters/inbound/AppController'
 import { getLicenseKey } from './getLicenseKey'
 import { ElectronAdapter } from './adapters/inbound'
 
@@ -26,18 +25,15 @@ export class CompositionRoot {
 
   public constructor(private readonly _dependencies: Partial<AppDependencies> = {}) {}
 
-  public async create(isProd: boolean): Promise<AppController> {
+  public async create(isProd: boolean): Promise<Hexagon.IAppController> {
     if (this._created) {
       throw new Error('Root already created')
     }
 
-    // TODO: check if DOMAIN is working now
-    // TODO: in dev we hit localhost!
     const axiosInstance = axios.create({
-      baseURL: 'http://api.leaguedex.app'
+      baseURL: isProd ? 'https://api.leaguedex.app' : 'http://localhost:5005'
     })
 
-    // Cross cutting concerns
     this._dataPath = isProd ? app.getPath('userData') : path.join(process.cwd(), 'data')
     this._isProd = isProd
 
@@ -95,7 +91,7 @@ export class CompositionRoot {
       reminderRepository
     )
 
-    const appController = new AppController(gameMonitor, logger, reminderService, eventBus)
+    const appController = new Hexagon.AppController(gameMonitor, logger, reminderService, eventBus)
     this._created = true
     return appController
   }
@@ -121,15 +117,17 @@ export class CompositionRoot {
   }
 }
 
-export async function createApp(
+async function createApp(
   overrides: Partial<AppDependencies>,
   isProd: boolean
-): Promise<AppController> {
+): Promise<Hexagon.IAppController> {
   const root = new CompositionRoot(overrides)
   return root.create(isProd)
 }
 
-export async function createTestApp(overrides: Partial<AppDependencies>): Promise<AppController> {
+export async function createTestApp(
+  overrides: Partial<AppDependencies>
+): Promise<Hexagon.IAppController> {
   if (overrides?.logger == null) {
     overrides.logger = new Outbound.NullLogger()
   }
@@ -143,13 +141,12 @@ export async function createTestApp(overrides: Partial<AppDependencies>): Promis
   return root.create(false)
 }
 
-export async function createElectronAppAndStart(ipcMain: IpcMain): Promise<AppController> {
+export async function createElectronAppAndStart(ipcMain: IpcMain): Promise<ElectronAdapter> {
   const isProd = app.isPackaged
-  const controller = await createApp({}, isProd)
-  const adapter = new ElectronAdapter(controller)
+  const appController = await createApp({}, isProd)
+  const adapter = new ElectronAdapter(appController)
 
   await adapter.setup(ipcMain)
-  await controller.start()
 
-  return controller
+  return adapter
 }

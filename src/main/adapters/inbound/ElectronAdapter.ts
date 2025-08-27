@@ -1,10 +1,6 @@
 import { BrowserWindow, type IpcMain } from 'electron'
-import { CreateReminderDto } from '../../hexagon'
-import { IAppController } from '../../hexagon/ports/IAppController'
+import { CreateReminderDto, IAppController } from '../../hexagon'
 
-/**
- * Responsible for setting bindings between Electron and the App.
- */
 export class ElectronAdapter {
   private _configured: boolean = false
 
@@ -53,6 +49,11 @@ export class ElectronAdapter {
       })
     })
 
+    await this._appController.start()
     this._configured = true
+  }
+
+  [Symbol.asyncDispose](): Promise<void> {
+    return this._appController.stop()
   }
 }

@@ -53,7 +53,7 @@ export class ReminderService {
     })
 
     for (const reminder of dueReminders) {
-      await this._audioPlayer.play(reminder.audioUrl)
+      await this._audioPlayer.play(reminder.audioUrl.fullPath)
     }
   }
 }

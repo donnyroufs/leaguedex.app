@@ -2,9 +2,8 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateReminderDto } from '../src/main/hexagon'
+import { CreateReminderDto, IAppController } from '../src/main/hexagon'
 import { FakeReminderRepository, EventBus, NullLogger } from '../src/main/adapters/outbound'
-import { AppController } from '../src/main/adapters/inbound/AppController'
 import { createTestApp } from '../src/main/CompositionRoot'
 
 import { FakeTimer } from './FakeTimer'
@@ -24,7 +23,7 @@ describeFeature(
     Scenario,
     ScenarioOutline
   }) => {
-    let app!: AppController
+    let app!: IAppController
     let fakeReminderRepository!: FakeReminderRepository
     let timer: FakeTimer
     let audioPlayer: AudioSpy

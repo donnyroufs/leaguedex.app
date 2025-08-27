@@ -1,3 +1,4 @@
+import { AudioFileName } from '@hexagon/AudioFileName'
 import { Reminder } from '../src/main/hexagon/Reminder'
 
 export class ReminderBuilder {
@@ -14,7 +15,7 @@ export class ReminderBuilder {
       interval: 1000,
       text: this._text,
       triggerType: 'interval',
-      audioUrl: 'https://example.com/audio.mp3'
+      audioUrl: AudioFileName.createMP3('audio', 'https://example.com')
     }
   }
 }

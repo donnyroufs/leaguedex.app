@@ -1,25 +1,23 @@
 import { AxiosInstance } from 'axios'
-import { join } from 'path'
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { Result } from '../../../shared-kernel'
 import { getLicenseKey } from '../../../getLicenseKey'
 import { ITextToSpeechGenerator } from '../../../hexagon'
+import { AudioFileName } from '@hexagon/AudioFileName'
 
-// TODO: test this
 export class OpenAISpeechGenerator implements ITextToSpeechGenerator {
   private constructor(
     private readonly _axios: AxiosInstance,
     private readonly _audioDir: string
   ) {}
 
-  public async generate(text: string): Promise<Result<string, Error>> {
+  public async generate(text: string): Promise<Result<AudioFileName, Error>> {
     try {
       if (!existsSync(this._audioDir)) {
         mkdirSync(this._audioDir, { recursive: true })
       }
 
-      const filename = this.createFileName(text)
-      const outputPath = join(this._audioDir, `${filename}.mp3`)
+      const fileName = AudioFileName.createMP3(text, this._audioDir)
 
       const response = await this._axios.post(
         '/tts/generate',
@@ -37,20 +35,12 @@ export class OpenAISpeechGenerator implements ITextToSpeechGenerator {
       }
 
       const buffer = Buffer.from(response.data)
-      writeFileSync(outputPath, buffer)
+      writeFileSync(fileName.fullPath, buffer)
 
-      return Result.ok(outputPath)
+      return Result.ok(fileName)
     } catch (err) {
       return Result.err(err as Error)
     }
-  }
-
-  private createFileName(text: string): string {
-    return text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '_')
-      .trim()
   }
 
   public static create(axios: AxiosInstance, audioDir: string): OpenAISpeechGenerator {

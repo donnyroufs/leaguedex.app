@@ -1,9 +1,9 @@
 import { spawn } from 'child_process'
-import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 import { ILogger, ITextToSpeechGenerator } from '../../../hexagon'
 
 import { Result } from '../../../shared-kernel'
+import { AudioFileName } from '@hexagon/AudioFileName'
 
 export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
   private constructor(
@@ -11,20 +11,19 @@ export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
     private readonly _audioDir: string
   ) {}
 
-  public async generate(text: string): Promise<Result<string, Error>> {
-    try {
-      const filename = this.createFileName(text)
-      const outputPath = join(this._audioDir, `${filename}.wav`)
+  public async generate(text: string): Promise<Result<AudioFileName, Error>> {
+    const fileName = AudioFileName.createWAV(text, this._audioDir)
 
-      const psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.SetOutputToWaveFile('${outputPath}');$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()`
+    try {
+      const psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.SetOutputToWaveFile('${fileName.fullPath}');$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()`
       const ps = spawn('powershell', ['-Command', psCommand], { shell: true })
 
       await new Promise((resolve, reject) => {
         ps.on('error', reject)
         ps.on('close', (code) => {
           if (code === 0) {
-            this._logger.info(`TTS audio saved to ${outputPath}`)
-            resolve(Result.ok(outputPath))
+            this._logger.info(`TTS audio saved to ${fileName.fullPath}`)
+            resolve(Result.ok(fileName))
           } else {
             reject(new Error(`PowerShell exited with code ${code}`))
           }
@@ -34,8 +33,8 @@ export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
         ps.stdin.end()
       })
 
-      this._logger.info('TTS audio saved to', { outputPath })
-      return Result.ok(outputPath)
+      this._logger.info('TTS audio saved to', { fileName: fileName.fullPath })
+      return Result.ok(fileName)
     } catch (err) {
       this._logger.error('TTS generation failed', { err })
       return Result.err(err as Error)
@@ -56,12 +55,5 @@ export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
     }
 
     return new NativeWindowsSpeechGenerator(logger, audioDir)
-  }
-
-  private createFileName(text: string): string {
-    return text
-      .replace(/[^a-zA-Z0-9\s]/g, '')
-      .replace(/\s+/g, '_')
-      .toLowerCase()
   }
 }

@@ -3,6 +3,9 @@ import { CreateReminderDto } from '../CreateReminderUseCase'
 import { IReminderDto } from '../ReminderDto'
 
 export interface IAppController {
+  start(): Promise<void>
+  stop(): Promise<void>
+
   addReminder(data: CreateReminderDto): Promise<string>
   getReminders(): Promise<IReminderDto[]>
   removeReminder(id: string): Promise<void>
