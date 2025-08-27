@@ -8,6 +8,9 @@ import * as Outbound from './adapters/outbound'
 import { getLicenseKey } from './getLicenseKey'
 import { ElectronAdapter } from './adapters/inbound'
 
+/**
+ * Dependencies we allow to be overridden.
+ */
 type AppDependencies = {
   eventBus: Hexagon.IEventBus
   dataSource: Outbound.IRiotClientDataSource
