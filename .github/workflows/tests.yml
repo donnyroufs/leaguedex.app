@@ -35,3 +35,17 @@ jobs:
 
       - name: Run tests
         run: yarn test
+
+      - name: Run tests with coverage
+        run: yarn test:coverage:main --reporter=json --outputFile=coverage.json
+
+      - name: Generate coverage report
+        if: github.event_name == 'pull_request'
+        uses: actions/vitest-coverage-report-action@v1
+        with:
+          path: coverage.json
+          badge: true
+          format: markdown
+          output: both
+          thresholds: '80 60'
+          title: 'Main Package Coverage Report'
