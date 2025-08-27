@@ -87,24 +87,11 @@ describeFeature(
     BeforeEachScenario(() => {})
 
     AfterEachScenario(async () => {
-      // eventBus.clear()
-      // audioPlayer.clear()
-      // fakeReminderRepository.clear()
-
-      // Looks like there is something wrong with the cucumber package? We will just reset the entire app for now.
-      fakeReminderRepository = new FakeReminderRepository()
-      timer = new FakeTimer()
-      eventBus = new EventBus(new NullLogger())
-      audioPlayer = new AudioSpy()
-      dataSource = new FakeRiotClientDataSource()
-
-      app = await createTestApp({
-        reminderRepository: fakeReminderRepository,
-        timer,
-        audioPlayer,
-        eventBus,
-        dataSource
-      })
+      timer.clear()
+      eventBus.clear()
+      audioPlayer.clear()
+      fakeReminderRepository.clear()
+      dataSource.reset()
     })
 
     Background(({ Given }) => {

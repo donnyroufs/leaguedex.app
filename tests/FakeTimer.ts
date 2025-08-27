@@ -33,4 +33,9 @@ export class FakeTimer implements ITimer {
       await this._callback()
     }
   }
+
+  public clear(): void {
+    this._callback = null
+    this._isRunning = false
+  }
 }
