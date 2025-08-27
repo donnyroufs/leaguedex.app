@@ -19,12 +19,4 @@ export class ElectronLogger implements ILogger {
   public debug(message: string, data: Record<string, unknown> = {}): void {
     log.debug(message, data)
   }
-
-  public static createNull(): ILogger {
-    return {
-      info: () => {},
-      error: () => {},
-      debug: () => {}
-    }
-  }
 }

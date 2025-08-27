@@ -24,9 +24,18 @@ export class FakeTimer implements ITimer {
     }
   }
 
+  /**
+   * We can always assume that a tick is the next interval, in this case every 1s. Later,
+   * we should probably add a way to set the interval on ITimer.
+   */
   public async tick(): Promise<void> {
     if (this._callback && this._isRunning) {
       await this._callback()
     }
+  }
+
+  public clear(): void {
+    this._callback = null
+    this._isRunning = false
   }
 }

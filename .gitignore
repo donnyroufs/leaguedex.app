@@ -10,3 +10,6 @@ data/
 
 electron-builder.env
 tmpaudio/
+coverage/
+
+electron.vite.config.*.mjs

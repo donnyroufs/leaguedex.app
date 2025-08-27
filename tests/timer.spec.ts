@@ -23,16 +23,12 @@ describe('Timer', () => {
     await dataSource.tickMultipleTimes(timer, 3)
     await dataSource.nextTick(timer)
 
-    expect(eventBus.events.map((x) => getTickFromEvent(x as unknown as GameTickEvent))).toEqual([
-      1, 2, 3, 4
-    ])
+    const tickEvents = eventBus.events.filter((x) => x instanceof GameTickEvent)
+    expect(tickEvents.map(getTickFromEvent)).toEqual([1, 2, 3, 4])
+    expect(tickEvents.length).toBe(4)
   })
 })
 
 function getTickFromEvent(evt: GameTickEvent): number {
-  if ('state' in evt.data) {
-    return evt.data.state.gameTime
-  }
-
-  return -1
+  return evt.payload.state.gameTime
 }

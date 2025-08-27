@@ -1,28 +1,27 @@
-// Ports - what adapters can depend on
 export * from './ports/IAudioPlayer'
 export * from './ports/ILogger'
-export * from './ports/INotifyElectron'
 export * from './ports/IReminderRepository'
-export * from './ports/ITextToSpeech'
+export * from './ports/ITextToSpeechGenerator'
 export * from './ports/ITimer'
 export * from './ports/IEventBus'
-export * from './ports/IRiotApi'
+export * from './ports/IGameDataProvider'
+export * from './ports/IAppController'
 
-// Domain models that adapters need
 export * from './Reminder'
 export * from './ReminderDto'
 export * from './GameState'
-export * from './Player'
+export * from './ActivePlayer'
 export * from './Team'
+export * from './GameData'
+export * from './AudioFileName'
 
-// Events that adapters need
-export * from './events'
+export * from './game-events'
+export * from './domain-events'
 
-// Use cases that adapters need
 export * from './CreateReminderUseCase'
 export * from './GetRemindersUseCase'
 export * from './RemoveReminderUseCase'
-export * from './RemindersGameTickListener'
-export * from './GameDetectionService'
-
+export * from './GameMonitor'
+export * from './ReminderService'
 export * from './GameObjectiveTracker'
+export * from './AppController'

@@ -2,14 +2,14 @@
 export * from './EventBus'
 export * from './Timer'
 export * from './ElectronLogger'
-export * from './NotifyElectron'
+export * from './NullLogger'
 
 // Feature-specific adapters
 export * from './AudioPlayer'
-export * from './TextToSpeech'
-
 // Repositories
 export * from './repositories'
 
 // Riot API adapters
-export * from './riot-api'
+export * from './game-data'
+
+export * from './audio-generators'

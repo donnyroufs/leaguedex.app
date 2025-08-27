@@ -1,3 +1,5 @@
+import { AudioFileName } from './AudioFileName'
+
 /**
  * The trigger type of a reminder.
  * - `interval`: Reminder that triggers every `interval` seconds.
@@ -10,7 +12,7 @@ export type ReminderObjective = 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakh
 export type Reminder = {
   id: string
   text: string
-  audioUrl: string
+  audioUrl: AudioFileName
   triggerType: ReminderTriggerType
   interval?: number
   triggerAt?: number

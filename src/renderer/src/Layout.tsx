@@ -5,7 +5,7 @@ import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
 import { Settings as SettingsIcon, Bell, Download, RefreshCw } from 'lucide-react'
-import { Contracts } from 'src/main/shared-kernel'
+import { GameDataDto } from '@contracts'
 
 type UpdateStatus = {
   status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
@@ -16,14 +16,14 @@ type UpdateStatus = {
 }
 
 export type AppContext = {
-  gameData: Contracts.GameDataDto | null
+  gameData: GameDataDto | null
 }
 
 export function Layout(): JSX.Element {
   const [version, setVersion] = useState<string | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false)
-  const [gameData, setGameData] = useState<Contracts.GameDataDto | null>(null)
+  const [gameData, setGameData] = useState<GameDataDto | null>(null)
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
@@ -121,15 +121,17 @@ export function Layout(): JSX.Element {
   return (
     <div className="w-full h-full flex flex-col bg-bg-primary" style={{ height: '100vh' }}>
       <header className="flex-shrink-0">
-        <Titlebar title="Leaguedex" />
+        <Titlebar title="Leaguedex" version={version} />
         <Statusbar gameTime={gameData?.time ?? null} />
       </header>
 
       <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary min-h-0">
-        <aside className="w-60 bg-bg-tertiary backdrop-blur-md border-r border-border-primary flex flex-col pt-6 flex-shrink-0">
-          <p className="px-4 pb-2 text-xs uppercase tracking-wide text-text-tertiary">Your Data</p>
+        <aside className="w-72 bg-bg-tertiary/80 backdrop-blur-xl border-r border-border-primary flex flex-col pt-8 flex-shrink-0 shadow-lg">
+          <p className="px-6 pb-3 text-sm font-medium uppercase tracking-wider text-text-tertiary/80">
+            Your Data
+          </p>
           <nav>
-            <ul className="flex flex-col mt-2">
+            <ul className="flex flex-col mt-1 space-y-1">
               <li>
                 <SidebarNavItem to="/" label="Reminders" icon={Bell} />
               </li>
@@ -138,16 +140,16 @@ export function Layout(): JSX.Element {
               </li>
             </ul>
           </nav>
-          <div className="mt-auto p-4 border-t border-border-primary bg-bg-primary">
-            <div className="flex flex-col gap-2">
+          <div className="mt-auto p-6 border-t border-border-primary bg-bg-primary/90">
+            <div className="flex flex-col gap-3">
               {getUpdateButton()}
               <button
                 onClick={handleCheckForUpdates}
                 disabled={isCheckingUpdates}
-                className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-bg-secondary hover:bg-bg-tertiary text-text-primary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm bg-bg-secondary hover:bg-bg-tertiary text-text-primary rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
               >
-                <RefreshCw className={`w-3 h-3 ${isCheckingUpdates ? 'animate-spin' : ''}`} />
-                {isCheckingUpdates ? 'Checking...' : `Check for Updates (v${version || '...'})`}
+                <RefreshCw className={`w-4 h-4 ${isCheckingUpdates ? 'animate-spin' : ''}`} />
+                {isCheckingUpdates ? 'Checking...' : `Check for Updates`}
               </button>
             </div>
           </div>

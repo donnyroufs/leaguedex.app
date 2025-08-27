@@ -1,30 +1,59 @@
-import { type IpcMain } from 'electron'
-import { App } from '../../Leaguedex'
-import { CreateReminderDto } from '../../hexagon'
+import { BrowserWindow, type IpcMain } from 'electron'
+import { CreateReminderDto, IAppController } from '../../hexagon'
 
-/**
- * Responsible for setting bindings between Electron and the App.
- */
 export class ElectronAdapter {
-  public static async setup(app: App, ipcMain: IpcMain): Promise<void> {
+  private _configured: boolean = false
+
+  public constructor(private readonly _appController: IAppController) {}
+
+  public async setup(ipcMain: IpcMain): Promise<void> {
+    if (this._configured) {
+      return
+    }
+
     ipcMain.handle('add-reminder', async (_, data: CreateReminderDto) => {
-      return app.addReminder(data)
+      return this._appController.addReminder(data)
     })
 
     ipcMain.handle('get-reminders', async () => {
-      return app.getReminders()
+      return this._appController.getReminders()
     })
 
     ipcMain.handle('remove-reminder', async (_, id: string) => {
-      return app.removeReminder(id)
+      return this._appController.removeReminder(id)
     })
 
     ipcMain.handle('update-license', async (_, key: string) => {
-      return app.updateLicense(key)
+      return this._appController.updateLicense(key)
     })
 
     ipcMain.handle('get-license', async () => {
-      return app.getLicense()
+      return this._appController.getLicense()
     })
+
+    this._appController.onGameTick((evt) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('game-data', evt)
+      })
+    })
+
+    this._appController.onGameStarted((evt) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('game-data', evt)
+      })
+    })
+
+    this._appController.onGameStopped((evt) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('game-data', evt)
+      })
+    })
+
+    await this._appController.start()
+    this._configured = true
+  }
+
+  [Symbol.asyncDispose](): Promise<void> {
+    return this._appController.stop()
   }
 }

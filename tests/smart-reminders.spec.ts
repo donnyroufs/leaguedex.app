@@ -2,14 +2,12 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateReminderDto } from '../src/main/hexagon'
-import { FakeReminderRepository, EventBus, ElectronLogger } from '../src/main/adapters/outbound'
-import { App } from '../src/main/Leaguedex'
+import { CreateReminderDto, IAppController } from '../src/main/hexagon'
+import { FakeReminderRepository, EventBus, NullLogger } from '../src/main/adapters/outbound'
 import { createTestApp } from '../src/main/CompositionRoot'
 
 import { FakeTimer } from './FakeTimer'
 import { AudioSpy } from './AudioSpy'
-import { DummyElectronNotifier } from './DummyElectronNotifier'
 import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
 
 const feature = await loadFeature('tests/features/smart-reminders.feature')
@@ -25,13 +23,12 @@ describeFeature(
     Scenario,
     ScenarioOutline
   }) => {
-    let app!: App
+    let app!: IAppController
     let fakeReminderRepository!: FakeReminderRepository
     let timer: FakeTimer
     let audioPlayer: AudioSpy
     let eventBus: EventBus
     let dataSource: FakeRiotClientDataSource
-    let notifyElectron: DummyElectronNotifier
 
     async function createReminder(data: CreateReminderDto): Promise<string> {
       const reminderData: {
@@ -68,18 +65,16 @@ describeFeature(
     BeforeAllScenarios(async () => {
       fakeReminderRepository = new FakeReminderRepository()
       timer = new FakeTimer()
-      eventBus = new EventBus(ElectronLogger.createNull())
+      eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
-      notifyElectron = new DummyElectronNotifier()
 
       app = await createTestApp({
         reminderRepository: fakeReminderRepository,
         timer,
         audioPlayer,
         eventBus,
-        dataSource,
-        notifyElectron
+        dataSource
       })
     })
 
@@ -91,26 +86,11 @@ describeFeature(
     BeforeEachScenario(() => {})
 
     AfterEachScenario(async () => {
-      // eventBus.clear()
-      // audioPlayer.clear()
-      // fakeReminderRepository.clear()
-
-      // Looks like there is something wrong with the cucumber package? We will just reset the entire app for now.
-      fakeReminderRepository = new FakeReminderRepository()
-      timer = new FakeTimer()
-      eventBus = new EventBus(ElectronLogger.createNull())
-      audioPlayer = new AudioSpy()
-      dataSource = new FakeRiotClientDataSource()
-      notifyElectron = new DummyElectronNotifier()
-
-      app = await createTestApp({
-        reminderRepository: fakeReminderRepository,
-        timer,
-        audioPlayer,
-        eventBus,
-        dataSource,
-        notifyElectron
-      })
+      timer.clear()
+      eventBus.clear()
+      audioPlayer.clear()
+      fakeReminderRepository.clear()
+      dataSource.reset()
     })
 
     Background(({ Given }) => {

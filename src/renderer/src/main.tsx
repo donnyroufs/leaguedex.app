@@ -15,7 +15,7 @@ const router = createHashRouter([
     element: <Layout />,
     errorElement: (
       <div className="flex flex-col h-screen w-screen">
-        <Titlebar title="Leaguedex" />
+        <Titlebar title="Leaguedex" version={null} />
         <div className="flex-1 flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold">Something went wrong</h1>
           <p className="mt-4">

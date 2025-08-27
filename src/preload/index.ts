@@ -1,11 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { Contracts } from '../main/shared-kernel'
 import { CreateReminderDto } from '../main/hexagon'
+import { GameDataDto } from '@contracts'
 
 const api = {
   app: {
-    onGameData: (callback: (data: Contracts.GameDataDto) => void) => {
+    onGameData: (callback: (data: GameDataDto) => void) => {
       ipcRenderer.on('game-data', (_, data) => {
         callback(data)
       })
