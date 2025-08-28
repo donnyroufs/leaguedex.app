@@ -1,4 +1,4 @@
-@startuml Smart Reminders Architecture
+@startuml Smart cues Architecture
 !theme plain
 skinparam backgroundColor transparent
 skinparam componentStyle rectangle
@@ -18,7 +18,7 @@ package "Game Manager Context" {
 package "Coaching Context" {
   [CoachingModule] as coaching
   [CoachingGameState] as coachingState
-  [ReminderSystem] as reminders
+  [cueSystem] as cues
   [AudioPlayer] as audio
 }
 
@@ -32,8 +32,8 @@ gameTick --> coaching : Rich game state
 
 ' Coaching internal flow
 coaching --> coachingState : Builds from game-tick events
-coachingState --> reminders : Checks against state buffer
-reminders --> audio : Plays when triggered
+coachingState --> cues : Checks against state buffer
+cues --> audio : Plays when triggered
 
 note right of stateBuilder
   Transforms raw Riot data
@@ -53,8 +53,8 @@ note right of coachingState
   Builds coaching-specific insights
 end note
 
-note right of reminders
-  Smart reminder triggers
+note right of cues
+  Smart cue triggers
   (gold gained, CS patterns,
   objective timing, etc.)
 end note

@@ -1,21 +1,21 @@
-Feature: Coaching - Smart Reminders
+Feature: Cues
   As a League of Legends player
-  I want to receive coaching reminders
+  I want to receive cues
   So that I can form better habits
 
   Background:
     Given the application is running
 
-  Scenario: No reminder when no game is running
-    Given I have a reminder configured:
+  Scenario: No cue when no game is running
+    Given I have a cue configured:
       | text          | triggerType | interval |
       | Check minimap | interval    | 60       |
     And we are not in a League of Legends match
     When "60" seconds pass
     Then no audio should play
 
-  Scenario: Repeating interval reminder
-    Given I have a reminder configured:
+  Scenario: Repeating interval cue
+    Given I have a cue configured:
       | text          | triggerType | interval |
       | Check minimap | interval    | 60       |
     And we are in a League of Legends match
@@ -24,8 +24,8 @@ Feature: Coaching - Smart Reminders
     When another "60" seconds pass in game time
     Then I should hear the audio "check_minimap" again
 
-  Scenario: One-time reminder at specific time
-    Given I have a reminder configured:
+  Scenario: One-time cue at specific time
+    Given I have a cue configured:
       | text         | triggerType | triggerAt |
       | Ward river   | oneTime     | 150       |
     And we are in a League of Legends match
@@ -34,8 +34,8 @@ Feature: Coaching - Smart Reminders
     When another "60" seconds pass in game time
     Then I should not hear the audio "ward_river" again
 
-  Scenario: Reminder on respawn event
-    Given I have a reminder configured:
+  Scenario: Cue on respawn event
+    Given I have a cue configured:
       | text             | triggerType | event |
       | Play safer now   | event       | respawn |
     And we are in a League of Legends match
@@ -45,8 +45,8 @@ Feature: Coaching - Smart Reminders
     When the player dies again with a "15" seconds death timer
     Then I should hear the audio "play_safer_now" again
 
-  Scenario Outline: Reminder before spawning objective
-    Given I have a reminder configured:
+  Scenario Outline: Cue before spawning objective
+    Given I have a cue configured:
       | text                | triggerType | objective   | beforeObjective |
       | <objective> spawn   | objective   | <objective> | 30              |
     And we are in a League of Legends match
@@ -60,8 +60,8 @@ Feature: Coaching - Smart Reminders
       | objective | time | next_time | death_time |
       | dragon    | 270  | 575       | 305        |
 
-  Scenario Outline: Reminder before spawning one-time objective
-    Given I have a reminder configured:
+  Scenario Outline: Cue before spawning one-time objective
+    Given I have a cue configured:
       | text                | triggerType | objective   | beforeObjective |
       | <objective> spawn   | objective   | <objective> | 30              |
     And we are in a League of Legends match
@@ -75,7 +75,7 @@ Feature: Coaching - Smart Reminders
       | atakhan   | 1170 |
 
   Scenario: Elder dragon spawns after team reaches 4 dragon kills
-    Given I have a reminder configured:
+    Given I have a cue configured:
       | text                | triggerType | objective   | beforeObjective |
       | Elder dragon spawn | objective   | dragon    | 30              |
     And we are in a League of Legends match

@@ -9,9 +9,16 @@
 
 Leaguedex is a tool designed to help League of Legends players continuously improve their gameplay. We currently offer one core feature, with more planned for the future:
 
-- An advanced Reminder system that allows players to create detailed game plans and learning strategies
+- An advanced cue system that allows players to create detailed game plans and learning strategies
 
 Upcoming features:
 - A note-taking system to track and monitor your personal progress
 - Matchup advice powered by our comprehensive knowledge base
 - Enhanced review tools, including an animated map to analyze macro plays
+
+
+---
+
+- [ ] What to do with migrating existing models on FS? Do we use sqlite? Do we write a migrator? I also dont think I should be looking at file name but rather id?
+- [ ] How are we going to catch potential issues between serialization/deserialization of this data? Our tests didnt catch it
+- [ ] Fix sidebar, it still isnt right.

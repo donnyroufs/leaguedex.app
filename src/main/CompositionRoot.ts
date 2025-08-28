@@ -15,7 +15,7 @@ type AppDependencies = {
   eventBus: Hexagon.IEventBus
   dataSource: Outbound.IRiotClientDataSource
   timer: Hexagon.ITimer
-  reminderRepository: Hexagon.IReminderRepository
+  cueRepository: Hexagon.ICueRepository
   logger: Hexagon.ILogger
   audioPlayer: Hexagon.IAudioPlayer
   tts: Hexagon.ITextToSpeechGenerator
@@ -49,9 +49,9 @@ export class CompositionRoot {
     const timer = this._dependencies.timer ?? new Outbound.Timer()
     const gameMonitor = new Hexagon.GameMonitor(logger, timer, eventBus, gameDataProvider)
 
-    const reminderRepository =
-      this._dependencies.reminderRepository ??
-      (await Outbound.ReminderRepositoryFactory.create(isProd, this._dataPath))
+    const cueRepository =
+      this._dependencies.cueRepository ??
+      (await Outbound.CueRepositoryFactory.create(isProd, this._dataPath))
 
     const audioPlayer = this._dependencies.audioPlayer ?? new Outbound.AudioPlayer(logger, isProd)
     const audioDir = path.join(this._dataPath, 'audio')
@@ -69,21 +69,21 @@ export class CompositionRoot {
         logger
       ))
 
-    const createReminderUseCase = new Hexagon.CreateReminderUseCase(tts, reminderRepository)
-    const getRemindersUseCase = new Hexagon.GetRemindersUseCase(reminderRepository)
-    const removeReminderUseCase = new Hexagon.RemoveReminderUseCase(reminderRepository)
+    const createCueUseCase = new Hexagon.CreateCueUseCase(tts, cueRepository)
+    const getCuesUseCase = new Hexagon.GetCuesUseCase(cueRepository)
+    const removeCueUseCase = new Hexagon.RemoveCueUseCase(cueRepository)
 
-    const reminderService = new Hexagon.ReminderService(
-      createReminderUseCase,
-      getRemindersUseCase,
-      removeReminderUseCase,
+    const cueService = new Hexagon.CueService(
+      createCueUseCase,
+      getCuesUseCase,
+      removeCueUseCase,
       eventBus,
       audioPlayer,
       logger,
-      reminderRepository
+      cueRepository
     )
 
-    const appController = new Hexagon.AppController(gameMonitor, logger, reminderService, eventBus)
+    const appController = new Hexagon.AppController(gameMonitor, logger, cueService, eventBus)
     this._created = true
     return appController
   }

@@ -1,52 +1,44 @@
-import {
-  ILogger,
-  CreateReminderDto,
-  IReminderDto,
-  GameMonitor,
-  ReminderService,
-  IAppController,
-  IEventBus
-} from '.'
+import { ILogger, GameMonitor, IAppController, IEventBus, CueService } from '.'
 import { app } from 'electron'
 import path, { join } from 'path'
 import { access, constants, readFile, writeFile } from 'fs/promises'
 import { getLicenseKey, revalidateLicenseKey } from '../getLicenseKey'
-import { GameDataDto } from '@contracts'
+import { CreateCueDto, GameDataDto, ICueDto } from '@contracts'
 
 export class AppController implements IAppController {
   public constructor(
     private readonly _gameMonitor: GameMonitor,
     private readonly _logger: ILogger,
-    private readonly _reminderService: ReminderService,
+    private readonly _cueService: CueService,
     private readonly _eventBus: IEventBus
   ) {}
 
   public async start(): Promise<void> {
     await this._gameMonitor.start()
-    await this._reminderService.start()
+    await this._cueService.start()
 
     this._logger.info('app started')
   }
 
   public async stop(): Promise<void> {
     await this._gameMonitor.stop()
-    await this._reminderService.stop()
+    await this._cueService.stop()
     this._logger.info('app stopped')
   }
 
-  public getReminders(): Promise<IReminderDto[]> {
-    this._logger.info('getReminders')
-    return this._reminderService.getReminders()
+  public getCues(): Promise<ICueDto[]> {
+    this._logger.info('getCues')
+    return this._cueService.getCues()
   }
 
-  public async addReminder(data: CreateReminderDto): Promise<string> {
-    this._logger.info('addReminder', { data })
-    return this._reminderService.addReminder(data)
+  public async addCue(data: CreateCueDto): Promise<string> {
+    this._logger.info('addCue', { data })
+    return this._cueService.addCue(data)
   }
 
-  public async removeReminder(id: string): Promise<void> {
-    this._logger.info('removeReminder', { id })
-    return this._reminderService.removeReminder(id)
+  public async removeCue(id: string): Promise<void> {
+    this._logger.info('removeCue', { id })
+    return this._cueService.removeCue(id)
   }
 
   public async getLicense(): Promise<string> {

@@ -1,5 +1,5 @@
-export type { IReminderDto } from '@hexagon/ReminderDto'
-export type { CreateReminderDto } from '@hexagon/CreateReminderUseCase'
+export type { ICueDto } from '@hexagon/ICueDto'
+export type { CreateCueDto } from '@hexagon/CreateCueUseCase'
 
 export type GameDataDto = {
   type: 'game-data'
