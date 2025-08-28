@@ -1,10 +1,9 @@
 import z from 'zod'
 import { IUseCase } from '../shared-kernel/IUseCase'
 
-import { IReminderRepository } from './ports/IReminderRepository'
-import { ITextToSpeechGenerator } from '.'
+import { ICueRepository, ITextToSpeechGenerator } from '.'
 
-const createReminderSchema = z.object({
+const createCueSchema = z.object({
   text: z.string().min(1),
   triggerType: z.enum(['interval', 'oneTime', 'event', 'objective']),
   interval: z.number().min(1).optional(),
@@ -14,21 +13,21 @@ const createReminderSchema = z.object({
   beforeObjective: z.number().min(0).optional()
 })
 
-export type CreateReminderDto = z.infer<typeof createReminderSchema>
+export type CreateCueDto = z.infer<typeof createCueSchema>
 
-export class CreateReminderUseCase implements IUseCase<CreateReminderDto, string> {
+export class CreateCueUseCase implements IUseCase<CreateCueDto, string> {
   public constructor(
     private readonly _audioGenerator: ITextToSpeechGenerator,
-    private readonly _reminderRepository: IReminderRepository
+    private readonly _cueRepository: ICueRepository
   ) {}
 
-  public async execute(data: CreateReminderDto): Promise<string> {
-    const parsedData = createReminderSchema.parse(data)
+  public async execute(data: CreateCueDto): Promise<string> {
+    const parsedData = createCueSchema.parse(data)
     const id = crypto.randomUUID()
     const result = await this._audioGenerator.generate(parsedData.text)
     const audioPath = result.unwrap()
 
-    const saveResult = await this._reminderRepository.save({
+    const saveResult = await this._cueRepository.save({
       id,
       text: parsedData.text,
       audioUrl: audioPath,

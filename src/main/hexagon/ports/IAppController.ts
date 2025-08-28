@@ -1,14 +1,14 @@
 import { GameDataDto } from '@contracts'
-import { CreateReminderDto } from '../CreateReminderUseCase'
-import { IReminderDto } from '../ReminderDto'
+import { CreateCueDto } from '../CreateCueUseCase'
+import { ICueDto } from '../ICueDto'
 
 export interface IAppController {
   start(): Promise<void>
   stop(): Promise<void>
 
-  addReminder(data: CreateReminderDto): Promise<string>
-  getReminders(): Promise<IReminderDto[]>
-  removeReminder(id: string): Promise<void>
+  addCue(data: CreateCueDto): Promise<string>
+  getCues(): Promise<ICueDto[]>
+  removeCue(id: string): Promise<void>
   getLicense(): Promise<string>
   updateLicense(key: string): Promise<void>
 

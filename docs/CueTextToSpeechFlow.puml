@@ -1,15 +1,15 @@
-@startuml ReminderTextToSpeechFlow
+@startuml cueTextToSpeechFlow
 
 participant "User" as user
 participant "CoachingService" as coaching
 participant "TextToSpeech" as tts
 participant "AudioPlayer" as audioPlayer
 
-== Reminder Creation ==
-user -> coaching: createReminder(text, interval)
-coaching --> user: reminderId
+== cue Creation ==
+user -> coaching: createcue(text, interval)
+coaching --> user: cueId
 
-== Reminder Trigger ==
+== cue Trigger ==
 note over coaching: Timer checks game state
 coaching -> tts: generateAudio(text)
 tts --> coaching: audioFilePath

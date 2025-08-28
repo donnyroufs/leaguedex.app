@@ -1,5 +1,5 @@
 import { BrowserWindow, type IpcMain } from 'electron'
-import { CreateReminderDto, IAppController } from '../../hexagon'
+import { CreateCueDto, IAppController } from '../../hexagon'
 
 export class ElectronAdapter {
   private _configured: boolean = false
@@ -11,16 +11,16 @@ export class ElectronAdapter {
       return
     }
 
-    ipcMain.handle('add-reminder', async (_, data: CreateReminderDto) => {
-      return this._appController.addReminder(data)
+    ipcMain.handle('add-cue', async (_, data: CreateCueDto) => {
+      return this._appController.addCue(data)
     })
 
-    ipcMain.handle('get-reminders', async () => {
-      return this._appController.getReminders()
+    ipcMain.handle('get-cues', async () => {
+      return this._appController.getCues()
     })
 
-    ipcMain.handle('remove-reminder', async (_, id: string) => {
-      return this._appController.removeReminder(id)
+    ipcMain.handle('remove-cue', async (_, id: string) => {
+      return this._appController.removeCue(id)
     })
 
     ipcMain.handle('update-license', async (_, key: string) => {

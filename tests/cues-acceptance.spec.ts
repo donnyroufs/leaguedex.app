@@ -2,15 +2,15 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateReminderDto, IAppController } from '../src/main/hexagon'
-import { FakeReminderRepository, EventBus, NullLogger } from '../src/main/adapters/outbound'
+import { CreateCueDto, IAppController } from '../src/main/hexagon'
+import { EventBus, FakeCueRepository, NullLogger } from '../src/main/adapters/outbound'
 import { createTestApp } from '../src/main/CompositionRoot'
 
 import { FakeTimer } from './FakeTimer'
 import { AudioSpy } from './AudioSpy'
 import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
 
-const feature = await loadFeature('tests/features/smart-reminders.feature')
+const feature = await loadFeature('tests/features/cues.feature')
 
 describeFeature(
   feature,
@@ -24,14 +24,14 @@ describeFeature(
     ScenarioOutline
   }) => {
     let app!: IAppController
-    let fakeReminderRepository!: FakeReminderRepository
+    let fakeCueRepository!: FakeCueRepository
     let timer: FakeTimer
     let audioPlayer: AudioSpy
     let eventBus: EventBus
     let dataSource: FakeRiotClientDataSource
 
-    async function createReminder(data: CreateReminderDto): Promise<string> {
-      const reminderData: {
+    async function createCue(data: CreateCueDto): Promise<string> {
+      const cueData: {
         text: string
         triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
         interval?: number
@@ -45,32 +45,32 @@ describeFeature(
       }
 
       if (data.triggerType === 'interval' && data.interval) {
-        reminderData.interval = Number(data.interval)
+        cueData.interval = Number(data.interval)
       } else if (data.triggerType === 'oneTime' && data.triggerAt) {
-        reminderData.triggerAt = Number(data.triggerAt)
+        cueData.triggerAt = Number(data.triggerAt)
       } else if (data.triggerType === 'event' && data.event) {
-        reminderData.event = data.event
+        cueData.event = data.event
       } else if (
         data.triggerType === 'objective' &&
         data.objective != null &&
         data.beforeObjective != null
       ) {
-        reminderData.objective = data.objective
-        reminderData.beforeObjective = Number(data.beforeObjective)
+        cueData.objective = data.objective
+        cueData.beforeObjective = Number(data.beforeObjective)
       }
 
-      return app.addReminder(reminderData)
+      return app.addCue(cueData)
     }
 
     BeforeAllScenarios(async () => {
-      fakeReminderRepository = new FakeReminderRepository()
+      fakeCueRepository = new FakeCueRepository()
       timer = new FakeTimer()
       eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
 
       app = await createTestApp({
-        reminderRepository: fakeReminderRepository,
+        cueRepository: fakeCueRepository,
         timer,
         audioPlayer,
         eventBus,
@@ -89,7 +89,7 @@ describeFeature(
       timer.clear()
       eventBus.clear()
       audioPlayer.clear()
-      fakeReminderRepository.clear()
+      fakeCueRepository.clear()
       dataSource.reset()
     })
 
@@ -99,13 +99,13 @@ describeFeature(
       })
     })
 
-    Scenario(`No reminder when no game is running`, ({ Given, When, Then, And }) => {
-      Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-        const createdReminderId = await createReminder(data)
+    Scenario(`No cue when no game is running`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
 
-        const reminders = await app.getReminders()
-        expect(reminders).toHaveLength(1)
-        expect(reminders[0].id).toBe(createdReminderId)
+        const cues = await app.getCues()
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
       })
 
       And(`we are not in a League of Legends match`, async () => {
@@ -121,13 +121,13 @@ describeFeature(
       })
     })
 
-    Scenario(`Repeating interval reminder`, ({ Given, When, Then, And }) => {
-      Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-        const createdReminderId = await createReminder(data)
+    Scenario(`Repeating interval cue`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
 
-        const reminders = await app.getReminders()
-        expect(reminders).toHaveLength(1)
-        expect(reminders[0].id).toBe(createdReminderId)
+        const cues = await app.getCues()
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
       })
 
       And(`we are in a League of Legends match`, async () => {
@@ -153,13 +153,13 @@ describeFeature(
       })
     })
 
-    Scenario(`One-time reminder at specific time`, ({ Given, When, Then, And }) => {
-      Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-        const createdReminderId = await createReminder(data)
+    Scenario(`One-time cue at specific time`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
 
-        const reminders = await app.getReminders()
-        expect(reminders).toHaveLength(1)
-        expect(reminders[0].id).toBe(createdReminderId)
+        const cues = await app.getCues()
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
       })
 
       And(`we are in a League of Legends match`, () => {
@@ -184,13 +184,13 @@ describeFeature(
       })
     })
 
-    Scenario(`Reminder on respawn event`, ({ Given, When, Then, And }) => {
-      Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-        const createdReminderId = await createReminder(data)
+    Scenario(`Cue on respawn event`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
 
-        const reminders = await app.getReminders()
-        expect(reminders).toHaveLength(1)
-        expect(reminders[0].id).toBe(createdReminderId)
+        const cues = await app.getCues()
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
       })
 
       And(`we are in a League of Legends match`, () => {
@@ -224,68 +224,65 @@ describeFeature(
       })
     })
 
+    ScenarioOutline(`Cue before spawning objective`, ({ Given, When, Then, And }, variables) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const transformedData = {
+          ...data,
+          text: replace(data.text, variables),
+          objective: variables.objective,
+          beforeObjective: Number(data.beforeObjective)
+        }
+        const createdCueId = await createCue(transformedData)
+
+        const cues = await app.getCues()
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
+      })
+
+      And(`we are in a League of Legends match`, () => {
+        dataSource.addGameStartedEvent()
+      })
+
+      When(`"<time>" seconds pass in game time`, async () => {
+        await dataSource.tickMultipleTimes(timer, Number(variables.time))
+      })
+
+      Then(`I should hear the audio "<objective>_spawn"`, () => {
+        expect(audioPlayer.lastCalledWith).toContain(variables.objective)
+        expect(audioPlayer.totalCalls).toBe(1)
+      })
+
+      When(`the <objective> has died at "<death_time>" seconds`, async () => {
+        const matchTime = Number(variables.death_time) - Number(variables.time)
+        await dataSource.tickMultipleTimes(timer, matchTime)
+        dataSource.addObjectiveDeathEvent(variables.objective, Number(variables.death_time))
+      })
+
+      And(`"<next_time>" seconds pass in game time`, async () => {
+        await dataSource.tickMultipleTimes(timer, Number(variables.next_time))
+      })
+
+      Then(`I should hear the audio "<objective>_spawn" again`, () => {
+        expect(audioPlayer.lastCalledWith).toContain(variables.objective)
+        expect(audioPlayer.totalCalls).toBe(2)
+      })
+    })
+
     ScenarioOutline(
-      `Reminder before spawning objective`,
+      `Cue before spawning one-time objective`,
       ({ Given, When, Then, And }, variables) => {
-        Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
+        Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
           const transformedData = {
             ...data,
             text: replace(data.text, variables),
             objective: variables.objective,
             beforeObjective: Number(data.beforeObjective)
           }
-          const createdReminderId = await createReminder(transformedData)
+          const createdCueId = await createCue(transformedData)
 
-          const reminders = await app.getReminders()
-          expect(reminders).toHaveLength(1)
-          expect(reminders[0].id).toBe(createdReminderId)
-        })
-
-        And(`we are in a League of Legends match`, () => {
-          dataSource.addGameStartedEvent()
-        })
-
-        When(`"<time>" seconds pass in game time`, async () => {
-          await dataSource.tickMultipleTimes(timer, Number(variables.time))
-        })
-
-        Then(`I should hear the audio "<objective>_spawn"`, () => {
-          expect(audioPlayer.lastCalledWith).toContain(variables.objective)
-          expect(audioPlayer.totalCalls).toBe(1)
-        })
-
-        When(`the <objective> has died at "<death_time>" seconds`, async () => {
-          const matchTime = Number(variables.death_time) - Number(variables.time)
-          await dataSource.tickMultipleTimes(timer, matchTime)
-          dataSource.addObjectiveDeathEvent(variables.objective, Number(variables.death_time))
-        })
-
-        And(`"<next_time>" seconds pass in game time`, async () => {
-          await dataSource.tickMultipleTimes(timer, Number(variables.next_time))
-        })
-
-        Then(`I should hear the audio "<objective>_spawn" again`, () => {
-          expect(audioPlayer.lastCalledWith).toContain(variables.objective)
-          expect(audioPlayer.totalCalls).toBe(2)
-        })
-      }
-    )
-
-    ScenarioOutline(
-      `Reminder before spawning one-time objective`,
-      ({ Given, When, Then, And }, variables) => {
-        Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-          const transformedData = {
-            ...data,
-            text: replace(data.text, variables),
-            objective: variables.objective,
-            beforeObjective: Number(data.beforeObjective)
-          }
-          const createdReminderId = await createReminder(transformedData)
-
-          const reminders = await app.getReminders()
-          expect(reminders).toHaveLength(1)
-          expect(reminders[0].id).toBe(createdReminderId)
+          const cues = await app.getCues()
+          expect(cues).toHaveLength(1)
+          expect(cues[0].id).toBe(createdCueId)
         })
 
         And(`we are in a League of Legends match`, () => {
@@ -307,12 +304,12 @@ describeFeature(
     Scenario(
       `Elder dragon spawns after team reaches 4 dragon kills`,
       ({ Given, When, Then, And }) => {
-        Given(`I have a reminder configured:`, async (_, [data]: CreateReminderDto[]) => {
-          const createdReminderId = await createReminder(data)
+        Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+          const createdCueId = await createCue(data)
 
-          const reminders = await app.getReminders()
-          expect(reminders).toHaveLength(1)
-          expect(reminders[0].id).toBe(createdReminderId)
+          const cues = await app.getCues()
+          expect(cues).toHaveLength(1)
+          expect(cues[0].id).toBe(createdCueId)
         })
 
         And(`we are in a League of Legends match`, () => {

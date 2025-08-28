@@ -1,15 +1,15 @@
 import { AudioFileName } from '@hexagon/AudioFileName'
-import { Reminder } from '../src/main/hexagon/Reminder'
+import { Cue } from '@hexagon/Cue'
 
-export class ReminderBuilder {
+export class CueBuilder {
   private _text: string = 'from-builder'
 
-  public withText(text: string): ReminderBuilder {
+  public withText(text: string): CueBuilder {
     this._text = text
     return this
   }
 
-  public build(): Reminder {
+  public build(): Cue {
     return {
       id: crypto.randomUUID(),
       interval: 1000,

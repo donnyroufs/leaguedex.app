@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast'
 
 import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
-import { RemindersPage } from './pages/Reminders'
+import { CuesPage } from './pages/Cues'
 import { Titlebar } from './components/Titlebar'
 
 const router = createHashRouter([
@@ -35,10 +35,10 @@ const router = createHashRouter([
       },
       {
         path: '/',
-        element: <RemindersPage />,
+        element: <CuesPage />,
         loader: async () => {
-          const reminders = await window.api.app.getReminders()
-          return { reminders }
+          const cues = await window.api.app.getCues()
+          return { cues }
         }
       }
     ]

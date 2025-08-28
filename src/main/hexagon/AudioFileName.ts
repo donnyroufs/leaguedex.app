@@ -8,7 +8,7 @@ export class AudioFileName {
   }
 
   /**
-   * @param text The reminder text.
+   * @param text The cue text.
    */
   private constructor(text: string, extension: 'mp3' | 'wav', path: string) {
     this._fileName = this.createFileName(text)

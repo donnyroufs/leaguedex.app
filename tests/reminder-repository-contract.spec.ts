@@ -2,22 +2,21 @@ import { describe, expect, test, afterEach } from 'vitest'
 import fs from 'fs/promises'
 import path from 'path'
 
-import { FakeReminderRepository } from '../src/main/adapters/outbound/repositories/FakeReminderRepository'
-import { FileSystemReminderRepository } from '../src/main/adapters/outbound/repositories/FileSystemReminderRepository'
-import { ReminderBuilder } from './ReminderBuilder'
 import { AudioFileName } from '@hexagon/AudioFileName'
+import { FakeCueRepository, FileSystemCueRepository } from 'src/main/adapters/outbound'
+import { CueBuilder } from './CueBuilder'
 
 const fsPath = path.join(process.cwd(), crypto.randomUUID())
 
 const instances = [
   {
-    name: 'FakeReminderRepository',
-    create: () => new FakeReminderRepository(),
+    name: 'FakeCueRepository',
+    create: () => new FakeCueRepository(),
     cleanup: async () => {}
   },
   {
-    name: 'FileSystemReminderRepository',
-    create: () => FileSystemReminderRepository.create(fsPath),
+    name: 'FileSystemCueRepository',
+    create: () => FileSystemCueRepository.create(fsPath),
     cleanup: async () => {
       await fs.rm(fsPath, { recursive: true, force: true })
     }
@@ -29,59 +28,59 @@ describe.each(instances)('$name Contract Tests', (x) => {
     await x.cleanup()
   })
 
-  test('saves a reminder', async () => {
+  test('saves a cue', async () => {
     const sut = await x.create()
-    const reminder = new ReminderBuilder().build()
+    const cue = new CueBuilder().build()
 
-    const result = await sut.save(reminder)
+    const result = await sut.save(cue)
 
     expect(result.isOk()).toBe(true)
 
-    const reminders = await sut.all()
-    expect(reminders.unwrap()).toEqual([reminder])
+    const cues = await sut.all()
+    expect(cues.unwrap()).toEqual([cue])
   })
 
-  test('Does not remove previous reminders when saving a new one', async () => {
+  test('Does not remove previous cues when saving a new one', async () => {
     const sut = await x.create()
 
-    const reminder = new ReminderBuilder().withText('test').build()
-    const reminder2 = new ReminderBuilder().build()
+    const cue = new CueBuilder().withText('test').build()
+    const cue2 = new CueBuilder().build()
 
-    await sut.save(reminder)
-    await sut.save(reminder2)
+    await sut.save(cue)
+    await sut.save(cue2)
 
-    const reminders = await sut.all()
+    const cues = await sut.all()
 
-    expect(reminders.unwrap()).toEqual([reminder, reminder2])
+    expect(cues.unwrap()).toEqual([cue, cue2])
   })
 
   test('serializes audioUrl correctly', async () => {
     const sut = await x.create()
-    const reminder = new ReminderBuilder().build()
-    await sut.save(reminder)
-    const reminders = await sut.all()
-    const confirmation = reminders.unwrap()[0]
+    const cue = new CueBuilder().build()
+    await sut.save(cue)
+    const cues = await sut.all()
+    const confirmation = cues.unwrap()[0]
     expect(confirmation.audioUrl).toBeDefined()
-    expect(confirmation.audioUrl).toEqual(reminder.audioUrl)
+    expect(confirmation.audioUrl).toEqual(cue.audioUrl)
     expect(confirmation.audioUrl).toBeInstanceOf(AudioFileName)
   })
 
-  test.todo('returns an error when saving a reminder fails')
-  test.todo('overwrites a reminder if same id is used')
+  test.todo('returns an error when saving a cue fails')
+  test.todo('overwrites a cue if same id is used')
 
-  test('removes a reminder', async () => {
+  test('removes a cue', async () => {
     const sut = await x.create()
-    const reminder = new ReminderBuilder().build()
-    const reminder2 = new ReminderBuilder().build()
+    const cue = new CueBuilder().build()
+    const cue2 = new CueBuilder().build()
 
-    await sut.save(reminder)
-    await sut.save(reminder2)
+    await sut.save(cue)
+    await sut.save(cue2)
 
-    const result = await sut.remove(reminder.id)
+    const result = await sut.remove(cue.id)
     expect(result.isOk()).toBe(true)
 
-    const reminders = await sut.all()
+    const cues = await sut.all()
 
-    expect(reminders.unwrap()).toEqual([reminder2])
+    expect(cues.unwrap()).toEqual([cue2])
   })
 })

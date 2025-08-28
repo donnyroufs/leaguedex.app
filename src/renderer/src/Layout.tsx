@@ -133,7 +133,7 @@ export function Layout(): JSX.Element {
           <nav>
             <ul className="flex flex-col mt-1 space-y-1">
               <li>
-                <SidebarNavItem to="/" label="Reminders" icon={Bell} />
+                <SidebarNavItem to="/" label="Cues" icon={Bell} />
               </li>
               <li>
                 <SidebarNavItem to="/settings" label="Settings" icon={SettingsIcon} />

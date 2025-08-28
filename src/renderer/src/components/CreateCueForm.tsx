@@ -2,7 +2,7 @@ import { JSX, useState } from 'react'
 import { Button } from './Button'
 import { Timer, Clock, Zap, Target } from 'lucide-react'
 
-type CreateReminderFormProps = {
+type CreateCueFormProps = {
   onSubmit: (data: {
     text: string
     triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
@@ -16,11 +16,11 @@ type CreateReminderFormProps = {
   isLoading?: boolean
 }
 
-export function CreateReminderForm({
+export function CreateCueForm({
   onSubmit,
   onCancel,
   isLoading = false
-}: CreateReminderFormProps): JSX.Element {
+}: CreateCueFormProps): JSX.Element {
   const [text, setText] = useState('')
   const [triggerType, setTriggerType] = useState<'interval' | 'oneTime' | 'event' | 'objective'>(
     'interval'
@@ -136,7 +136,7 @@ export function CreateReminderForm({
     }
 
     // @ts-expect-error we need to fix shared contracts
-    const formData: CreateReminderDto = {
+    const formData: CreateCueDto = {
       text: text.trim(),
       triggerType
     }
@@ -173,16 +173,16 @@ export function CreateReminderForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Reminder Text Section - Full Width */}
+      {/* Cue Text Section - Full Width */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-xl font-semibold text-text-primary">Reminder Details</h3>
-          <p className="text-sm text-text-tertiary mt-1">What should this reminder say?</p>
+          <h3 className="text-xl font-semibold text-text-primary">Cue Details</h3>
+          <p className="text-sm text-text-tertiary mt-1">What should this cue say?</p>
         </div>
 
         <div>
           <input
-            id="reminder-text"
+            id="cue-text"
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -201,7 +201,7 @@ export function CreateReminderForm({
         <div className="lg:col-span-1 space-y-4">
           <div>
             <h3 className="text-xl font-semibold text-text-primary">Trigger Type</h3>
-            <p className="text-sm text-text-tertiary mt-1">When should this reminder activate?</p>
+            <p className="text-sm text-text-tertiary mt-1">When should this cue activate?</p>
           </div>
 
           <div className="space-y-3">
@@ -269,18 +269,18 @@ export function CreateReminderForm({
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Interval Settings</h3>
-                <p className="text-sm text-text-tertiary">How often should this reminder repeat?</p>
+                <p className="text-sm text-text-tertiary">How often should this cue repeat?</p>
               </div>
 
               <div>
                 <label
-                  htmlFor="reminder-interval"
+                  htmlFor="cue-interval"
                   className="block text-sm font-medium text-text-primary mb-2"
                 >
                   Interval (seconds)
                 </label>
                 <input
-                  id="reminder-interval"
+                  id="cue-interval"
                   type="number"
                   value={interval}
                   onChange={(e) => setInterval(e.target.value)}
@@ -301,20 +301,18 @@ export function CreateReminderForm({
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Timing Settings</h3>
-                <p className="text-sm text-text-tertiary">
-                  When exactly should this reminder trigger?
-                </p>
+                <p className="text-sm text-text-tertiary">When exactly should this cue trigger?</p>
               </div>
 
               <div>
                 <label
-                  htmlFor="reminder-trigger-time"
+                  htmlFor="cue-trigger-time"
                   className="block text-sm font-medium text-text-primary mb-2"
                 >
                   Trigger Time (seconds)
                 </label>
                 <input
-                  id="reminder-trigger-time"
+                  id="cue-trigger-time"
                   type="number"
                   value={triggerAt}
                   onChange={(e) => setTriggerAt(e.target.value)}
@@ -335,20 +333,18 @@ export function CreateReminderForm({
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Event Settings</h3>
-                <p className="text-sm text-text-tertiary">
-                  What event should trigger this reminder?
-                </p>
+                <p className="text-sm text-text-tertiary">What event should trigger this cue?</p>
               </div>
 
               <div>
                 <label
-                  htmlFor="reminder-event"
+                  htmlFor="cue-event"
                   className="block text-sm font-medium text-text-primary mb-2"
                 >
                   Event
                 </label>
                 <select
-                  id="reminder-event"
+                  id="cue-event"
                   value={event}
                   onChange={(e) => setEvent(e.target.value)}
                   className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-warning/20 focus:border-warning/40 transition-all duration-200"
@@ -367,20 +363,20 @@ export function CreateReminderForm({
               <div>
                 <h3 className="text-lg font-semibold text-text-primary">Objective Settings</h3>
                 <p className="text-sm text-text-tertiary">
-                  Which objective and when should this reminder trigger?
+                  Which objective and when should this cue trigger?
                 </p>
               </div>
 
               <div className="space-y-3">
                 <div>
                   <label
-                    htmlFor="reminder-objective"
+                    htmlFor="cue-objective"
                     className="block text-sm font-medium text-text-primary mb-2"
                   >
                     Objective
                   </label>
                   <select
-                    id="reminder-objective"
+                    id="cue-objective"
                     value={objective}
                     onChange={(e) =>
                       setObjective(
@@ -399,13 +395,13 @@ export function CreateReminderForm({
 
                 <div>
                   <label
-                    htmlFor="reminder-before-objective"
+                    htmlFor="cue-before-objective"
                     className="block text-sm font-medium text-text-primary mb-2"
                   >
                     Time Before Spawn (seconds)
                   </label>
                   <input
-                    id="reminder-before-objective"
+                    id="cue-before-objective"
                     type="number"
                     value={beforeObjective}
                     onChange={(e) => setBeforeObjective(e.target.value)}
@@ -437,7 +433,7 @@ export function CreateReminderForm({
           Cancel
         </Button>
         <Button type="submit" disabled={!isFormValid() || isLoading} className="flex-1">
-          {isLoading ? 'Creating...' : 'Create Reminder'}
+          {isLoading ? 'Creating...' : 'Create Cue'}
         </Button>
       </div>
     </form>

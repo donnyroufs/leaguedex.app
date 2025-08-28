@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { CreateReminderDto } from '../main/hexagon'
-import { GameDataDto } from '@contracts'
+import { CreateCueDto, GameDataDto } from '@contracts'
 
 const api = {
   app: {
@@ -14,9 +13,9 @@ const api = {
         ipcRenderer.removeAllListeners('game-data')
       }
     },
-    addReminder: (data: CreateReminderDto) => ipcRenderer.invoke('add-reminder', data),
-    getReminders: () => ipcRenderer.invoke('get-reminders'),
-    removeReminder: (id: string) => ipcRenderer.invoke('remove-reminder', id),
+    addCue: (data: CreateCueDto) => ipcRenderer.invoke('add-cue', data),
+    getCues: () => ipcRenderer.invoke('get-cues'),
+    removeCue: (id: string) => ipcRenderer.invoke('remove-cue', id),
     updateLicense: (key: string) => ipcRenderer.invoke('update-license', key),
     getLicense: () => ipcRenderer.invoke('get-license')
   },
