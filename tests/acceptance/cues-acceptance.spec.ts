@@ -2,13 +2,12 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateCueDto, IAppController } from '../src/main/hexagon'
-import { EventBus, FakeCueRepository, NullLogger } from '../src/main/adapters/outbound'
-import { createTestApp } from '../src/main/CompositionRoot'
-
-import { FakeTimer } from './FakeTimer'
-import { AudioSpy } from './AudioSpy'
-import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
+import { CreateCueDto, IAppController } from '@hexagon/index'
+import { createTestApp } from 'src/main/CompositionRoot'
+import { EventBus, FakeCueRepository, NullLogger } from 'src/main/adapters/outbound'
+import { FakeTimer } from 'tests/FakeTimer'
+import { AudioSpy } from 'tests/AudioSpy'
+import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
 
 const feature = await loadFeature('tests/features/cues.feature')
 
