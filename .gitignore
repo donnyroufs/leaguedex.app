@@ -13,3 +13,4 @@ tmpaudio/
 coverage/
 
 electron.vite.config.*.mjs
+TODOS.md
