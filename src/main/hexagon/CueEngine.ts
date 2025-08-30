@@ -2,7 +2,7 @@ import { GameState } from './GameState'
 import { Cue } from './Cue'
 
 export class CueEngine {
-  public static getDueCues(state: GameState, cues: Cue[]): Cue[] {
+  public static getDueCues(state: GameState, cues: ReadonlyArray<Cue>): Cue[] {
     return cues.filter((cue) => {
       if (cue.triggerType === 'interval' && cue.interval) {
         return state.gameTime % cue.interval === 0

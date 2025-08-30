@@ -1,14 +1,18 @@
 import { IUseCase } from '../shared-kernel/IUseCase'
 import { ICueDto } from './ICueDto'
-import { ICueRepository } from './ports/ICueRepository'
+import { ICuePackRepository } from './ports/ICuePackRepository'
 
 export class GetCuesUseCase implements IUseCase<void, ICueDto[]> {
-  public constructor(private readonly _cueRepository: ICueRepository) {}
+  public constructor(private readonly _cueRepository: ICuePackRepository) {}
 
   public async execute(): Promise<ICueDto[]> {
-    const result = await this._cueRepository.all()
+    const result = await this._cueRepository.active()
 
-    const cues = result.unwrap()
+    if (result.isErr() || result.unwrap() === null) {
+      return []
+    }
+
+    const cues = result.unwrap()!.cues
 
     return cues.map((cue) => ({
       id: cue.id,

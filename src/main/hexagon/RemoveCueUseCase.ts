@@ -1,5 +1,5 @@
 import { IUseCase } from '../shared-kernel/IUseCase'
-import { ICueRepository } from './ports/ICueRepository'
+import { ICuePackRepository } from './ports/ICuePackRepository'
 
 class FailedToRemoveCueError extends Error {
   public constructor(id: string) {
@@ -8,11 +8,12 @@ class FailedToRemoveCueError extends Error {
   }
 }
 
+// TODO: add test
 export class RemoveCueUseCase implements IUseCase<string, void> {
-  public constructor(private readonly _cueRepository: ICueRepository) {}
+  public constructor(private readonly _cueRepository: ICuePackRepository) {}
 
   public async execute(cueId: string): Promise<void> {
-    const result = await this._cueRepository.remove(cueId)
+    const result = await this._cueRepository.removeCue(cueId)
 
     if (!result.isErr()) {
       return

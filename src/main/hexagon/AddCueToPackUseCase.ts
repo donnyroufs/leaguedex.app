@@ -1,7 +1,7 @@
 import z from 'zod'
 import { IUseCase } from '../shared-kernel/IUseCase'
 
-import { ICueRepository, ITextToSpeechGenerator } from '.'
+import { Cue, ICuePackRepository, ITextToSpeechGenerator } from '.'
 
 const createCueSchema = z.object({
   text: z.string().min(1),
@@ -10,15 +10,16 @@ const createCueSchema = z.object({
   triggerAt: z.number().min(0).optional(),
   event: z.string().optional(),
   objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
-  beforeObjective: z.number().min(0).optional()
+  beforeObjective: z.number().min(0).optional(),
+  packId: z.string().min(1)
 })
 
 export type CreateCueDto = z.infer<typeof createCueSchema>
 
-export class CreateCueUseCase implements IUseCase<CreateCueDto, string> {
+export class AddCueToPackUseCase implements IUseCase<CreateCueDto, string> {
   public constructor(
     private readonly _audioGenerator: ITextToSpeechGenerator,
-    private readonly _cueRepository: ICueRepository
+    private readonly _cuePackRepository: ICuePackRepository
   ) {}
 
   public async execute(data: CreateCueDto): Promise<string> {
@@ -27,7 +28,14 @@ export class CreateCueUseCase implements IUseCase<CreateCueDto, string> {
     const result = await this._audioGenerator.generate(parsedData.text)
     const audioPath = result.unwrap()
 
-    const saveResult = await this._cueRepository.save({
+    const cuePack = await this._cuePackRepository.load(data.packId)
+    const cuePackResult = cuePack.unwrap()
+
+    if (!cuePackResult) {
+      throw new Error('Cue pack not found')
+    }
+
+    const cue: Cue = {
       id,
       text: parsedData.text,
       audioUrl: audioPath,
@@ -37,7 +45,11 @@ export class CreateCueUseCase implements IUseCase<CreateCueDto, string> {
       event: parsedData.event,
       objective: parsedData.objective,
       beforeObjective: parsedData.beforeObjective
-    })
+    }
+
+    cuePackResult.add(cue)
+
+    const saveResult = await this._cuePackRepository.save(cuePackResult)
 
     return saveResult.throwOrReturn(id)
   }

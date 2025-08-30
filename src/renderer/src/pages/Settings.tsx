@@ -38,7 +38,6 @@ export function Settings(): JSX.Element {
   const [showLicenseKey, setShowLicenseKey] = useState<boolean>(false)
 
   const handleUpdateLicense = async (): Promise<void> => {
-    console.log('update license', licenseKey)
     await window.api.app.updateLicense(licenseKey)
     await revalidate()
   }

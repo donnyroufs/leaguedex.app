@@ -2,13 +2,12 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateCueDto, IAppController } from '../src/main/hexagon'
-import { EventBus, FakeCueRepository, NullLogger } from '../src/main/adapters/outbound'
-import { createTestApp } from '../src/main/CompositionRoot'
-
-import { FakeTimer } from './FakeTimer'
-import { AudioSpy } from './AudioSpy'
-import { FakeRiotClientDataSource } from './FakeRiotClientDataSource'
+import { CreateCueDto, IAppController } from '@hexagon/index'
+import { createTestApp } from 'src/main/CompositionRoot'
+import { EventBus, FakeCuePackRepository, NullLogger } from 'src/main/adapters/outbound'
+import { FakeTimer } from 'tests/FakeTimer'
+import { AudioSpy } from 'tests/AudioSpy'
+import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
 
 const feature = await loadFeature('tests/features/cues.feature')
 
@@ -24,13 +23,15 @@ describeFeature(
     ScenarioOutline
   }) => {
     let app!: IAppController
-    let fakeCueRepository!: FakeCueRepository
     let timer: FakeTimer
     let audioPlayer: AudioSpy
     let eventBus: EventBus
     let dataSource: FakeRiotClientDataSource
+    let cuePackRepository: FakeCuePackRepository
 
     async function createCue(data: CreateCueDto): Promise<string> {
+      const packId = await app.createCuePack({ name: 'My Pack' })
+
       const cueData: {
         text: string
         triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
@@ -59,22 +60,22 @@ describeFeature(
         cueData.beforeObjective = Number(data.beforeObjective)
       }
 
-      return app.addCue(cueData)
+      return app.addCue({ ...cueData, packId })
     }
 
     BeforeAllScenarios(async () => {
-      fakeCueRepository = new FakeCueRepository()
       timer = new FakeTimer()
       eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
+      cuePackRepository = new FakeCuePackRepository()
 
       app = await createTestApp({
-        cueRepository: fakeCueRepository,
         timer,
         audioPlayer,
         eventBus,
-        dataSource
+        dataSource,
+        cuePackRepository
       })
     })
 
@@ -89,7 +90,7 @@ describeFeature(
       timer.clear()
       eventBus.clear()
       audioPlayer.clear()
-      fakeCueRepository.clear()
+      cuePackRepository.clear()
       dataSource.reset()
     })
 

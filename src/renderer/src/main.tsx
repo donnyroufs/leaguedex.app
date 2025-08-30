@@ -7,7 +7,8 @@ import { Toaster } from 'react-hot-toast'
 
 import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
-import { CuesPage } from './pages/Cues'
+import { PacksPage } from './pages/Packs'
+import { ActivePackPage } from './pages/ActivePack'
 import { Titlebar } from './components/Titlebar'
 
 const router = createHashRouter([
@@ -34,11 +35,25 @@ const router = createHashRouter([
         }
       },
       {
-        path: '/',
-        element: <CuesPage />,
+        path: '/packs',
+        element: <PacksPage />,
         loader: async () => {
-          const cues = await window.api.app.getCues()
-          return { cues }
+          const [cuePacks, activePack] = await Promise.all([
+            window.api.app.getCuePacks(),
+            window.api.app.getActiveCuePack()
+          ])
+          return { cuePacks, activePack }
+        }
+      },
+      {
+        path: '/',
+        element: <ActivePackPage />,
+        loader: async () => {
+          const [cues, activePack] = await Promise.all([
+            window.api.app.getCues(),
+            window.api.app.getActiveCuePack()
+          ])
+          return { cues, activePack }
         }
       }
     ]
