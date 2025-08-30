@@ -39,8 +39,7 @@ export class CuePackService {
   }
 
   public async activateCuePack(id: string): Promise<void> {
-    await this._activateCuePackUseCase.execute(id)
-    await this.onCuePackImported(id)
+    return this._activateCuePackUseCase.execute(id)
   }
 
   public async getCuePacks(): Promise<ICuePackDto[]> {
