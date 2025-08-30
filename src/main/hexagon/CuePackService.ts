@@ -64,7 +64,8 @@ export class CuePackService {
   }
 
   public async importPack(code: string): Promise<void> {
-    return this._importPackUseCase.execute({ code })
+    const id = await this._importPackUseCase.execute({ code })
+    await this.onCuePackImported(id)
   }
 
   private async onCuePackRemoved(id: string): Promise<void> {

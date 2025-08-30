@@ -8,7 +8,7 @@ type ImportPackUseCaseInput = {
   code: string
 }
 
-type ImportPackUseCaseOutput = void
+type ImportPackUseCaseOutput = string
 
 export class ImportPackUseCase
   implements IUseCase<ImportPackUseCaseInput, ImportPackUseCaseOutput>
@@ -25,7 +25,7 @@ export class ImportPackUseCase
       const cuePack = await CuePackEncoder.decode(code, this._textToSpeechGenerator)
       const result = await this._cuePackRepository.save(cuePack)
 
-      return result.unwrap()
+      return result.throwOrReturn(cuePack.id)
     } catch (err) {
       this._logger.error('Failed to import cue pack', { error: err })
       throw err

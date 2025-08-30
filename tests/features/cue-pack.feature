@@ -41,6 +41,7 @@ Feature: Cue Pack Management
     Given I have an encoded base64 string that contains a cue pack named "A shared cue pack" with the following cues:
       | text          | triggerType | interval |
       | Check minimap | interval    | 60       |
+    And I have a cue pack called "My First Pack" with no cues
     When I import the cue pack using the encoded string
     Then I should have a new cue pack called "A shared cue pack"
     And all required audio files should be generated

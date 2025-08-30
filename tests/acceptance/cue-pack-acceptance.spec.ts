@@ -80,7 +80,8 @@ describeFeature(
         eventBus,
         dataSource,
         cuePackRepository,
-        tts
+        tts,
+        logger: new NullLogger()
       })
     })
 
@@ -260,18 +261,16 @@ describeFeature(
       ({ Given, When, Then, And, context }: Typed<ImportCuePackContext>) => {
         Given(
           `I have an encoded base64 string that contains a cue pack named {string} with the following cues:`,
-          async (_, name: string, dataTable: CreateCueDto[]) => {
-            const packId = await app.createCuePack({ name })
-
-            for (const cue of dataTable) {
-              await createCue(cue, packId)
-            }
-
+          async (_, name: string) => {
             const code = `eyJuYW1lIjoiQSBzaGFyZWQgY3VlIHBhY2siLCJjdWVzIjpbeyJ0ZXh0IjoiQ2hlY2sgbWluaW1hcCIsInRyaWdnZXJUeXBlIjoiaW50ZXJ2YWwiLCJpbnRlcnZhbCI6NjB9XX0=`
             context.code = code
             context.newPackName = name
           }
         )
+
+        And(`I have a cue pack called {string} with no cues`, async (_, name: string) => {
+          await app.createCuePack({ name })
+        })
 
         When(`I import the cue pack using the encoded string`, async () => {
           await app.importPack(context.code)
@@ -285,7 +284,7 @@ describeFeature(
         })
 
         And(`all required audio files should be generated`, () => {
-          expect(tts.totalCalls).toBe(2) // Initial one, and imported
+          expect(tts.totalCalls).toBe(1)
           expect(tts.lastCalledWith).toBe('Check minimap')
         })
 
