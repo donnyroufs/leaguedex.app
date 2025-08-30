@@ -170,7 +170,7 @@ export function PacksPage(): JSX.Element {
                     key={pack.id}
                     className={`relative border rounded-lg bg-bg-secondary transition-all duration-200 ${
                       isActive
-                        ? 'border-info/40 bg-info/5 ring-2 ring-info/20'
+                        ? 'border-info border-1 bg-info/5'
                         : 'border-border-primary hover:border-border-accent hover:bg-bg-tertiary'
                     }`}
                   >
@@ -199,7 +199,7 @@ export function PacksPage(): JSX.Element {
                         <div
                           className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center border ${
                             isActive
-                              ? 'bg-info/10 border-info/20'
+                              ? 'bg-info/10 border-info'
                               : 'bg-bg-primary border-border-primary/20'
                           }`}
                         >
@@ -209,23 +209,15 @@ export function PacksPage(): JSX.Element {
                             <Package className="w-6 h-6 text-text-tertiary" />
                           )}
                         </div>
-                        <div className="flex flex-col">
-                          {isActive && (
-                            <span className="text-xs font-semibold text-info uppercase tracking-wider mb-1">
-                              Active Pack
-                            </span>
-                          )}
-                          <div
-                            className={`w-6 h-px ${isActive ? 'bg-info' : 'bg-current'} opacity-30`}
-                          ></div>
+                        <div className="flex flex-col flex-1">
+                          <h3 className="text-text-primary font-semibold text-lg leading-tight mb-1">
+                            {pack.name}
+                          </h3>
                         </div>
                       </div>
 
                       {/* Pack details */}
                       <div className="space-y-3">
-                        <h3 className="text-text-primary font-semibold text-lg leading-tight">
-                          {pack.name}
-                        </h3>
                         <div className="flex items-center space-x-2.5 text-text-secondary">
                           <Target className="w-3.5 h-3.5 text-text-tertiary" />
                           <span className="text-sm font-medium">
@@ -236,22 +228,16 @@ export function PacksPage(): JSX.Element {
 
                       {/* Actions */}
                       <div className="mt-6 pt-4 border-t border-border-primary/20">
-                        {isActive ? (
-                          <div className="flex items-center space-x-2.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-info/80"></div>
-                            <span className="text-xs text-info font-medium">Currently Active</span>
-                          </div>
-                        ) : (
-                          <Button
-                            onClick={() => handleActivatePack(pack.id)}
-                            variant="secondary"
-                            size="sm"
-                            className="w-full"
-                          >
-                            <Users className="w-4 h-4 mr-2" />
-                            Activate Pack
-                          </Button>
-                        )}
+                        <Button
+                          onClick={() => handleActivatePack(pack.id)}
+                          variant="secondary"
+                          size="sm"
+                          className="w-full"
+                          disabled={isActive}
+                        >
+                          <Users className="w-4 h-4 mr-2" />
+                          {isActive ? 'Currently Active' : 'Activate Pack'}
+                        </Button>
                       </div>
                     </div>
                   </div>
