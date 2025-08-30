@@ -12,6 +12,7 @@ export interface IAppController {
   createCuePack(data: CreateCuePackDto): Promise<string>
   getActiveCuePack(): Promise<ICuePackDto | null>
   getCuePacks(): Promise<ICuePackDto[]>
+  removeCuePack(id: string): Promise<void>
   addCue(data: CreateCueDto): Promise<string>
   getCues(): Promise<ICueDto[]>
   removeCue(id: string): Promise<void>

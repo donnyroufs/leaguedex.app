@@ -66,9 +66,7 @@ export function PacksPage(): JSX.Element {
 
   const handleDeletePack = async (packId: string): Promise<void> => {
     try {
-      // Note: We'll need to implement this API method
-      // await window.api.app.deleteCuePack(packId)
-      console.log('Delete pack:', packId)
+      await window.api.app.removeCuePack(packId)
       toast.success('Pack deleted successfully')
       revalidate()
     } catch (error) {

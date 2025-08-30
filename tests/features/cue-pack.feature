@@ -28,6 +28,15 @@ Feature: Cue Pack Management
     Then I should have the "Pack 2" cue pack active
     And I should not have the "Pack 1" cue pack active
 
+  Scenario: Removing a cue pack
+    Given I have two cue packs configured:
+      | name   |
+      | Pack 1 |
+      | Pack 2 |
+    When I remove the "Pack 2" cue pack
+    Then I should not have a cue pack called "Pack 2"
+    And I should have the "Pack 1" cue pack active
+
   # Scenario: Import cue pack from encoded data
   #   Given I have an encoded base64 string that contains a cue pack named "A shared cue pack" with the following cues:
   #     | text          | triggerType | interval |

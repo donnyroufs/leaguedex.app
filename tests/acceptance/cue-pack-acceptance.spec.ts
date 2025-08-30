@@ -177,6 +177,41 @@ describeFeature(
       }
     )
 
+    type RemoveCuePackContext = {
+      packs: { id: string; name: string }[]
+    }
+
+    Scenario(
+      `Removing a cue pack`,
+      ({ Given, When, Then, context, And }: Typed<RemoveCuePackContext>) => {
+        Given(`I have two cue packs configured:`, async (_, dataTable: { name: string }[]) => {
+          context.packs = []
+
+          for (const pack of dataTable) {
+            const id = await app.createCuePack({ name: pack.name })
+            context.packs.push({ id, name: pack.name })
+          }
+        })
+
+        When(`I remove the {string} cue pack`, async (_, name: string) => {
+          const packId = context.packs.find((p) => p.name === name)!.id
+          await app.removeCuePack(packId)
+        })
+
+        Then(`I should not have a cue pack called {string}`, async (_, name: string) => {
+          const packs = await app.getCuePacks()
+
+          expect(packs).toHaveLength(1)
+          expect(packs[0]!.name).not.toBe(name)
+        })
+
+        And(`I should have the {string} cue pack active`, async (_, name: string) => {
+          const activePack = await app.getActiveCuePack()
+          expect(activePack!.name).toBe(name)
+        })
+      }
+    )
+
     // Scenario(`Import cue pack from encoded data`, ({ Given, When, Then, And }) => {
     //   Given(
     //     `I have an encoded base64 string that contains a cue pack named "A shared cue pack" with the following cues:`,

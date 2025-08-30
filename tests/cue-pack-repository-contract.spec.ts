@@ -71,4 +71,18 @@ describe.each(instances)('$name Contract Tests', (x) => {
     expect(pack.cues[0]!.id).toEqual(cue2.id)
     expect(pack.cues[0]!.text).toEqual(cue2.text)
   })
+
+  test('removes a cue pack', async () => {
+    const sut = await x.create()
+    const cuePack1 = new TestCuePackBuilder().withName('My Pack').build()
+    const cuePack2 = new TestCuePackBuilder().withName('My Pack 2').build()
+
+    await sut.save(cuePack1)
+    await sut.save(cuePack2)
+    await sut.remove(cuePack1.id)
+
+    const cuePacks = await sut.all()
+    expect(cuePacks.unwrap()).toHaveLength(1)
+    expect(cuePacks.unwrap()[0]!.id).toEqual(cuePack2.id)
+  })
 })

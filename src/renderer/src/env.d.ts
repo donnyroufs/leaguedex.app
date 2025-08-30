@@ -19,6 +19,7 @@ declare global {
         activateCuePack: (id: string) => Promise<void>
         getCuePacks: () => Promise<ICuePackDto[]>
         getActiveCuePack: () => Promise<ICuePackDto | null>
+        removeCuePack: (id: string) => Promise<void>
       }
 
       getVersion: () => Promise<string>

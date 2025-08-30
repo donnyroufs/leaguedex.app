@@ -7,9 +7,10 @@ import { CreateCuePackUseCase } from '@hexagon/CreateCuePackUseCase'
 import { ActivateCuePackUseCase } from '@hexagon/ActivateCuePackUseCase'
 import { GetCuePacksUseCase } from '@hexagon/GetCuePacksUseCase'
 import { GetActiveCuePackUseCase } from '@hexagon/GetActiveCuePackUseCase'
+import { RemoveCuePackUseCase } from '@hexagon/RemoveCuePackUseCase'
 
 describe('CuePackService', () => {
-  test('Should setup a listener to deactivate previous CuePack when a new one has been created', async () => {
+  test('Should setup listeners for cue pack created and removed events', async () => {
     const cuePackRepository = new FakeCuePackRepository()
     const eventBus = new EventBusSpy()
     const service = new CuePackService(
@@ -18,12 +19,13 @@ describe('CuePackService', () => {
       new GetCuePacksUseCase(cuePackRepository),
       new GetActiveCuePackUseCase(cuePackRepository),
       eventBus,
-      new NullLogger()
+      new NullLogger(),
+      new RemoveCuePackUseCase(cuePackRepository, eventBus)
     )
 
     await service.start()
 
-    expect(eventBus.subscribers).toEqual(['cue-pack-created'])
+    expect(eventBus.subscribers).toEqual(['cue-pack-created', 'cue-pack-removed'])
 
     await service.stop()
   })

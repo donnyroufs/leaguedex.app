@@ -1,5 +1,6 @@
 import {
   CuePackCreatedEvent,
+  CuePackRemovedEvent,
   GameStartedEvent,
   GameStoppedEvent,
   GameTickEvent
@@ -10,6 +11,7 @@ export type EventMap = {
   'game-stopped': GameStoppedEvent
   'game-tick': GameTickEvent
   'cue-pack-created': CuePackCreatedEvent
+  'cue-pack-removed': CuePackRemovedEvent
 }
 
 export type EventKey = keyof EventMap

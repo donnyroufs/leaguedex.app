@@ -33,5 +33,6 @@ export * from './GetCuePacksUseCase'
 export * from './GetActiveCuePackUseCase'
 export * from './ActivateCuePackUseCase'
 export * from './CuePackService'
+export * from './RemoveCuePackUseCase'
 
 export * from './AppController'

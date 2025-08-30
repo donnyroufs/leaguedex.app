@@ -53,8 +53,9 @@ export class FakeCuePackRepository implements ICuePackRepository {
     return Result.ok()
   }
 
-  public async remove(): Promise<Result<void, Error>> {
-    throw new Error('Not implemented')
+  public async remove(id: string): Promise<Result<void, Error>> {
+    this._cuePacks.delete(id)
+    return Result.ok()
   }
 
   public clear(): void {

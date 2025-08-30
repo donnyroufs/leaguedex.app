@@ -52,6 +52,11 @@ export class AppController implements IAppController {
     return this._cueService.getCues()
   }
 
+  public async removeCuePack(id: string): Promise<void> {
+    this._logger.info('removeCuePack', { id })
+    return this._cuePackService.removeCuePack(id)
+  }
+
   public async addCue(data: CreateCueDto): Promise<string> {
     this._logger.info('addCue', { data })
     return this._cueService.addCue(data)

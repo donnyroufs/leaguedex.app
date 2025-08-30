@@ -11,6 +11,10 @@ export class ElectronAdapter {
       return
     }
 
+    ipcMain.handle('remove-cue-pack', async (_, id: string) => {
+      return this._appController.removeCuePack(id)
+    })
+
     ipcMain.handle('create-cue-pack', async (_, data: CreateCuePackDto) => {
       return this._appController.createCuePack(data)
     })

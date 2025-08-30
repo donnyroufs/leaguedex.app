@@ -71,13 +71,15 @@ export class CompositionRoot {
     const createCuePackUseCase = new Hexagon.CreateCuePackUseCase(cuePackRepository, eventBus)
     const getActiveCuePackUseCase = new Hexagon.GetActiveCuePackUseCase(cuePackRepository)
     const activateCuePackUseCase = new Hexagon.ActivateCuePackUseCase(cuePackRepository)
+    const removeCuePackUseCase = new Hexagon.RemoveCuePackUseCase(cuePackRepository, eventBus)
     const cuePackService = new Hexagon.CuePackService(
       createCuePackUseCase,
       activateCuePackUseCase,
       getCuePacksUseCase,
       getActiveCuePackUseCase,
       eventBus,
-      logger
+      logger,
+      removeCuePackUseCase
     )
 
     const addCueToPackUseCase = new Hexagon.AddCueToPackUseCase(tts, cuePackRepository)
