@@ -199,19 +199,12 @@ export function ActivePackPage(): JSX.Element {
                     </div>
 
                     <div className="space-y-3">
-                      <h3 className="text-text-primary font-semibold text-lg leading-tight">
+                      <h3 className="text-text-primary font-medium text-lg leading-relaxed break-words">
                         {cue.text}
                       </h3>
                       <div className="flex items-center space-x-2.5 text-text-secondary">
                         <Timer className="w-3.5 h-3.5 text-text-tertiary" />
                         <span className="text-sm font-medium">{formatTriggerDisplay(cue)}</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 pt-4 border-t border-border-primary/20">
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-info/80"></div>
-                        <span className="text-xs text-text-tertiary font-medium">Active</span>
                       </div>
                     </div>
                   </div>
