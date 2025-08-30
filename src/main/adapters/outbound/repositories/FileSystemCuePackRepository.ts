@@ -26,67 +26,6 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
     }
   }
 
-  private async writeCuePacks(cuePacks: FSCuePack[]): Promise<void> {
-    await fs.writeFile(this._path, JSON.stringify(cuePacks, null, 2))
-  }
-
-  private serializeCuePack(cuePack: CuePack): FSCuePack {
-    return {
-      id: cuePack.id,
-      name: cuePack.name,
-      isActive: cuePack.isActive,
-      cues: cuePack.cues.map((cue) => this.serializeCue(cue))
-    }
-  }
-
-  private serializeCue(cue: Cue): FSCue {
-    return {
-      id: cue.id,
-      text: cue.text,
-      audioUrl: cue.audioUrl.toJSON(),
-      triggerType: cue.triggerType,
-      interval: cue.interval,
-      triggerAt: cue.triggerAt,
-      event: cue.event,
-      objective: cue.objective,
-      beforeObjective: cue.beforeObjective
-    }
-  }
-
-  private deserializeCuePack(fsCuePack: FSCuePack): CuePack {
-    // Create a new CuePack with the stored name
-    const cuePack = CuePack.create(fsCuePack.name)
-
-    // Use Object.defineProperty to set the private properties
-    Object.defineProperty(cuePack, 'id', { value: fsCuePack.id, writable: false })
-
-    // Set the active state
-    if (fsCuePack.isActive) {
-      cuePack.activate()
-    }
-
-    // Add all the cues
-    fsCuePack.cues.forEach((cue) => {
-      cuePack.add(this.deserializeCue(cue))
-    })
-
-    return cuePack
-  }
-
-  private deserializeCue(fsCue: FSCue): Cue {
-    return {
-      id: fsCue.id,
-      text: fsCue.text,
-      audioUrl: AudioFileName.fromJSON(fsCue.audioUrl),
-      triggerType: fsCue.triggerType,
-      interval: fsCue.interval,
-      triggerAt: fsCue.triggerAt,
-      event: fsCue.event,
-      objective: fsCue.objective,
-      beforeObjective: fsCue.beforeObjective
-    }
-  }
-
   public async all(): Promise<Result<CuePack[], Error>> {
     try {
       const fsCuePacks = await this.readCuePacks()
@@ -168,6 +107,63 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
       return Result.ok(activePack)
     } catch (error) {
       return Result.err(error as Error)
+    }
+  }
+
+  private async writeCuePacks(cuePacks: FSCuePack[]): Promise<void> {
+    await fs.writeFile(this._path, JSON.stringify(cuePacks, null, 2))
+  }
+
+  private serializeCuePack(cuePack: CuePack): FSCuePack {
+    return {
+      id: cuePack.id,
+      name: cuePack.name,
+      isActive: cuePack.isActive,
+      cues: cuePack.cues.map((cue) => this.serializeCue(cue))
+    }
+  }
+
+  private serializeCue(cue: Cue): FSCue {
+    return {
+      id: cue.id,
+      text: cue.text,
+      audioUrl: cue.audioUrl.toJSON(),
+      triggerType: cue.triggerType,
+      interval: cue.interval,
+      triggerAt: cue.triggerAt,
+      event: cue.event,
+      objective: cue.objective,
+      beforeObjective: cue.beforeObjective
+    }
+  }
+
+  private deserializeCuePack(fsCuePack: FSCuePack): CuePack {
+    const cuePack = CuePack.create(fsCuePack.name)
+
+    Object.defineProperty(cuePack, 'id', { value: fsCuePack.id, writable: false })
+
+    if (fsCuePack.isActive) {
+      cuePack.activate()
+    }
+
+    fsCuePack.cues.forEach((cue) => {
+      cuePack.add(this.deserializeCue(cue))
+    })
+
+    return cuePack
+  }
+
+  private deserializeCue(fsCue: FSCue): Cue {
+    return {
+      id: fsCue.id,
+      text: fsCue.text,
+      audioUrl: AudioFileName.fromJSON(fsCue.audioUrl),
+      triggerType: fsCue.triggerType,
+      interval: fsCue.interval,
+      triggerAt: fsCue.triggerAt,
+      event: fsCue.event,
+      objective: fsCue.objective,
+      beforeObjective: fsCue.beforeObjective
     }
   }
 

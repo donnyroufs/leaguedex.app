@@ -43,6 +43,9 @@ export class CueService {
   protected async onGameTick(evt: GameTickEvent): Promise<void> {
     const { gameTime } = evt.payload.state
 
+    // TODO: we probably should cache the active pack and invalidate it when:
+    // - Updated the pack (added,removed
+    // - We activate/deactivate a pack
     const pack = await this._cueRepository.active()
 
     if (pack.isErr() || pack.unwrap() === null) {
@@ -59,6 +62,7 @@ export class CueService {
       dueCues: dueCues.map((x) => x.id)
     })
 
+    // TODO: instead of awaiting it, we should create a queue so that we process it in the background
     for (const cue of dueCues) {
       await this._audioPlayer.play(cue.audioUrl.fullPath)
     }

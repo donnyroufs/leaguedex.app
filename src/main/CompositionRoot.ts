@@ -69,23 +69,17 @@ export class CompositionRoot {
       this._dependencies.cuePackRepository ??
       (await Outbound.CuePackRepositoryFactory.create(isProd, this._dataPath))
     const getCuePacksUseCase = new Hexagon.GetCuePacksUseCase(cuePackRepository)
-    const createCuePackUseCase = new Hexagon.CreateCuePackUseCase(cuePackRepository, eventBus)
+    const createCuePackUseCase = new Hexagon.CreateCuePackUseCase(cuePackRepository)
     const getActiveCuePackUseCase = new Hexagon.GetActiveCuePackUseCase(cuePackRepository)
     const activateCuePackUseCase = new Hexagon.ActivateCuePackUseCase(cuePackRepository)
-    const removeCuePackUseCase = new Hexagon.RemoveCuePackUseCase(cuePackRepository, eventBus)
-    const importPackUseCase = new Hexagon.ImportPackUseCase(
-      cuePackRepository,
-      tts,
-      logger,
-      eventBus
-    )
+    const removeCuePackUseCase = new Hexagon.RemoveCuePackUseCase(cuePackRepository)
+    const importPackUseCase = new Hexagon.ImportPackUseCase(cuePackRepository, tts, logger)
     const exportPackUseCase = new Hexagon.ExportPackUseCase(cuePackRepository)
     const cuePackService = new Hexagon.CuePackService(
       createCuePackUseCase,
       activateCuePackUseCase,
       getCuePacksUseCase,
       getActiveCuePackUseCase,
-      eventBus,
       logger,
       removeCuePackUseCase,
       importPackUseCase,
