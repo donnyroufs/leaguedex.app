@@ -52,6 +52,10 @@ export class AppController implements IAppController {
     return this._cueService.getCues()
   }
 
+  public async exportPack(id: string): Promise<string> {
+    return this._cuePackService.exportPack(id)
+  }
+
   public async importPack(code: string): Promise<void> {
     return this._cuePackService.importPack(code)
   }

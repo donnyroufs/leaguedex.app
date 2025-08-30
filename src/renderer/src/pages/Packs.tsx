@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Package, Plus, Users, Target, Crown, Trash2, Download } from 'lucide-react'
+import { Package, Plus, Users, Target, Crown, Trash2, Download, Share } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -20,6 +20,7 @@ export function PacksPage(): JSX.Element {
   const [packName, setPackName] = useState<string>('')
   const [importCode, setImportCode] = useState<string>('')
   const [packToDelete, setPackToDelete] = useState<string | null>(null)
+  const [exportingPacks, setExportingPacks] = useState<Set<string>>(new Set())
   const { isOpen, onOpen, onClose } = useModal()
   const { isOpen: isImportOpen, onOpen: onImportOpen, onClose: onImportClose } = useModal()
   const { cuePacks, activePack } = useLoaderData<LoaderData>()
@@ -77,6 +78,24 @@ export function PacksPage(): JSX.Element {
     } catch (error) {
       console.error('Failed to activate pack:', error)
       toast.error('Failed to activate pack')
+    }
+  }
+
+  const handleExportPack = async (packId: string): Promise<void> => {
+    try {
+      setExportingPacks((prev) => new Set(prev).add(packId))
+      const exportCode = await window.api.app.exportPack(packId)
+      await navigator.clipboard.writeText(exportCode)
+      toast.success('Pack exported and copied to clipboard')
+    } catch (error) {
+      console.error('Failed to export pack:', error)
+      toast.error('Failed to export pack')
+    } finally {
+      setExportingPacks((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(packId)
+        return newSet
+      })
     }
   }
 
@@ -162,6 +181,16 @@ export function PacksPage(): JSX.Element {
                       aria-label="Delete pack"
                     >
                       <Trash2 className="w-4 h-4 text-text-tertiary hover:text-status-danger" />
+                    </button>
+
+                    {/* Export button */}
+                    <button
+                      onClick={() => handleExportPack(pack.id)}
+                      disabled={exportingPacks.has(pack.id)}
+                      className="absolute top-3 right-12 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="Export pack"
+                    >
+                      <Share className="w-4 h-4 text-text-tertiary hover:text-info" />
                     </button>
 
                     <div className="p-6">

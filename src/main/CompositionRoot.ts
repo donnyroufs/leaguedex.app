@@ -78,6 +78,7 @@ export class CompositionRoot {
       logger,
       eventBus
     )
+    const exportPackUseCase = new Hexagon.ExportPackUseCase(cuePackRepository)
     const cuePackService = new Hexagon.CuePackService(
       createCuePackUseCase,
       activateCuePackUseCase,
@@ -86,7 +87,8 @@ export class CompositionRoot {
       eventBus,
       logger,
       removeCuePackUseCase,
-      importPackUseCase
+      importPackUseCase,
+      exportPackUseCase
     )
 
     const addCueToPackUseCase = new Hexagon.AddCueToPackUseCase(tts, cuePackRepository)

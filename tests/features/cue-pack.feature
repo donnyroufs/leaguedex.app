@@ -47,13 +47,12 @@ Feature: Cue Pack Management
     And I should now have a total of 2 cue packs
     And The pack should be activated by default
 
-  # Scenario: Export cue pack to encoded data
-  #   Given I have a cue pack called "Mid Fundamentals" with the following cues:
-  #     | text          | triggerType | interval |
-  #     | Check minimap | interval    | 60       |
-  #     | Check wards   | interval    | 45       |
-  #   When I export the cue pack to encoded data
-  #   Then I should have a base64 encoded string that contains the cue pack
+  Scenario: Export cue pack to encoded data
+    Given I have a cue pack called "Mid Fundamentals" with the following cues:
+      | text          | triggerType | interval |
+      | Check wards   | interval    | 45       |
+    When I export the cue pack to encoded data
+    Then I should have a base64 encoded string that contains the cue pack
 
 # Scenario: Editing a cue pack
 # Scenario: Forking a cue pack

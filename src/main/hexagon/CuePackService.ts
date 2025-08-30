@@ -1,6 +1,7 @@
 import { ActivateCuePackUseCase } from './ActivateCuePackUseCase'
 import { CreateCuePackUseCase } from './CreateCuePackUseCase'
 import { CuePackCreatedEvent, CuePackImportedEvent, CuePackRemovedEvent } from './domain-events'
+import { ExportPackUseCase } from './ExportPackUseCase'
 import { GetActiveCuePackUseCase } from './GetActiveCuePackUseCase'
 import { GetCuePacksUseCase, ICuePackDto } from './GetCuePacksUseCase'
 import { ImportPackUseCase } from './ImportPackUseCase'
@@ -17,7 +18,8 @@ export class CuePackService {
     private readonly _eventBus: IEventBus,
     private readonly _logger: ILogger,
     private readonly _removeCuePackUseCase: RemoveCuePackUseCase,
-    private readonly _importPackUseCase: ImportPackUseCase
+    private readonly _importPackUseCase: ImportPackUseCase,
+    private readonly _exportPackUseCase: ExportPackUseCase
   ) {}
 
   public async start(): Promise<void> {
@@ -50,6 +52,10 @@ export class CuePackService {
 
   public async getActiveCuePack(): Promise<ICuePackDto | null> {
     return this._getActiveCuePackUseCase.execute()
+  }
+
+  public async exportPack(id: string): Promise<string> {
+    return this._exportPackUseCase.execute({ id })
   }
 
   private async onCuePackCreated(event: CuePackCreatedEvent): Promise<void> {

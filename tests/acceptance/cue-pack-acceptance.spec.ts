@@ -32,9 +32,7 @@ describeFeature(
     let dataSource: FakeRiotClientDataSource
     let cuePackRepository: FakeCuePackRepository
 
-    async function createCue(data: CreateCueDto): Promise<string> {
-      const packId = await app.createCuePack({ name: 'My Pack' })
-
+    async function createCue(data: CreateCueDto, packId: string): Promise<string> {
       const cueData: {
         text: string
         triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
@@ -258,8 +256,10 @@ describeFeature(
         Given(
           `I have an encoded base64 string that contains a cue pack named {string} with the following cues:`,
           async (_, name: string, dataTable: CreateCueDto[]) => {
+            const packId = await app.createCuePack({ name })
+
             for (const cue of dataTable) {
-              await createCue(cue)
+              await createCue(cue, packId)
             }
 
             // This one refers to my audio path, do we overwrite it? Or should the generation, handle the path?
@@ -294,5 +294,39 @@ describeFeature(
         })
       }
     )
+
+    type ExportCuePackContext = {
+      code: string
+      packId: string
+    }
+
+    Scenario(
+      `Export cue pack to encoded data`,
+      ({ Given, When, Then, context }: Typed<ExportCuePackContext>) => {
+        Given(
+          `I have a cue pack called {string} with the following cues:`,
+          async (_, name: string, dataTable: CreateCueDto[]) => {
+            const packId = await app.createCuePack({ name })
+            context.packId = packId
+            for (const cue of dataTable) {
+              await createCue(cue, packId)
+            }
+          }
+        )
+
+        When(`I export the cue pack to encoded data`, async () => {
+          const code = await app.exportPack(context.packId)
+          context.code = code
+        })
+
+        Then(`I should have a base64 encoded string that contains the cue pack`, async () => {
+          expect(context.code).toBeDefined()
+          expect(async () => {
+            await app.importPack(context.code)
+          }).not.toThrow()
+        })
+      }
+    )
   }
+
 )
