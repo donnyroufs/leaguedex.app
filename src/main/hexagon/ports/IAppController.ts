@@ -10,6 +10,7 @@ export interface IAppController {
 
   activateCuePack(id: string): Promise<void>
   createCuePack(data: CreateCuePackDto): Promise<string>
+  importPack(code: string): Promise<void>
   getActiveCuePack(): Promise<ICuePackDto | null>
   getCuePacks(): Promise<ICuePackDto[]>
   removeCuePack(id: string): Promise<void>

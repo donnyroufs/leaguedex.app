@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Package, Plus, Users, Target, Crown, Trash2 } from 'lucide-react'
+import { Package, Plus, Users, Target, Crown, Trash2, Download } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -16,9 +16,12 @@ type LoaderData = {
 
 export function PacksPage(): JSX.Element {
   const [isCreating, setIsCreating] = useState<boolean>(false)
+  const [isImporting, setIsImporting] = useState<boolean>(false)
   const [packName, setPackName] = useState<string>('')
+  const [importCode, setImportCode] = useState<string>('')
   const [packToDelete, setPackToDelete] = useState<string | null>(null)
   const { isOpen, onOpen, onClose } = useModal()
+  const { isOpen: isImportOpen, onOpen: onImportOpen, onClose: onImportClose } = useModal()
   const { cuePacks, activePack } = useLoaderData<LoaderData>()
   const { revalidate } = useRevalidator()
   const toast = useToast()
@@ -42,6 +45,27 @@ export function PacksPage(): JSX.Element {
       toast.error('Failed to create pack')
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  const handleImportPack = async (): Promise<void> => {
+    if (!importCode.trim()) {
+      toast.error('Import code is required')
+      return
+    }
+
+    try {
+      setIsImporting(true)
+      await window.api.app.importPack(importCode.trim())
+      setImportCode('')
+      onImportClose()
+      revalidate()
+      toast.success('Pack imported successfully')
+    } catch (error) {
+      console.error('Failed to import pack:', error)
+      toast.error('Failed to import pack')
+    } finally {
+      setIsImporting(false)
     }
   }
 
@@ -87,14 +111,25 @@ export function PacksPage(): JSX.Element {
     onClose()
   }
 
+  const handleImportModalClose = (): void => {
+    setImportCode('')
+    onImportClose()
+  }
+
   return (
     <PageWrapper>
       <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
         <h1 className="text-2xl font-semibold text-text-primary">Cue Packs</h1>
-        <Button onClick={onOpen} size="md">
-          <Plus size={16} className="mr-2" />
-          Create Pack
-        </Button>
+        <div className="flex gap-3">
+          <Button onClick={onImportOpen} variant="secondary" size="md">
+            <Download size={16} className="mr-2" />
+            Import Pack
+          </Button>
+          <Button onClick={onOpen} size="md">
+            <Plus size={16} className="mr-2" />
+            Create Pack
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0 p-8">
@@ -236,6 +271,47 @@ export function PacksPage(): JSX.Element {
               className="flex-1"
             >
               {isCreating ? 'Creating...' : 'Create Pack'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Import Pack Modal */}
+      <Modal isOpen={isImportOpen} onClose={handleImportModalClose} title="Import Pack">
+        <div className="space-y-6">
+          <div>
+            <label
+              htmlFor="import-code"
+              className="block text-sm font-medium text-text-primary mb-2"
+            >
+              Import Code
+            </label>
+            <textarea
+              id="import-code"
+              value={importCode}
+              onChange={(e) => setImportCode(e.target.value)}
+              placeholder="Paste your pack import code here..."
+              rows={4}
+              className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info/40 transition-all duration-200 resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-border-primary/20">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleImportModalClose}
+              disabled={isImporting}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleImportPack}
+              disabled={!importCode.trim() || isImporting}
+              className="flex-1"
+            >
+              {isImporting ? 'Importing...' : 'Import Pack'}
             </Button>
           </div>
         </div>

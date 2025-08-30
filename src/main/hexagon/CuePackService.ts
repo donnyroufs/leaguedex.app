@@ -1,8 +1,9 @@
 import { ActivateCuePackUseCase } from './ActivateCuePackUseCase'
 import { CreateCuePackUseCase } from './CreateCuePackUseCase'
-import { CuePackCreatedEvent, CuePackRemovedEvent } from './domain-events'
+import { CuePackCreatedEvent, CuePackImportedEvent, CuePackRemovedEvent } from './domain-events'
 import { GetActiveCuePackUseCase } from './GetActiveCuePackUseCase'
 import { GetCuePacksUseCase, ICuePackDto } from './GetCuePacksUseCase'
+import { ImportPackUseCase } from './ImportPackUseCase'
 import { IEventBus } from './ports/IEventBus'
 import { ILogger } from './ports/ILogger'
 import { RemoveCuePackUseCase } from './RemoveCuePackUseCase'
@@ -15,17 +16,20 @@ export class CuePackService {
     private readonly _getActiveCuePackUseCase: GetActiveCuePackUseCase,
     private readonly _eventBus: IEventBus,
     private readonly _logger: ILogger,
-    private readonly _removeCuePackUseCase: RemoveCuePackUseCase
+    private readonly _removeCuePackUseCase: RemoveCuePackUseCase,
+    private readonly _importPackUseCase: ImportPackUseCase
   ) {}
 
   public async start(): Promise<void> {
     this._eventBus.subscribe('cue-pack-created', this.onCuePackCreated.bind(this))
     this._eventBus.subscribe('cue-pack-removed', this.onCuePackRemoved.bind(this))
+    this._eventBus.subscribe('cue-pack-imported', this.onCuePackImported.bind(this))
   }
 
   public async stop(): Promise<void> {
     this._eventBus.unsubscribe('cue-pack-created', this.onCuePackCreated.bind(this))
     this._eventBus.unsubscribe('cue-pack-removed', this.onCuePackRemoved.bind(this))
+    this._eventBus.unsubscribe('cue-pack-imported', this.onCuePackImported.bind(this))
   }
 
   public async removeCuePack(id: string): Promise<void> {
@@ -57,6 +61,10 @@ export class CuePackService {
     }
   }
 
+  public async importPack(code: string): Promise<void> {
+    return this._importPackUseCase.execute({ code })
+  }
+
   private async onCuePackRemoved(event: CuePackRemovedEvent): Promise<void> {
     this._logger.info('Cue pack removed', { event })
     try {
@@ -77,6 +85,15 @@ export class CuePackService {
       const pack = packs[0]!
 
       await this._activateCuePackUseCase.execute(pack.id)
+    } catch (error) {
+      this._logger.error('Failed to activate cue pack', { error })
+    }
+  }
+
+  private async onCuePackImported(event: CuePackImportedEvent): Promise<void> {
+    this._logger.info('Cue pack imported', { event })
+    try {
+      await this._activateCuePackUseCase.execute(event.cuePackId)
     } catch (error) {
       this._logger.error('Failed to activate cue pack', { error })
     }

@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import { expect } from 'vitest'
 
 import { loadFeature, describeFeature, StepTest } from '@amiceli/vitest-cucumber'
-import { IAppController, ICueDto, ICuePackDto } from '@hexagon/index'
+import { CreateCueDto, IAppController, ICueDto, ICuePackDto } from '@hexagon/index'
 import { EventBus, NullLogger, FakeCuePackRepository } from 'src/main/adapters/outbound'
 import { createTestApp } from 'src/main/CompositionRoot'
 import { AudioSpy } from 'tests/AudioSpy'
@@ -31,6 +31,40 @@ describeFeature(
     let eventBus: EventBus
     let dataSource: FakeRiotClientDataSource
     let cuePackRepository: FakeCuePackRepository
+
+    async function createCue(data: CreateCueDto): Promise<string> {
+      const packId = await app.createCuePack({ name: 'My Pack' })
+
+      const cueData: {
+        text: string
+        triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
+        interval?: number
+        triggerAt?: number
+        event?: string
+        objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+        beforeObjective?: number
+      } = {
+        text: data.text,
+        triggerType: data.triggerType
+      }
+
+      if (data.triggerType === 'interval' && data.interval) {
+        cueData.interval = Number(data.interval)
+      } else if (data.triggerType === 'oneTime' && data.triggerAt) {
+        cueData.triggerAt = Number(data.triggerAt)
+      } else if (data.triggerType === 'event' && data.event) {
+        cueData.event = data.event
+      } else if (
+        data.triggerType === 'objective' &&
+        data.objective != null &&
+        data.beforeObjective != null
+      ) {
+        cueData.objective = data.objective
+        cueData.beforeObjective = Number(data.beforeObjective)
+      }
+
+      return app.addCue({ ...cueData, packId })
+    }
 
     BeforeAllScenarios(async () => {
       timer = new FakeTimer()
@@ -212,16 +246,53 @@ describeFeature(
       }
     )
 
-    // Scenario(`Import cue pack from encoded data`, ({ Given, When, Then, And }) => {
-    //   Given(
-    //     `I have an encoded base64 string that contains a cue pack named "A shared cue pack" with the following cues:`,
-    //     () => {}
-    //   )
-    //   When(`I import the cue pack using the encoded string`, () => {})
-    //   Then(`I should have a new cue pack called "A shared cue pack"`, () => {})
-    //   And(`all required audio files should be generated`, () => {})
-    //   And(`I should now have a total of 2 cue packs`, () => {})
-    //   And(`I can activate the imported cue pack`, () => {})
-    // })
+    type ImportCuePackContext = {
+      code: string
+      packs: { id: string; name: string }[]
+      newPackName: string
+    }
+
+    Scenario(
+      `Import cue pack from encoded data`,
+      ({ Given, When, Then, And, context }: Typed<ImportCuePackContext>) => {
+        Given(
+          `I have an encoded base64 string that contains a cue pack named {string} with the following cues:`,
+          async (_, name: string, dataTable: CreateCueDto[]) => {
+            for (const cue of dataTable) {
+              await createCue(cue)
+            }
+
+            // This one refers to my audio path, do we overwrite it? Or should the generation, handle the path?
+            const code = `ewogICJuYW1lIjogIkEgc2hhcmVkIGN1ZSBwYWNrIiwKICAiY3VlcyI6IFsKICAgIHsKICAgICAgInRleHQiOiAiQ2hlY2sgbWluaW1hcCIsCiAgICAgICJ0cmlnZ2VyVHlwZSI6ICJpbnRlcnZhbCIsCiAgICAgICJpbnRlcnZhbCI6IDYwCiAgICB9CiAgXQp9`
+            context.code = code
+            context.newPackName = name
+          }
+        )
+
+        When(`I import the cue pack using the encoded string`, async () => {
+          await app.importPack(context.code)
+        })
+
+        Then(`I should have a new cue pack called {string}`, async (_, name: string) => {
+          const packs = await app.getCuePacks()
+          context.packs = packs
+
+          expect(packs.some((pack) => pack.name === name)).toBe(true)
+        })
+
+        And(`all required audio files should be generated`, () => {
+          // TODO: hwo to test
+        })
+
+        And(`I should now have a total of 2 cue packs`, async () => {
+          expect(context.packs).toHaveLength(2)
+        })
+
+        And(`The pack should be activated by default`, async () => {
+          const activePack = await app.getActiveCuePack()
+          expect(activePack!.name).toBe(context.newPackName)
+        })
+      }
+    )
   }
 )

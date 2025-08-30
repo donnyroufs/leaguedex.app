@@ -22,7 +22,8 @@ const api = {
     activateCuePack: (id: string) => ipcRenderer.invoke('activate-cue-pack', id),
     getCuePacks: () => ipcRenderer.invoke('get-cue-packs'),
     getActiveCuePack: () => ipcRenderer.invoke('get-active-cue-pack'),
-    removeCuePack: (id: string) => ipcRenderer.invoke('remove-cue-pack', id)
+    removeCuePack: (id: string) => ipcRenderer.invoke('remove-cue-pack', id),
+    importPack: (code: string) => ipcRenderer.invoke('import-pack', code)
   },
 
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
