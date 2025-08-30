@@ -5,7 +5,7 @@ import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
 import { useModal, useToast } from '../hooks'
 import { EmptyState } from '@renderer/components/EmptyState'
-import { useLoaderData, useRevalidator } from 'react-router'
+import { useLoaderData, useNavigate, useRevalidator } from 'react-router'
 import { ConfirmDialog } from '@renderer/components/ConfirmDialog'
 import { ICuePackDto, CreateCuePackDto } from '@hexagon/index'
 
@@ -15,6 +15,7 @@ type LoaderData = {
 }
 
 export function PacksPage(): JSX.Element {
+  const navigate = useNavigate()
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const [isImporting, setIsImporting] = useState<boolean>(false)
   const [packName, setPackName] = useState<string>('')
@@ -60,7 +61,7 @@ export function PacksPage(): JSX.Element {
       await window.api.app.importPack(importCode.trim())
       setImportCode('')
       onImportClose()
-      revalidate()
+      navigate('/')
       toast.success('Pack imported successfully')
     } catch (error) {
       console.error('Failed to import pack:', error)
@@ -75,6 +76,7 @@ export function PacksPage(): JSX.Element {
       await window.api.app.activateCuePack(packId)
       revalidate()
       toast.success('Pack activated successfully')
+      navigate('/')
     } catch (error) {
       console.error('Failed to activate pack:', error)
       toast.error('Failed to activate pack')
