@@ -177,7 +177,7 @@ export function PacksPage(): JSX.Element {
                     {/* Delete button */}
                     <button
                       onClick={() => openDeleteConfirmation(pack.id)}
-                      className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors"
+                      className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors"
                       aria-label="Delete pack"
                     >
                       <Trash2 className="w-4 h-4 text-text-tertiary hover:text-status-danger" />
@@ -187,7 +187,7 @@ export function PacksPage(): JSX.Element {
                     <button
                       onClick={() => handleExportPack(pack.id)}
                       disabled={exportingPacks.has(pack.id)}
-                      className="absolute top-3 right-12 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="absolute top-2 right-9 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Export pack"
                     >
                       <Share className="w-4 h-4 text-text-tertiary hover:text-info" />
@@ -210,7 +210,7 @@ export function PacksPage(): JSX.Element {
                           )}
                         </div>
                         <div className="flex flex-col flex-1">
-                          <h3 className="text-text-primary font-semibold text-lg leading-tight mb-1">
+                          <h3 className="text-text-primary font-semibold text-lg leading-tight break-words max-w-[14ch]">
                             {pack.name}
                           </h3>
                         </div>
