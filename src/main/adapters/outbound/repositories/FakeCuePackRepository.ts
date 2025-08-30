@@ -37,6 +37,26 @@ export class FakeCuePackRepository implements ICuePackRepository {
     return Result.ok(cuePack)
   }
 
+  public async removeCue(cueId: string): Promise<Result<void, Error>> {
+    const cuePack = await this.active()
+
+    if (cuePack.isErr() || cuePack.unwrap() === null) {
+      return Result.err(new Error('Cue pack not found'))
+    }
+
+    const pack = cuePack.unwrap()!
+
+    pack.remove(cueId)
+
+    await this.save(pack)
+
+    return Result.ok()
+  }
+
+  public async remove(): Promise<Result<void, Error>> {
+    throw new Error('Not implemented')
+  }
+
   public clear(): void {
     this._cuePacks.clear()
   }

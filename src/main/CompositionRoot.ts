@@ -15,7 +15,6 @@ type AppDependencies = {
   eventBus: Hexagon.IEventBus
   dataSource: Outbound.IRiotClientDataSource
   timer: Hexagon.ITimer
-  cueRepository: Hexagon.ICueRepository
   logger: Hexagon.ILogger
   audioPlayer: Hexagon.IAudioPlayer
   tts: Hexagon.ITextToSpeechGenerator
@@ -50,10 +49,6 @@ export class CompositionRoot {
     const timer = this._dependencies.timer ?? new Outbound.Timer()
     const gameMonitor = new Hexagon.GameMonitor(logger, timer, eventBus, gameDataProvider)
 
-    const cueRepository =
-      this._dependencies.cueRepository ??
-      (await Outbound.CueRepositoryFactory.create(isProd, this._dataPath))
-
     const audioPlayer = this._dependencies.audioPlayer ?? new Outbound.AudioPlayer(logger, isProd)
     const audioDir = path.join(this._dataPath, 'audio')
 
@@ -87,8 +82,7 @@ export class CompositionRoot {
 
     const addCueToPackUseCase = new Hexagon.AddCueToPackUseCase(tts, cuePackRepository)
     const getCuesUseCase = new Hexagon.GetCuesUseCase(cuePackRepository)
-    // TODO: fix this one
-    const removeCueUseCase = new Hexagon.RemoveCueUseCase(cueRepository)
+    const removeCueUseCase = new Hexagon.RemoveCueUseCase(cuePackRepository)
 
     const cueService = new Hexagon.CueService(
       addCueToPackUseCase,

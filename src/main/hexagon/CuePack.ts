@@ -15,11 +15,15 @@ export class CuePack {
     public readonly id: string,
     public readonly name: string,
     private _isActive: boolean,
-    private readonly _cues: Cue[] = []
+    private _cues: Cue[] = []
   ) {}
 
   public add(cue: Cue): void {
     this._cues.push(cue)
+  }
+
+  public remove(cueId: string): void {
+    this._cues = this._cues.filter((cue) => cue.id !== cueId)
   }
 
   public deactivate(): void {

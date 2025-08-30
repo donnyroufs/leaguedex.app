@@ -35,4 +35,18 @@ describe('Cue Pack', () => {
     expect(pack.cues).toHaveLength(1)
     expect(pack.cues[0]).toEqual(cue)
   })
+
+  test('Should remove a cue from the pack', () => {
+    const pack = CuePack.create('My Pack')
+    const cue = new CueBuilder().withText('My cue').build()
+    const cue2 = new CueBuilder().withText('My cue 2').build()
+
+    pack.add(cue)
+    pack.add(cue2)
+
+    pack.remove(cue.id)
+
+    expect(pack.cues).toHaveLength(1)
+    expect(pack.cues[0]).toEqual(cue2)
+  })
 })

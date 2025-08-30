@@ -4,12 +4,7 @@ import { expect } from 'vitest'
 
 import { CreateCueDto, IAppController } from '@hexagon/index'
 import { createTestApp } from 'src/main/CompositionRoot'
-import {
-  EventBus,
-  FakeCuePackRepository,
-  FakeCueRepository,
-  NullLogger
-} from 'src/main/adapters/outbound'
+import { EventBus, FakeCuePackRepository, NullLogger } from 'src/main/adapters/outbound'
 import { FakeTimer } from 'tests/FakeTimer'
 import { AudioSpy } from 'tests/AudioSpy'
 import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
@@ -28,7 +23,6 @@ describeFeature(
     ScenarioOutline
   }) => {
     let app!: IAppController
-    let fakeCueRepository!: FakeCueRepository
     let timer: FakeTimer
     let audioPlayer: AudioSpy
     let eventBus: EventBus
@@ -70,7 +64,6 @@ describeFeature(
     }
 
     BeforeAllScenarios(async () => {
-      fakeCueRepository = new FakeCueRepository()
       timer = new FakeTimer()
       eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
@@ -78,7 +71,6 @@ describeFeature(
       cuePackRepository = new FakeCuePackRepository()
 
       app = await createTestApp({
-        cueRepository: fakeCueRepository,
         timer,
         audioPlayer,
         eventBus,
@@ -98,7 +90,6 @@ describeFeature(
       timer.clear()
       eventBus.clear()
       audioPlayer.clear()
-      fakeCueRepository.clear()
       cuePackRepository.clear()
       dataSource.reset()
     })

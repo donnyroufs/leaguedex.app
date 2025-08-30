@@ -3,12 +3,7 @@ import { expect } from 'vitest'
 
 import { loadFeature, describeFeature, StepTest } from '@amiceli/vitest-cucumber'
 import { IAppController, ICueDto, ICuePackDto } from '@hexagon/index'
-import {
-  FakeCueRepository,
-  EventBus,
-  NullLogger,
-  FakeCuePackRepository
-} from 'src/main/adapters/outbound'
+import { EventBus, NullLogger, FakeCuePackRepository } from 'src/main/adapters/outbound'
 import { createTestApp } from 'src/main/CompositionRoot'
 import { AudioSpy } from 'tests/AudioSpy'
 import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
@@ -31,7 +26,6 @@ describeFeature(
     Scenario
   }) => {
     let app!: IAppController
-    let fakeCueRepository!: FakeCueRepository
     let timer: FakeTimer
     let audioPlayer: AudioSpy
     let eventBus: EventBus
@@ -39,7 +33,6 @@ describeFeature(
     let cuePackRepository: FakeCuePackRepository
 
     BeforeAllScenarios(async () => {
-      fakeCueRepository = new FakeCueRepository()
       timer = new FakeTimer()
       eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
@@ -47,7 +40,6 @@ describeFeature(
       cuePackRepository = new FakeCuePackRepository()
 
       app = await createTestApp({
-        cueRepository: fakeCueRepository,
         timer,
         audioPlayer,
         eventBus,
@@ -67,7 +59,6 @@ describeFeature(
       timer.clear()
       eventBus.clear()
       audioPlayer.clear()
-      fakeCueRepository.clear()
       dataSource.reset()
       cuePackRepository.clear()
     })
