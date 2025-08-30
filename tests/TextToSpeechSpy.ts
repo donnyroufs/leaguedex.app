@@ -10,4 +10,9 @@ export class TextToSpeechSpy implements ITextToSpeechGenerator {
     this.lastCalledWith = text
     return Result.ok(AudioFileName.createMP3(text))
   }
+
+  public clear(): void {
+    this.totalCalls = 0
+    this.lastCalledWith = undefined
+  }
 }

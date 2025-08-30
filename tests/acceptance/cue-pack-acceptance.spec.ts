@@ -8,6 +8,7 @@ import { createTestApp } from 'src/main/CompositionRoot'
 import { AudioSpy } from 'tests/AudioSpy'
 import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
 import { FakeTimer } from 'tests/FakeTimer'
+import { TextToSpeechSpy } from 'tests/TextToSpeechSpy'
 
 type Typed<TContext> = Omit<StepTest, 'context'> & {
   context: TContext
@@ -31,6 +32,7 @@ describeFeature(
     let eventBus: EventBus
     let dataSource: FakeRiotClientDataSource
     let cuePackRepository: FakeCuePackRepository
+    let tts: TextToSpeechSpy
 
     async function createCue(data: CreateCueDto, packId: string): Promise<string> {
       const cueData: {
@@ -70,13 +72,15 @@ describeFeature(
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
       cuePackRepository = new FakeCuePackRepository()
+      tts = new TextToSpeechSpy()
 
       app = await createTestApp({
         timer,
         audioPlayer,
         eventBus,
         dataSource,
-        cuePackRepository
+        cuePackRepository,
+        tts
       })
     })
 
@@ -93,6 +97,7 @@ describeFeature(
       audioPlayer.clear()
       dataSource.reset()
       cuePackRepository.clear()
+      tts.clear()
     })
 
     Background(({ Given }) => {
@@ -281,7 +286,8 @@ describeFeature(
         })
 
         And(`all required audio files should be generated`, () => {
-          // TODO: hwo to test
+          expect(tts.totalCalls).toBe(2) // Initial one, and imported
+          expect(tts.lastCalledWith).toBe('Check minimap')
         })
 
         And(`I should now have a total of 2 cue packs`, async () => {
@@ -328,5 +334,4 @@ describeFeature(
       }
     )
   }
-
 )
