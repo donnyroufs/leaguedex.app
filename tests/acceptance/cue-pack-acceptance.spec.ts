@@ -267,8 +267,7 @@ describeFeature(
               await createCue(cue, packId)
             }
 
-            // This one refers to my audio path, do we overwrite it? Or should the generation, handle the path?
-            const code = `ewogICJuYW1lIjogIkEgc2hhcmVkIGN1ZSBwYWNrIiwKICAiY3VlcyI6IFsKICAgIHsKICAgICAgInRleHQiOiAiQ2hlY2sgbWluaW1hcCIsCiAgICAgICJ0cmlnZ2VyVHlwZSI6ICJpbnRlcnZhbCIsCiAgICAgICJpbnRlcnZhbCI6IDYwCiAgICB9CiAgXQp9`
+            const code = `eyJuYW1lIjoiQSBzaGFyZWQgY3VlIHBhY2siLCJjdWVzIjpbeyJ0ZXh0IjoiQ2hlY2sgbWluaW1hcCIsInRyaWdnZXJUeXBlIjoiaW50ZXJ2YWwiLCJpbnRlcnZhbCI6NjB9XX0=`
             context.code = code
             context.newPackName = name
           }
