@@ -1,9 +1,15 @@
-import { GameStartedEvent, GameStoppedEvent, GameTickEvent } from '../domain-events'
+import {
+  CuePackCreatedEvent,
+  GameStartedEvent,
+  GameStoppedEvent,
+  GameTickEvent
+} from '../domain-events'
 
 export type EventMap = {
   'game-started': GameStartedEvent
   'game-stopped': GameStoppedEvent
   'game-tick': GameTickEvent
+  'cue-pack-created': CuePackCreatedEvent
 }
 
 export type EventKey = keyof EventMap

@@ -19,6 +19,7 @@ type AppDependencies = {
   logger: Hexagon.ILogger
   audioPlayer: Hexagon.IAudioPlayer
   tts: Hexagon.ITextToSpeechGenerator
+  cuePackRepository: Hexagon.ICuePackRepository
 }
 
 export class CompositionRoot {
@@ -69,21 +70,43 @@ export class CompositionRoot {
         logger
       ))
 
-    const createCueUseCase = new Hexagon.CreateCueUseCase(tts, cueRepository)
-    const getCuesUseCase = new Hexagon.GetCuesUseCase(cueRepository)
+    const cuePackRepository =
+      this._dependencies.cuePackRepository ?? new Outbound.FakeCuePackRepository()
+    const getCuePacksUseCase = new Hexagon.GetCuePacksUseCase(cuePackRepository)
+    const createCuePackUseCase = new Hexagon.CreateCuePackUseCase(cuePackRepository, eventBus)
+    const getActiveCuePackUseCase = new Hexagon.GetActiveCuePackUseCase(cuePackRepository)
+    const activateCuePackUseCase = new Hexagon.ActivateCuePackUseCase(cuePackRepository)
+    const cuePackService = new Hexagon.CuePackService(
+      createCuePackUseCase,
+      activateCuePackUseCase,
+      getCuePacksUseCase,
+      getActiveCuePackUseCase,
+      eventBus,
+      logger
+    )
+
+    const addCueToPackUseCase = new Hexagon.AddCueToPackUseCase(tts, cuePackRepository)
+    const getCuesUseCase = new Hexagon.GetCuesUseCase(cuePackRepository)
+    // TODO: fix this one
     const removeCueUseCase = new Hexagon.RemoveCueUseCase(cueRepository)
 
     const cueService = new Hexagon.CueService(
-      createCueUseCase,
+      addCueToPackUseCase,
       getCuesUseCase,
       removeCueUseCase,
       eventBus,
       audioPlayer,
       logger,
-      cueRepository
+      cuePackRepository
     )
 
-    const appController = new Hexagon.AppController(gameMonitor, logger, cueService, eventBus)
+    const appController = new Hexagon.AppController(
+      gameMonitor,
+      logger,
+      cueService,
+      eventBus,
+      cuePackService
+    )
     this._created = true
     return appController
   }

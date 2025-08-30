@@ -6,22 +6,49 @@ Feature: Cue Pack Management
   Background:
     Given the application is running
 
-  Scenario: Personal cue pack is active by default
+  Scenario: Create a new cue pack
     Given I have no cue packs configured
-    Then I should have a personal cue pack
-    And it should be active by default
-    And it should be empty
+    When I create a new cue pack called "My Pack"
+    Then I should have a new cue pack called "My Pack"
+    And it should be activated by default
+    And it should not have any cues
 
-  Scenario: Import cue pack from encoded data
-    Given I have an encoded base64 string that contains a cue pack named "A shared cue pack" with the following cues:
-      | text          | triggerType | interval |
-      | Check minimap | interval    | 60       |
-    And I have a personal cue pack
-    When I import the cue pack using the encoded string
-    Then I should have a new cue pack called "A shared cue pack"
-    And all required audio files should be generated
-    And I should now have a total of 2 cue packs
-    And I can activate the imported cue pack
+  Scenario: Add a cue to the pack
+    Given I have a cue pack called "My Pack"
+    When I add a cue with the name "Check minimap" for the interval "60" seconds
+    Then I should have a cue in the "My Pack" cue pack with the name "Check minimap"
+    And the cue should be triggered every "60" seconds
+
+  Scenario: Select a cue pack
+    Given I have two cue packs configured:
+      | name   |
+      | Pack 1 |
+      | Pack 2 |
+    When I select the "Pack 2" cue pack
+    Then I should have the "Pack 2" cue pack active
+    And I should not have the "Pack 1" cue pack active
+
+  # Scenario: Import cue pack from encoded data
+  #   Given I have an encoded base64 string that contains a cue pack named "A shared cue pack" with the following cues:
+  #     | text          | triggerType | interval |
+  #     | Check minimap | interval    | 60       |
+  #   When I import the cue pack using the encoded string
+  #   Then I should have a new cue pack called "A shared cue pack"
+  #   And all required audio files should be generated
+  #   And I should now have a total of 2 cue packs
+  #   And I can activate the imported cue pack
+
+
+# Scenario: Editing a cue pack
+# Scenario: Forking a cue pack
+# Scenario: Adding existing cues to a pack
+
+# Scenario: Remove a cue pack
+#   Given I have a cue pack called "My Pack"
+#   And I have a cue pack called "My Pack 2"
+#   When I remove the "My Pack" cue pack
+#   Then "My Pack" should be removed
+#   And "My Pack 2" should be active
 
 # Scenario: Export cue pack to encoded data
 #     Given I have a cue pack called "Mid Fundamentals" with the following cues:

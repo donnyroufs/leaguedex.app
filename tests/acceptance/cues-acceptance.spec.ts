@@ -4,7 +4,12 @@ import { expect } from 'vitest'
 
 import { CreateCueDto, IAppController } from '@hexagon/index'
 import { createTestApp } from 'src/main/CompositionRoot'
-import { EventBus, FakeCueRepository, NullLogger } from 'src/main/adapters/outbound'
+import {
+  EventBus,
+  FakeCuePackRepository,
+  FakeCueRepository,
+  NullLogger
+} from 'src/main/adapters/outbound'
 import { FakeTimer } from 'tests/FakeTimer'
 import { AudioSpy } from 'tests/AudioSpy'
 import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
@@ -28,8 +33,11 @@ describeFeature(
     let audioPlayer: AudioSpy
     let eventBus: EventBus
     let dataSource: FakeRiotClientDataSource
+    let cuePackRepository: FakeCuePackRepository
 
     async function createCue(data: CreateCueDto): Promise<string> {
+      const packId = await app.createCuePack({ name: 'My Pack' })
+
       const cueData: {
         text: string
         triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
@@ -58,7 +66,7 @@ describeFeature(
         cueData.beforeObjective = Number(data.beforeObjective)
       }
 
-      return app.addCue(cueData)
+      return app.addCue({ ...cueData, packId })
     }
 
     BeforeAllScenarios(async () => {
@@ -67,13 +75,15 @@ describeFeature(
       eventBus = new EventBus(new NullLogger())
       audioPlayer = new AudioSpy()
       dataSource = new FakeRiotClientDataSource()
+      cuePackRepository = new FakeCuePackRepository()
 
       app = await createTestApp({
         cueRepository: fakeCueRepository,
         timer,
         audioPlayer,
         eventBus,
-        dataSource
+        dataSource,
+        cuePackRepository
       })
     })
 
@@ -89,6 +99,7 @@ describeFeature(
       eventBus.clear()
       audioPlayer.clear()
       fakeCueRepository.clear()
+      cuePackRepository.clear()
       dataSource.reset()
     })
 

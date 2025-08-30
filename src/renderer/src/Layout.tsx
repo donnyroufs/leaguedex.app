@@ -4,7 +4,7 @@ import { Outlet } from 'react-router'
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
-import { Settings as SettingsIcon, Bell, Download, RefreshCw } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Download, RefreshCw, Package } from 'lucide-react'
 import { GameDataDto } from '@contracts'
 
 type UpdateStatus = {
@@ -133,7 +133,10 @@ export function Layout(): JSX.Element {
           <nav>
             <ul className="flex flex-col mt-1 space-y-1">
               <li>
-                <SidebarNavItem to="/" label="Cues" icon={Bell} />
+                <SidebarNavItem to="/" label="Active Pack" icon={Bell} />
+              </li>
+              <li>
+                <SidebarNavItem to="/packs" label="Packs" icon={Package} />
               </li>
               <li>
                 <SidebarNavItem to="/settings" label="Settings" icon={SettingsIcon} />

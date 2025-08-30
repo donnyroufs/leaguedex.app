@@ -1,21 +1,25 @@
-import { ILogger, GameMonitor, IAppController, IEventBus, CueService } from '.'
+import { ILogger, GameMonitor, IAppController, IEventBus, CueService, CuePackService } from '.'
 import { app } from 'electron'
 import path, { join } from 'path'
 import { access, constants, readFile, writeFile } from 'fs/promises'
 import { getLicenseKey, revalidateLicenseKey } from '../getLicenseKey'
 import { CreateCueDto, GameDataDto, ICueDto } from '@contracts'
+import { ICuePackDto } from './GetCuePacksUseCase'
+import { CreateCuePackDto } from './CreateCuePackUseCase'
 
 export class AppController implements IAppController {
   public constructor(
     private readonly _gameMonitor: GameMonitor,
     private readonly _logger: ILogger,
     private readonly _cueService: CueService,
-    private readonly _eventBus: IEventBus
+    private readonly _eventBus: IEventBus,
+    private readonly _cuePackService: CuePackService
   ) {}
 
   public async start(): Promise<void> {
     await this._gameMonitor.start()
     await this._cueService.start()
+    await this._cuePackService.start()
 
     this._logger.info('app started')
   }
@@ -23,7 +27,24 @@ export class AppController implements IAppController {
   public async stop(): Promise<void> {
     await this._gameMonitor.stop()
     await this._cueService.stop()
+    await this._cuePackService.stop()
     this._logger.info('app stopped')
+  }
+
+  public async activateCuePack(id: string): Promise<void> {
+    return this._cuePackService.activateCuePack(id)
+  }
+
+  public async getCuePacks(): Promise<ICuePackDto[]> {
+    return this._cuePackService.getCuePacks()
+  }
+
+  public async createCuePack(data: CreateCuePackDto): Promise<string> {
+    return this._cuePackService.createCuePack(data.name)
+  }
+
+  public async getActiveCuePack(): Promise<ICuePackDto | null> {
+    return this._cuePackService.getActiveCuePack()
   }
 
   public getCues(): Promise<ICueDto[]> {

@@ -5,6 +5,7 @@ export class EventBusSpy implements IEventBus {
   public lastEvent: DomainEvent | null = null
   public lastEventType: EventKey | null = null
   public totalCalls: number = 0
+  public subscribers: EventKey[] = []
 
   public publish<T extends EventKey>(eventType: T, event: EventMap[T]): void {
     this.events.push(event)
@@ -40,11 +41,20 @@ export class EventBusSpy implements IEventBus {
     return this.events.filter((event) => event.eventType === eventType).length === 1
   }
 
-  public subscribe(): void {
+  public subscribe(eventType: EventKey): void {
+    this.subscribers.push(eventType)
     return
   }
 
   public unsubscribe(): void {
     return
+  }
+
+  public clear(): void {
+    this.events = []
+    this.lastEvent = null
+    this.lastEventType = null
+    this.totalCalls = 0
+    this.subscribers = []
   }
 }

@@ -8,17 +8,18 @@ import { useModal, useToast } from '../hooks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { ConfirmDialog } from '@renderer/components/ConfirmDialog'
-import { CreateCueDto, ICueDto } from '@hexagon/index'
+import { CreateCueDto, ICueDto, ICuePackDto } from '@hexagon/index'
 
 type LoaderData = {
   cues: ICueDto[]
+  activePack: ICuePackDto | null
 }
 
-export function CuesPage(): JSX.Element {
+export function ActivePackPage(): JSX.Element {
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const [cueToDelete, setCueToDelete] = useState<string | null>(null)
   const { isOpen, onOpen, onClose } = useModal()
-  const { cues } = useLoaderData<LoaderData>()
+  const { cues, activePack } = useLoaderData<LoaderData>()
   const { revalidate } = useRevalidator()
   const toast = useToast()
 
@@ -77,7 +78,7 @@ export function CuesPage(): JSX.Element {
       case 'interval':
         return 'Interval'
       case 'oneTime':
-        return 'One-time'
+        return 'One Time'
       case 'event':
         return 'Event'
       case 'objective':
@@ -88,17 +89,22 @@ export function CuesPage(): JSX.Element {
   }
 
   const handleCreateCue = async (data: CreateCueDto): Promise<void> => {
-    setIsCreating(true)
+    if (!activePack) {
+      toast.error('No active pack selected')
+      return
+    }
+
     try {
+      setIsCreating(true)
       await window.api.app.addCue(data)
-      toast.success('Cue created successfully!')
       onClose()
+      revalidate()
+      toast.success('Cue created successfully')
     } catch (error) {
       console.error('Failed to create cue:', error)
       toast.error('Failed to create cue')
     } finally {
       setIsCreating(false)
-      revalidate()
     }
   }
 
@@ -131,18 +137,36 @@ export function CuesPage(): JSX.Element {
   return (
     <PageWrapper>
       <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
-        <h1 className="text-2xl font-semibold text-text-primary">Cues</h1>
-        <Button onClick={onOpen} size="md">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold text-text-primary">Active Pack</h1>
+          {activePack && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-info/10 border border-info/20 rounded-lg">
+              <div className="w-2 h-2 rounded-full bg-info"></div>
+              <span className="text-sm font-medium text-info">{activePack.name}</span>
+            </div>
+          )}
+        </div>
+
+        <Button onClick={onOpen} size="md" disabled={!activePack}>
           <Plus size={16} className="mr-2" />
           Add Cue
         </Button>
       </div>
+
       <div className="flex-1 overflow-y-auto min-h-0 p-8">
-        {cues.length === 0 ? (
+        {!activePack ? (
           <div className="flex items-center justify-center h-full">
             <EmptyState
-              title="No cues"
-              subtitle="Add a cue to get started"
+              title="No active pack"
+              subtitle="Go to Packs to create and activate a cue pack"
+              icon={<Bell size={32} className="text-text-tertiary" />}
+            />
+          </div>
+        ) : cues.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <EmptyState
+              title="No cues in this pack"
+              subtitle="Add your first cue to get started"
               icon={<Bell size={32} className="text-text-tertiary" />}
             />
           </div>
@@ -198,8 +222,16 @@ export function CuesPage(): JSX.Element {
         )}
       </div>
 
+      {/* Create Cue Modal */}
       <Modal isOpen={isOpen} onClose={onClose} title="Create New Cue">
-        <CreateCueForm onSubmit={handleCreateCue} onCancel={onClose} isLoading={isCreating} />
+        {activePack && (
+          <CreateCueForm
+            onSubmit={handleCreateCue}
+            onCancel={onClose}
+            activePackId={activePack.id}
+            isLoading={isCreating}
+          />
+        )}
       </Modal>
 
       <ConfirmDialog

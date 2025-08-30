@@ -1,24 +1,19 @@
 import { JSX, useState } from 'react'
 import { Button } from './Button'
 import { Timer, Clock, Zap, Target } from 'lucide-react'
+import { CreateCueDto } from '@contracts'
 
 type CreateCueFormProps = {
-  onSubmit: (data: {
-    text: string
-    triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
-    interval?: number
-    triggerAt?: number
-    event?: string
-    objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-    beforeObjective?: number
-  }) => Promise<void>
+  onSubmit: (data: CreateCueDto) => Promise<void>
   onCancel: () => void
+  activePackId: string
   isLoading?: boolean
 }
 
 export function CreateCueForm({
   onSubmit,
   onCancel,
+  activePackId,
   isLoading = false
 }: CreateCueFormProps): JSX.Element {
   const [text, setText] = useState('')
@@ -135,10 +130,10 @@ export function CreateCueForm({
       return
     }
 
-    // @ts-expect-error we need to fix shared contracts
     const formData: CreateCueDto = {
       text: text.trim(),
-      triggerType
+      triggerType,
+      packId: activePackId
     }
 
     if (triggerType === 'interval') {

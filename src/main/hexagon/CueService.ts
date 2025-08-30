@@ -4,20 +4,20 @@ import { IEventBus } from './ports/IEventBus'
 import { ILogger } from './ports/ILogger'
 import { ICueDto } from './ICueDto'
 import { CueEngine } from './CueEngine'
-import { CreateCueDto, CreateCueUseCase } from './CreateCueUseCase'
-import { ICueRepository } from './ports/ICueRepository'
+import { CreateCueDto, AddCueToPackUseCase } from './AddCueToPackUseCase'
 import { RemoveCueUseCase } from './RemoveCueUseCase'
 import { GetCuesUseCase } from './GetCuesUseCase'
+import { ICuePackRepository } from './ports/ICuePackRepository'
 
 export class CueService {
   public constructor(
-    private readonly _createCueUseCase: CreateCueUseCase,
+    private readonly _addCueToPackUseCase: AddCueToPackUseCase,
     private readonly _getCuesUseCase: GetCuesUseCase,
     private readonly _removeCueUseCase: RemoveCueUseCase,
     private readonly _eventBus: IEventBus,
     private readonly _audioPlayer: IAudioPlayer,
     private readonly _logger: ILogger,
-    private readonly _cueRepository: ICueRepository
+    private readonly _cueRepository: ICuePackRepository
   ) {}
 
   public async start(): Promise<void> {
@@ -29,7 +29,7 @@ export class CueService {
   }
 
   public async addCue(data: CreateCueDto): Promise<string> {
-    return this._createCueUseCase.execute(data)
+    return this._addCueToPackUseCase.execute(data)
   }
 
   public async getCues(): Promise<ICueDto[]> {
@@ -43,12 +43,19 @@ export class CueService {
   protected async onGameTick(evt: GameTickEvent): Promise<void> {
     const { gameTime } = evt.payload.state
 
-    const cues = await this._cueRepository.all()
-    const dueCues = CueEngine.getDueCues(evt.payload.state, cues.unwrap())
+    const pack = await this._cueRepository.active()
+
+    if (pack.isErr() || pack.unwrap() === null) {
+      return
+    }
+
+    const cues = pack.unwrap()!.cues
+
+    const dueCues = CueEngine.getDueCues(evt.payload.state, cues)
 
     this._logger.info('Processing cues', {
       gameTime,
-      cues: cues.unwrap().map((x) => x.id),
+      cues: cues.map((x) => x.id),
       dueCues: dueCues.map((x) => x.id)
     })
 
