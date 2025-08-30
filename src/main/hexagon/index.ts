@@ -1,6 +1,5 @@
 export * from './ports/IAudioPlayer'
 export * from './ports/ILogger'
-export * from './ports/ICueRepository'
 export * from './ports/ITextToSpeechGenerator'
 export * from './ports/ITimer'
 export * from './ports/IEventBus'
