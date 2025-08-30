@@ -66,7 +66,8 @@ export class CompositionRoot {
       ))
 
     const cuePackRepository =
-      this._dependencies.cuePackRepository ?? new Outbound.FakeCuePackRepository()
+      this._dependencies.cuePackRepository ??
+      (await Outbound.CuePackRepositoryFactory.create(isProd, this._dataPath))
     const getCuePacksUseCase = new Hexagon.GetCuePacksUseCase(cuePackRepository)
     const createCuePackUseCase = new Hexagon.CreateCuePackUseCase(cuePackRepository, eventBus)
     const getActiveCuePackUseCase = new Hexagon.GetActiveCuePackUseCase(cuePackRepository)

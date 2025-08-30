@@ -2,12 +2,24 @@ import { describe, expect, test, afterEach } from 'vitest'
 import { FakeCuePackRepository } from 'src/main/adapters/outbound'
 import { TestCuePackBuilder } from './TestCuePackBuilder'
 import { CueBuilder } from './CueBuilder'
+import { FileSystemCuePackRepository } from 'src/main/adapters/outbound/repositories/FileSystemCuePackRepository'
+import path from 'path'
+import fs from 'fs/promises'
+
+const fsPath = path.join(process.cwd(), crypto.randomUUID())
 
 const instances = [
   {
     name: 'FakeCuePackRepository',
     create: async () => new FakeCuePackRepository(),
     cleanup: async () => {}
+  },
+  {
+    name: 'FileSystemCuePackRepository',
+    create: async () => FileSystemCuePackRepository.create(fsPath),
+    cleanup: async () => {
+      await fs.rm(fsPath, { recursive: true, force: true })
+    }
   }
 ] as const
 
