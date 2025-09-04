@@ -172,7 +172,7 @@ export function PacksPage(): JSX.Element {
                     key={pack.id}
                     className={`relative border rounded-lg bg-bg-secondary transition-all duration-200 ${
                       isActive
-                        ? 'border-info border-1 bg-info/5'
+                        ? 'border-info border-1'
                         : 'border-border-primary hover:border-border-accent hover:bg-bg-tertiary'
                     }`}
                   >
@@ -201,7 +201,7 @@ export function PacksPage(): JSX.Element {
                         <div
                           className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center border ${
                             isActive
-                              ? 'bg-info/10 border-info'
+                              ? 'bg-bg-primary border-info'
                               : 'bg-bg-primary border-border-primary/20'
                           }`}
                         >
@@ -234,7 +234,7 @@ export function PacksPage(): JSX.Element {
                           onClick={() => handleActivatePack(pack.id)}
                           variant="secondary"
                           size="sm"
-                          className="w-full"
+                          className="w-full hover:cursor-pointer"
                           disabled={isActive}
                         >
                           <Users className="w-4 h-4 mr-2" />
