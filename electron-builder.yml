@@ -1,5 +1,5 @@
 appId: com.leaguedex.app
-productName: leaguedex-app
+productName: Leaguedex
 directories:
   buildResources: build
 files:
@@ -12,33 +12,19 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: leaguedex-app
-  icon: build/icon.png
+  executableName: Leaguedex
+  icon: build/icon.ico #png?
+  target:
+    - target: nsis
+      arch: x64
 nsis:
   artifactName: ${name}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
-mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-dmg:
-  artifactName: ${name}.${ext}
-linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
-  category: Utility
-appImage:
-  artifactName: ${name}.${ext}
+
 npmRebuild: false
+
 publish:
   provider: spaces
   name: leaguedex-releases
