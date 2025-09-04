@@ -194,7 +194,7 @@ export function ActivePackPage(): JSX.Element {
                     <X className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
                   </button>
                   <div className="p-5">
-                    <div className="flex items-center space-x-4 mb-6">
+                    <div className="flex items-center space-x-4 mb-3">
                       <div className="flex-shrink-0 w-12 h-12 bg-bg-primary rounded-xl flex items-center justify-center border border-border-primary/20">
                         {getCueIcon(cue.triggerType)}
                       </div>
