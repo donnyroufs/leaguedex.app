@@ -184,35 +184,41 @@ export function ActivePackPage(): JSX.Element {
               {cues.map((cue) => (
                 <div
                   key={cue.id}
-                  className={`relative border rounded-lg bg-bg-secondary ${getCueColor()}`}
+                  className={`relative border rounded-lg bg-bg-secondary ${getCueColor()} hover:shadow-md transition-shadow min-h-[200px] flex flex-col`}
                 >
                   <button
                     onClick={() => openDeleteConfirmation(cue.id)}
-                    className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors"
+                    className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors z-10"
                     aria-label="Remove cue"
                   >
                     <X className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
                   </button>
-                  <div className="p-5">
-                    <div className="flex items-center space-x-4 mb-3">
-                      <div className="flex-shrink-0 w-12 h-12 bg-bg-primary rounded-xl flex items-center justify-center border border-border-primary/20">
-                        {getCueIcon(cue.triggerType)}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">
+
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0 w-10 h-10 bg-bg-primary rounded-lg flex items-center justify-center border border-border-primary/20">
+                          {getCueIcon(cue.triggerType)}
+                        </div>
+                        <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider bg-bg-primary px-2.5 py-1 rounded-md">
                           {getTriggerTypeLabel(cue.triggerType)}
                         </span>
-                        <div className="w-6 h-px bg-current opacity-30 mt-1.5"></div>
                       </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <h3 className="text-text-primary font-medium text-lg leading-relaxed break-words">
+                    <div className="flex-1 flex flex-col justify-between">
+                      <h3 className="text-text-primary font-medium text-base leading-relaxed break-words min-h-[3rem]">
                         {cue.text}
                       </h3>
-                      <div className="flex items-center space-x-2.5 text-text-secondary">
-                        <Timer className="w-3.5 h-3.5 text-text-tertiary" />
-                        <span className="text-sm font-medium">{formatTriggerDisplay(cue)}</span>
+
+                      {/* Trigger details */}
+                      <div className="pt-3 border-t border-border-primary/10 mt-4">
+                        <div className="flex items-start space-x-2.5 text-text-secondary">
+                          <Timer className="w-4 h-4 text-text-tertiary mt-0.5 flex-shrink-0" />
+                          <span className="text-sm font-medium leading-relaxed">
+                            {formatTriggerDisplay(cue)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -223,7 +229,6 @@ export function ActivePackPage(): JSX.Element {
         )}
       </div>
 
-      {/* Create Cue Modal */}
       <Modal isOpen={isOpen} onClose={onClose} title="Create New Cue">
         {activePack && (
           <CreateCueForm
