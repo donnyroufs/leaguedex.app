@@ -126,7 +126,7 @@ export function Layout(): JSX.Element {
       </header>
 
       <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary min-h-0">
-        <aside className="w-72 bg-bg-tertiary/80 backdrop-blur-xl border-r border-border-primary flex flex-col pt-8 flex-shrink-0 shadow-lg">
+        <aside className="w-64 bg-bg-tertiary/80 backdrop-blur-xl border-r border-border-primary flex flex-col pt-8 flex-shrink-0 shadow-lg">
           <p className="px-6 pb-3 text-sm font-medium uppercase tracking-wider text-text-tertiary/80">
             Your Data
           </p>
