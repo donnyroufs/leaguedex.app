@@ -13,7 +13,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: Leaguedex
-  icon: build/icon.ico #png?
+  icon: build/icon.png
   target:
     - target: nsis
       arch: x64
