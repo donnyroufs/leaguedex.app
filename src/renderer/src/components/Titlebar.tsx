@@ -41,7 +41,7 @@ export const Titlebar: React.FC<TitlebarProps> = ({ title, version }) => {
           />
         </svg>
         <span className="text-sm font-medium ml-3">{title}</span>
-        {version && <span className="text-xs text-text-tertiary ml-2">v{version}</span>}
+        {version && <span className="text-xs text-text-tertiary ml-2">v{version} beta</span>}
       </div>
 
       <div
