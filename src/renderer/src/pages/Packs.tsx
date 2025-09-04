@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Package, Plus, Users, Target, Crown, Trash2, Download, Share } from 'lucide-react'
+import { Package, Plus, Target, Crown, Trash2, Download, Share } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -237,7 +237,6 @@ export function PacksPage(): JSX.Element {
                           className="w-full hover:cursor-pointer"
                           disabled={isActive}
                         >
-                          <Users className="w-4 h-4 mr-2" />
                           {isActive ? 'Currently Active' : 'Activate Pack'}
                         </Button>
                       </div>
