@@ -54,7 +54,15 @@ export function ActivePackPage(): JSX.Element {
     }
 
     if (cue.triggerType === 'event' && cue.event) {
-      return `On ${cue.event}`
+      switch (cue.event) {
+        case 'canon-wave-spawned':
+          return 'When a canon wave spawns'
+        case 'respawn':
+          return 'When you respawn'
+        default:
+          console.warn('Missing event', cue.event)
+          return `On ${cue.event}`
+      }
     }
 
     if (cue.triggerType === 'objective' && cue.objective && cue.beforeObjective) {

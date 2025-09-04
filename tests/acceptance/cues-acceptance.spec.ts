@@ -347,6 +347,37 @@ describeFeature(
         })
       }
     )
+
+    Scenario(`Cue on canon wave spawned event`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
+
+        const cues = await app.getCues()
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
+      })
+
+      And(`we are in a League of Legends match`, () => {
+        dataSource.addGameStartedEvent()
+      })
+
+      When(`{string} seconds pass in game time`, async (_, seconds: string) => {
+        await dataSource.tickMultipleTimes(timer, Number(seconds))
+      })
+
+      Then(`I should hear the audio "canon_wave_spawned"`, () => {
+        expect(audioPlayer.lastCalledWith).toContain('canon_wave_spawned')
+      })
+
+      When(`another {string} seconds pass in game time`, async (_, seconds: string) => {
+        await dataSource.tickMultipleTimes(timer, Number(seconds))
+      })
+
+      Then(`I should hear the audio "canon_wave_spawned" again`, () => {
+        expect(audioPlayer.lastCalledWith).toContain('canon_wave_spawned')
+        expect(audioPlayer.totalCalls).toBe(2)
+      })
+    })
   }
 )
 

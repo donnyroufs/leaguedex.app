@@ -16,6 +16,26 @@ export class CueEngine {
         return state.activePlayer.respawnsIn === 1
       }
 
+      // Ignore after 15:05
+      // First wave spawns at 1:05
+      // respawn every 30 seconds
+      // Third wave is canon wave
+      // TODO: add test case, we only test happy path; but what happens after 15:05?? we should not get any
+      if (cue.triggerType === 'event' && cue.event === 'canon-wave-spawned') {
+        if (state.gameTime < 65 || state.gameTime > 905) {
+          return false
+        }
+
+        const elapsed = state.gameTime - 65
+
+        if (elapsed % 30 === 0) {
+          const currentWave = Math.floor(elapsed / 30) + 1
+          return currentWave % 3 === 0
+        }
+
+        return false
+      }
+
       if (cue.triggerType === 'objective' && cue.objective != null) {
         const nextSpawn = state.objectives[cue.objective]?.nextSpawn
 

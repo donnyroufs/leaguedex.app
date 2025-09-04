@@ -8,6 +8,7 @@ const createCueSchema = z.object({
   triggerType: z.enum(['interval', 'oneTime', 'event', 'objective']),
   interval: z.number().min(1).optional(),
   triggerAt: z.number().min(0).optional(),
+  // TODO: validation
   event: z.string().optional(),
   objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
   beforeObjective: z.number().min(0).optional(),

@@ -346,7 +346,7 @@ export function CreateCueForm({
                 >
                   <option value="">Select an event</option>
                   <option value="respawn">Player respawn</option>
-                  {/* Add more events here as they become available */}
+                  <option value="canon-wave-spawned">Canon wave spawned (until 15:05)</option>
                 </select>
                 {errors.event && <p className="mt-2 text-sm text-status-danger">{errors.event}</p>}
               </div>
