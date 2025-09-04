@@ -57,7 +57,7 @@ export function Settings(): JSX.Element {
           <div className="space-y-6">
             <div className="space-y-3">
               <label htmlFor="licenseKey" className="block text-sm font-medium text-text-primary">
-                License Key
+                License
               </label>
               <div className="relative">
                 <input
@@ -77,8 +77,16 @@ export function Settings(): JSX.Element {
                 </button>
               </div>
               <p className="text-sm text-text-tertiary leading-5">
-                Close friends / trusted members can request one to test the latest features for
-                free.
+                Restart the app to apply your license. You can get a license on{' '}
+                <a
+                  href="https://discord.gg/JShSD3ehw3"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-info hover:underline"
+                >
+                  Discord
+                </a>
+                .
               </p>
             </div>
             <div className="flex justify-end">
