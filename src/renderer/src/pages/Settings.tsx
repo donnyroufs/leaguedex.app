@@ -3,6 +3,7 @@ import { Cloud, Eye, EyeOff } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { Button } from '@renderer/components/Button'
+import { useToast } from '@renderer/hooks'
 
 type SettingsSectionProps = {
   title: string
@@ -36,10 +37,12 @@ export function Settings(): JSX.Element {
   const { revalidate } = useRevalidator()
   const [licenseKey, setLicenseKey] = useState<string>(license ?? '')
   const [showLicenseKey, setShowLicenseKey] = useState<boolean>(false)
+  const toast = useToast()
 
   const handleUpdateLicense = async (): Promise<void> => {
     await window.api.app.updateLicense(licenseKey)
     await revalidate()
+    toast.success('Restart app to apply the new license.')
   }
 
   const notChanged = licenseKey === license
