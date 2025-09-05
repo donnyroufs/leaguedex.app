@@ -11,20 +11,17 @@ export default defineConfig({
       externalizeDepsPlugin(),
       obfuscator({
         options: {
-          // Strong obfuscation for main process
+          // Safer obfuscation for Electron main process
           compact: true,
-          controlFlowFlattening: true,
-          controlFlowFlatteningThreshold: 0.75,
-          deadCodeInjection: true,
-          deadCodeInjectionThreshold: 0.4,
-          debugProtection: true, // Set to true for extra protection
-          debugProtectionInterval: 0,
-          disableConsoleOutput: true,
+          controlFlowFlattening: false, // Can break IPC
+          deadCodeInjection: false, // Can break entry points
+          debugProtection: false, // Breaks Electron debugging
+          disableConsoleOutput: false, // Needed for Electron logs
           identifierNamesGenerator: 'hexadecimal',
           log: false,
           numbersToExpressions: true,
           renameGlobals: false,
-          selfDefending: true,
+          selfDefending: false, // Can break process management
           simplify: true,
           splitStrings: true,
           splitStringsChunkLength: 10,
@@ -34,11 +31,11 @@ export default defineConfig({
           stringArrayIndexShift: true,
           stringArrayRotate: true,
           stringArrayShuffle: true,
-          stringArrayWrappersCount: 2,
+          stringArrayWrappersCount: 1, // Reduced from 2
           stringArrayWrappersChainedCalls: true,
-          stringArrayWrappersParametersMaxCount: 4,
+          stringArrayWrappersParametersMaxCount: 2, // Reduced from 4
           stringArrayWrappersType: 'function',
-          stringArrayThreshold: 0.9,
+          stringArrayThreshold: 0.75, // Reduced from 0.9
           transformObjectKeys: true,
           unicodeEscapeSequence: false
         }
@@ -52,7 +49,20 @@ export default defineConfig({
     }
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [
+      externalizeDepsPlugin(),
+      // Light obfuscation for preload
+      obfuscator({
+        options: {
+          compact: true,
+          identifierNamesGenerator: 'hexadecimal',
+          log: false,
+          stringArray: true,
+          stringArrayThreshold: 0.5,
+          transformObjectKeys: true
+        }
+      })
+    ],
     resolve: {
       alias: {
         '@contracts': resolve('src/contracts/index.ts'),
