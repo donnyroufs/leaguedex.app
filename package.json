@@ -1,7 +1,7 @@
 {
   "name": "leaguedex-app",
   "version": "0.0.62",
-  "description": "Leaguedex is a tool for League of Legends players to track their games and analyze their performance.",
+  "description": "Leaguedex - Your Virtual Coach",
   "main": "./out/main/index.js",
   "author": "Donny Roufs",
   "homepage": "https://leaguedex.app",
@@ -70,6 +70,7 @@
     "react-dom": "^19.1.0",
     "typescript": "^5.8.3",
     "vite": "^7.0.5",
+    "vite-plugin-javascript-obfuscator": "^3.1.0",
     "vitest": "^3.2.4"
   }
 }
