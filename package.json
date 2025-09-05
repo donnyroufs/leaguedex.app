@@ -1,5 +1,6 @@
 {
   "name": "leaguedex-app",
+  "productName": "Leaguedex",
   "version": "0.0.63",
   "description": "Leaguedex - Your Virtual Coach",
   "main": "./out/main/index.js",
