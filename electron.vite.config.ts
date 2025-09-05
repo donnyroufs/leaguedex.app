@@ -14,7 +14,8 @@ export default defineConfig({
           // Safer obfuscation for Electron main process
           compact: true,
           controlFlowFlattening: false, // Can break IPC
-          deadCodeInjection: false, // Can break entry points
+          deadCodeInjection: true, // Can break entry points,
+          deadCodeInjectionThreshold: 0.3,
           debugProtection: false, // Breaks Electron debugging
           disableConsoleOutput: false, // Needed for Electron logs
           identifierNamesGenerator: 'hexadecimal',
@@ -31,11 +32,11 @@ export default defineConfig({
           stringArrayIndexShift: true,
           stringArrayRotate: true,
           stringArrayShuffle: true,
-          stringArrayWrappersCount: 1, // Reduced from 2
+          stringArrayWrappersCount: 2,
           stringArrayWrappersChainedCalls: true,
-          stringArrayWrappersParametersMaxCount: 2, // Reduced from 4
+          stringArrayWrappersParametersMaxCount: 4,
           stringArrayWrappersType: 'function',
-          stringArrayThreshold: 0.75, // Reduced from 0.9
+          stringArrayThreshold: 0.9,
           transformObjectKeys: true,
           unicodeEscapeSequence: false
         }
@@ -58,7 +59,7 @@ export default defineConfig({
           identifierNamesGenerator: 'hexadecimal',
           log: false,
           stringArray: true,
-          stringArrayThreshold: 0.5,
+          stringArrayThreshold: 0.9,
           transformObjectKeys: true
         }
       })
