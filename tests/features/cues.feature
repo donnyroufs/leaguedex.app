@@ -88,10 +88,12 @@ Feature: Cues
       | text               | triggerType | event |
       | Canon wave spawned | event       | canon-wave-spawned |
     And we are in a League of Legends match
-    When "185" seconds pass in game time
+    When "155" seconds pass in game time
     Then I should hear the audio "canon_wave_spawned"
-    When another "120" seconds pass in game time
+    When another "90" seconds pass in game time
     Then I should hear the audio "canon_wave_spawned" again
+    And another "90" seconds pass in game time
+    Then I should hear the cue again
 
 
     # Scenario: Cue on canon wave spawned event after 15:05
