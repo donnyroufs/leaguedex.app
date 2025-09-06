@@ -1,7 +1,7 @@
 {
   "name": "leaguedex-app",
   "productName": "Leaguedex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Leaguedex - Your Virtual Coach",
   "main": "./out/main/index.js",
   "author": "Donny Roufs",
