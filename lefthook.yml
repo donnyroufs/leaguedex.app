@@ -1,0 +1,12 @@
+pre-commit:
+  parallel: true
+  commands:
+    typecheck:
+      run: yarn typecheck
+      stage_fixed: true
+    dependencies:
+      run: yarn test:arch
+      stage_fixed: true
+    tests:
+      run: yarn vitest run
+      stage_fixed: true

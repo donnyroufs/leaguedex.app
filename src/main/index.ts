@@ -1,19 +1,33 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { autoUpdater } from 'electron-updater'
+
 import icon from '../../resources/icon.png?asset'
 
+import { createElectronAppAndStart } from './CompositionRoot'
+
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    roundedCorners: false,
+    title: 'Leaguedex',
+    width: 1300,
+    height: 800,
+    minWidth: 1300,
+    minHeight: 800,
+    maxWidth: 1600,
+    maxHeight: 1000,
     show: false,
+    frame: false, // Remove the default titlebar
+    titleBarStyle: 'hidden',
+    icon,
     autoHideMenuBar: true,
+    center: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      contextIsolation: true
     }
   })
 
@@ -35,30 +49,120 @@ function createWindow(): void {
   }
 }
 
+const isSingleInstance = app.requestSingleInstanceLock()
+
+if (!isSingleInstance) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.focus()
+    }
+  })
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+app.whenReady().then(async () => {
+  await createElectronAppAndStart(ipcMain)
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+  ipcMain.handle('get-version', async () => {
+    return app.getVersion()
+  })
+
+  electronApp.setAppUserModelId('com.leaguedex.app')
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('window-minimize', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (focusedWindow) focusedWindow.minimize()
+  })
 
-  createWindow()
+  ipcMain.on('window-maximize', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (focusedWindow) {
+      if (focusedWindow.isMaximized()) {
+        focusedWindow.unmaximize()
+      } else {
+        focusedWindow.maximize()
+      }
+    }
+  })
+
+  ipcMain.on('window-close', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow()
+    if (focusedWindow) focusedWindow.close()
+  })
+
+  if (!is.dev) {
+    autoUpdater.setFeedURL({
+      provider: 'spaces',
+      name: 'leaguedex-releases',
+      region: 'ams3',
+      acl: 'public-read'
+    })
+    autoUpdater.checkForUpdatesAndNotify()
+
+    autoUpdater.on('checking-for-update', () => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', { status: 'checking' })
+      })
+    })
+
+    autoUpdater.on('update-available', (info) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', {
+          status: 'available',
+          version: info.version,
+          releaseDate: info.releaseDate
+        })
+      })
+    })
+
+    autoUpdater.on('update-not-available', () => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', { status: 'not-available' })
+      })
+    })
+
+    autoUpdater.on('error', (err) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', {
+          status: 'error',
+          error: err.message
+        })
+      })
+    })
+
+    autoUpdater.on('download-progress', (progressObj) => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', {
+          status: 'downloading',
+          progress: progressObj.percent
+        })
+      })
+    })
+
+    autoUpdater.on('update-downloaded', () => {
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('update-status', { status: 'downloaded' })
+      })
+    })
+  }
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  createWindow()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -72,3 +176,24 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+// Add update handlers
+ipcMain.handle('check-for-updates', async () => {
+  if (!is.dev) {
+    return autoUpdater.checkForUpdates()
+  }
+  return null
+})
+
+ipcMain.handle('download-update', async () => {
+  if (!is.dev) {
+    return autoUpdater.downloadUpdate()
+  }
+  return null
+})
+
+ipcMain.handle('install-update', async () => {
+  if (!is.dev) {
+    autoUpdater.quitAndInstall()
+  }
+})

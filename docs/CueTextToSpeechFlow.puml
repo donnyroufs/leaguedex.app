@@ -1,0 +1,21 @@
+@startuml cueTextToSpeechFlow
+
+participant "User" as user
+participant "CoachingService" as coaching
+participant "TextToSpeech" as tts
+participant "AudioPlayer" as audioPlayer
+
+== cue Creation ==
+user -> coaching: createcue(text, interval)
+coaching --> user: cueId
+
+== cue Trigger ==
+note over coaching: Timer checks game state
+coaching -> tts: generateAudio(text)
+tts --> coaching: audioFilePath
+
+coaching -> audioPlayer: play(audioFilePath)
+audioPlayer -> audioPlayer: play audio file
+note over audioPlayer: Audio plays via system
+
+@enduml

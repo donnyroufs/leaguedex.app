@@ -1,0 +1,51 @@
+import { defineConfig } from 'vitest/config'
+import { resolve } from 'path'
+
+export default defineConfig({
+  test: {
+    include: ['tests/**/*.spec.ts', 'tests/**/*.test.ts'],
+    exclude: ['tests/**/renderer/**', 'tests/**/preload/**'],
+
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+
+      include: ['src/main/**/*.ts', 'src/contracts/**/*.ts'],
+
+      exclude: [
+        'src/renderer/**',
+        'src/preload/**',
+        'tests/**',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/node_modules/**'
+      ],
+
+      thresholds: {
+        global: {
+          branches: 70,
+          functions: 70,
+          lines: 70,
+          statements: 70
+        }
+      }
+    },
+
+    environment: 'node',
+
+    testTimeout: 10000,
+
+    setupFiles: [],
+
+    globals: true
+  },
+
+  resolve: {
+    alias: {
+      '@contracts': resolve('src/contracts/index.ts'),
+      '@hexagon': resolve('src/main/hexagon'),
+      '@main': resolve('src/main')
+    }
+  }
+})

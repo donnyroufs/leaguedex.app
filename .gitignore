@@ -4,3 +4,13 @@ out
 .DS_Store
 .eslintcache
 *.log*
+.env
+
+data/
+
+electron-builder.env
+tmpaudio/
+coverage/
+
+electron.vite.config.*.mjs
+TODOS.md
