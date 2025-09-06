@@ -362,7 +362,12 @@ describeFeature(
       })
 
       When(`{string} seconds pass in game time`, async (_, seconds: string) => {
-        await dataSource.tickMultipleTimes(timer, Number(seconds))
+        // TODO: do we need to do this for other tests too?
+        // Our spy is not smart enough to know on what game-tick it got called
+        // so we need to go back 1 tick and expect that there was no call
+        await dataSource.tickMultipleTimes(timer, Number(seconds) - 1)
+        expect(audioPlayer.totalCalls).toBe(0)
+        await dataSource.nextTick(timer)
       })
 
       Then(`I should hear the audio "canon_wave_spawned"`, () => {
@@ -376,6 +381,15 @@ describeFeature(
       Then(`I should hear the audio "canon_wave_spawned" again`, () => {
         expect(audioPlayer.lastCalledWith).toContain('canon_wave_spawned')
         expect(audioPlayer.totalCalls).toBe(2)
+      })
+
+      And(`another {string} seconds pass in game time`, async (_, seconds: string) => {
+        await dataSource.tickMultipleTimes(timer, Number(seconds))
+      })
+
+      Then(`I should hear the cue again`, () => {
+        expect(audioPlayer.lastCalledWith).toContain('canon_wave_spawned')
+        expect(audioPlayer.totalCalls).toBe(3)
       })
     })
   }

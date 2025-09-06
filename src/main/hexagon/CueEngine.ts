@@ -17,18 +17,20 @@ export class CueEngine {
       }
 
       if (cue.triggerType === 'event' && cue.event === 'canon-wave-spawned') {
-        if (state.gameTime < 65 || state.gameTime > 905) {
+        const firstCanonWave = 155
+        const lastCanonWave = 905
+
+        if (state.gameTime < firstCanonWave || state.gameTime > lastCanonWave) {
           return false
         }
 
-        const elapsed = state.gameTime - 65
-
-        if (elapsed % 30 === 0) {
-          const currentWave = Math.floor(elapsed / 30) + 1
-          return currentWave % 4 === 0
+        if (state.gameTime === firstCanonWave) {
+          return true
         }
 
-        return false
+        const elapsed = state.gameTime - firstCanonWave
+
+        return elapsed % 90 === 0
       }
 
       if (cue.triggerType === 'objective' && cue.objective != null) {
