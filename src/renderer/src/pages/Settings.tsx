@@ -133,7 +133,7 @@ export function Settings(): JSX.Element {
                 </div>
               </div>
               <p className="text-sm text-text-tertiary leading-5">
-                Adjust the volume for audio cues and notifications.
+                Adjust the volume for audio cues.
               </p>
             </div>
             <div className="flex justify-end">
