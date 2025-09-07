@@ -1,5 +1,6 @@
 import { BrowserWindow, type IpcMain } from 'electron'
-import { CreateCueDto, CreateCuePackDto, IAppController } from '../../hexagon'
+import { IAppController } from '../../hexagon'
+import { IUserSettingsDto, CreateCueDto, CreateCuePackDto } from '@contracts'
 
 export class ElectronAdapter {
   private _configured: boolean = false
@@ -10,6 +11,14 @@ export class ElectronAdapter {
     if (this._configured) {
       return
     }
+
+    ipcMain.handle('update-user-settings', async (_, data: IUserSettingsDto) => {
+      return this._appController.updateUserSettings(data)
+    })
+
+    ipcMain.handle('get-user-settings', async () => {
+      return this._appController.getUserSettings()
+    })
 
     ipcMain.handle('export-pack', async (_, id: string) => {
       return this._appController.exportPack(id)

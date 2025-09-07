@@ -1,6 +1,13 @@
 /// <reference types="vite/client" />
 
-import { CreateCueDto, ICueDto, GameDataDto, ICuePackDto, CreateCuePackDto } from '@contracts'
+import type {
+  CreateCueDto,
+  ICueDto,
+  GameDataDto,
+  ICuePackDto,
+  CreateCuePackDto,
+  IUserSettingsDto
+} from '@contracts'
 
 declare global {
   interface Window {
@@ -22,6 +29,8 @@ declare global {
         removeCuePack: (id: string) => Promise<void>
         importPack: (code: string) => Promise<void>
         exportPack: (id: string) => Promise<string>
+        updateUserSettings: (data: IUserSettingsDto) => Promise<void>
+        getUserSettings: () => Promise<IUserSettingsDto>
       }
 
       getVersion: () => Promise<string>

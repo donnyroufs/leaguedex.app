@@ -3,10 +3,14 @@ import { CreateCueDto } from '../AddCueToPackUseCase'
 import { ICueDto } from '../ICueDto'
 import { ICuePackDto } from '@hexagon/GetCuePacksUseCase'
 import { CreateCuePackDto } from '@hexagon/CreateCuePackUseCase'
+import { IUserSettingsDto } from '@hexagon/IUserSettingsDto'
 
 export interface IAppController {
   start(): Promise<void>
   stop(): Promise<void>
+
+  updateUserSettings(data: IUserSettingsDto): Promise<void>
+  getUserSettings(): Promise<IUserSettingsDto>
 
   activateCuePack(id: string): Promise<void>
   createCuePack(data: CreateCuePackDto): Promise<string>
