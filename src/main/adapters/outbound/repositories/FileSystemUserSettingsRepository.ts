@@ -6,15 +6,23 @@ import fs from 'fs/promises'
 import path from 'path'
 
 export class FileSystemUserSettingsRepository implements IUserSettingsRepository {
+  private _cache: UserSettings | null = null
+
   private constructor(private readonly _path: string) {}
 
   public async load(): Promise<Result<UserSettings, Error>> {
+    if (this._cache) {
+      return Result.ok(this._cache)
+    }
+
     const settings = await fs.readFile(this._path, 'utf8')
-    return Result.ok(JSON.parse(settings))
+    this._cache = JSON.parse(settings)
+    return Result.ok(this._cache!)
   }
 
   public async save(settings: UserSettings): Promise<Result<void, Error>> {
     await fs.writeFile(this._path, JSON.stringify(settings))
+    this._cache = settings
     return Result.ok(undefined)
   }
 

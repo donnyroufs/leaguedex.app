@@ -91,7 +91,10 @@ export class CompositionRoot {
     const getCuesUseCase = new Hexagon.GetCuesUseCase(cuePackRepository)
     const removeCueUseCase = new Hexagon.RemoveCueUseCase(cuePackRepository)
 
-    const userSettingsRepository = await Outbound.UserSettingsRepositoryFactory.create(isProd)
+    const userSettingsRepository = await Outbound.UserSettingsRepositoryFactory.create(
+      false,
+      this._dataPath
+    )
 
     const cueService = new Hexagon.CueService(
       addCueToPackUseCase,
