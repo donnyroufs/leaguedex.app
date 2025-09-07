@@ -31,6 +31,7 @@ declare global {
         exportPack: (id: string) => Promise<string>
         updateUserSettings: (data: IUserSettingsDto) => Promise<void>
         getUserSettings: () => Promise<IUserSettingsDto>
+        playCue: (id: string) => Promise<void>
       }
 
       getVersion: () => Promise<string>

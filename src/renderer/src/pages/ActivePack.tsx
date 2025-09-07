@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Bell, Plus, Clock, Zap, Target, Timer, X } from 'lucide-react'
+import { Bell, Plus, Clock, Zap, Target, Timer, X, Play } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -186,13 +186,22 @@ export function ActivePackPage(): JSX.Element {
                   key={cue.id}
                   className={`relative border rounded-lg bg-bg-secondary ${getCueColor()} hover:shadow-md transition-shadow min-h-[200px] flex flex-col`}
                 >
-                  <button
-                    onClick={() => openDeleteConfirmation(cue.id)}
-                    className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors z-10"
-                    aria-label="Remove cue"
-                  >
-                    <X className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
-                  </button>
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <button
+                      onClick={() => window.api.app.playCue(cue.id)}
+                      className="p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors z-10"
+                      aria-label="Play cue"
+                    >
+                      <Play className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
+                    </button>
+                    <button
+                      onClick={() => openDeleteConfirmation(cue.id)}
+                      className="p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors z-10"
+                      aria-label="Remove cue"
+                    >
+                      <X className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
+                    </button>
+                  </div>
 
                   <div className="p-6 flex flex-col flex-1">
                     <div className="flex items-center justify-between mb-5">

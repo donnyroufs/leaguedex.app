@@ -25,6 +25,7 @@ const api = {
     removeCuePack: (id: string) => ipcRenderer.invoke('remove-cue-pack', id),
     importPack: (code: string) => ipcRenderer.invoke('import-pack', code),
     exportPack: (id: string) => ipcRenderer.invoke('export-pack', id),
+    playCue: (id: string) => ipcRenderer.invoke('play-cue', id),
     getUserSettings: () => ipcRenderer.invoke('get-user-settings'),
     updateUserSettings: (data: IUserSettingsDto) => ipcRenderer.invoke('update-user-settings', data)
   },
