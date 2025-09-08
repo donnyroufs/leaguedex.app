@@ -1,9 +1,10 @@
 import { JSX, useState } from 'react'
-import { Cloud, Eye, EyeOff } from 'lucide-react'
+import { Cloud, Eye, EyeOff, Volume2 } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { useToast } from '@renderer/hooks'
+import { IUserSettingsDto } from '@contracts'
 
 type SettingsSectionProps = {
   title: string
@@ -33,10 +34,14 @@ export type ToggleSwitchProps = {
 }
 
 export function Settings(): JSX.Element {
-  const { license } = useLoaderData<{ license: string | null }>()
+  const { license, settings } = useLoaderData<{
+    license: string | null
+    settings: IUserSettingsDto
+  }>()
   const { revalidate } = useRevalidator()
   const [licenseKey, setLicenseKey] = useState<string>(license ?? '')
   const [showLicenseKey, setShowLicenseKey] = useState<boolean>(false)
+  const [volume, setVolume] = useState<number>(settings.volume)
   const toast = useToast()
 
   const handleUpdateLicense = async (): Promise<void> => {
@@ -45,7 +50,14 @@ export function Settings(): JSX.Element {
     toast.success('Restart app to apply the new license.')
   }
 
+  const handleUpdateVolume = async (): Promise<void> => {
+    await window.api.app.updateUserSettings({ volume })
+    await revalidate()
+    toast.success('Volume settings saved.')
+  }
+
   const notChanged = licenseKey === license
+  const volumeNotChanged = volume === settings.volume
 
   return (
     <PageWrapper>
@@ -92,6 +104,41 @@ export function Settings(): JSX.Element {
             <div className="flex justify-end">
               <Button onClick={handleUpdateLicense} disabled={notChanged}>
                 Update License
+              </Button>
+            </div>
+          </div>
+        </SettingsSection>
+
+        <SettingsSection title="Cues" icon={Volume2}>
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <label htmlFor="volume" className="block text-sm font-medium text-text-primary">
+                Volume
+              </label>
+              <div className="space-y-2">
+                <input
+                  id="volume"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-bg-primary rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-text-tertiary">
+                  <span>0%</span>
+                  <span className="font-medium text-text-primary">{Math.round(volume * 100)}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+              <p className="text-sm text-text-tertiary leading-5">
+                Adjust the volume for audio cues.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleUpdateVolume} disabled={volumeNotChanged}>
+                Save Volume
               </Button>
             </div>
           </div>

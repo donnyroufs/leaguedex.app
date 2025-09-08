@@ -8,6 +8,7 @@ import { CreateCueDto, AddCueToPackUseCase } from './AddCueToPackUseCase'
 import { RemoveCueUseCase } from './RemoveCueUseCase'
 import { GetCuesUseCase } from './GetCuesUseCase'
 import { ICuePackRepository } from './ports/ICuePackRepository'
+import { IUserSettingsRepository } from './ports/IUserSettingsRepository'
 
 export class CueService {
   public constructor(
@@ -17,7 +18,8 @@ export class CueService {
     private readonly _eventBus: IEventBus,
     private readonly _audioPlayer: IAudioPlayer,
     private readonly _logger: ILogger,
-    private readonly _cueRepository: ICuePackRepository
+    private readonly _cueRepository: ICuePackRepository,
+    private readonly _userSettingsRepository: IUserSettingsRepository
   ) {}
 
   public async start(): Promise<void> {
@@ -62,9 +64,18 @@ export class CueService {
       dueCues: dueCues.map((x) => x.id)
     })
 
+    const settings = await this._userSettingsRepository.load()
+
+    if (settings.isErr()) {
+      this._logger.error('Failed to load user settings', { error: settings.getError() })
+      throw new Error('Failed to load user settings')
+    }
+
+    const volume = settings.unwrap().volume
+
     // TODO: instead of awaiting it, we should create a queue so that we process it in the background
     for (const cue of dueCues) {
-      await this._audioPlayer.play(cue.audioUrl.fullPath)
+      await this._audioPlayer.play(cue.audioUrl.fullPath, volume)
     }
   }
 }

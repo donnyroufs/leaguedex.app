@@ -31,7 +31,9 @@ const router = createHashRouter([
         element: <Settings />,
         loader: async () => {
           const license = await window.api.app.getLicense()
-          return { license }
+          const settings = await window.api.app.getUserSettings()
+
+          return { license, settings }
         }
       },
       {

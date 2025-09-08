@@ -1,4 +1,13 @@
-import { ILogger, GameMonitor, IAppController, IEventBus, CueService, CuePackService } from '.'
+import {
+  ILogger,
+  GameMonitor,
+  IAppController,
+  IEventBus,
+  CueService,
+  CuePackService,
+  IUserSettingsDto,
+  IUserSettingsRepository
+} from '.'
 import { app } from 'electron'
 import path, { join } from 'path'
 import { access, constants, readFile, writeFile } from 'fs/promises'
@@ -13,8 +22,19 @@ export class AppController implements IAppController {
     private readonly _logger: ILogger,
     private readonly _cueService: CueService,
     private readonly _eventBus: IEventBus,
-    private readonly _cuePackService: CuePackService
+    private readonly _cuePackService: CuePackService,
+    private readonly _userSettingsRepository: IUserSettingsRepository
   ) {}
+
+  public async updateUserSettings(data: IUserSettingsDto): Promise<void> {
+    const res = await this._userSettingsRepository.save(data)
+    return res.unwrap()
+  }
+
+  public async getUserSettings(): Promise<IUserSettingsDto> {
+    const res = await this._userSettingsRepository.load()
+    return res.unwrap()
+  }
 
   public async start(): Promise<void> {
     await this._gameMonitor.start()

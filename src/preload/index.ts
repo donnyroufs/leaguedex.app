@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { CreateCueDto, CreateCuePackDto, GameDataDto } from '@contracts'
+import { CreateCueDto, CreateCuePackDto, GameDataDto, IUserSettingsDto } from '@contracts'
 
 const api = {
   app: {
@@ -24,7 +24,9 @@ const api = {
     getActiveCuePack: () => ipcRenderer.invoke('get-active-cue-pack'),
     removeCuePack: (id: string) => ipcRenderer.invoke('remove-cue-pack', id),
     importPack: (code: string) => ipcRenderer.invoke('import-pack', code),
-    exportPack: (id: string) => ipcRenderer.invoke('export-pack', id)
+    exportPack: (id: string) => ipcRenderer.invoke('export-pack', id),
+    getUserSettings: () => ipcRenderer.invoke('get-user-settings'),
+    updateUserSettings: (data: IUserSettingsDto) => ipcRenderer.invoke('update-user-settings', data)
   },
 
   minimizeWindow: () => ipcRenderer.send('window-minimize'),

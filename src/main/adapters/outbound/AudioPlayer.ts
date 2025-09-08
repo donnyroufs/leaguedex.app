@@ -10,16 +10,16 @@ export class AudioPlayer implements IAudioPlayer {
     private readonly _isProd: boolean
   ) {}
 
-  public async play(audioPath: string): Promise<Result<void, Error>> {
+  public async play(audioPath: string, volume: number = 1): Promise<Result<void, Error>> {
     this._logger.info('Playing audio', {
       audioPath
     })
 
     try {
       if (!this._isProd) {
-        await soundPlay.play(join(process.cwd(), 'dev-stub.wav'), 1)
+        await soundPlay.play(join(process.cwd(), 'dev-stub.wav'), volume)
       } else {
-        await soundPlay.play(audioPath, 1)
+        await soundPlay.play(audioPath, volume)
       }
     } catch (err) {
       this._logger.error('Failed to play audio', {

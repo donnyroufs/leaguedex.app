@@ -19,6 +19,7 @@ type AppDependencies = {
   audioPlayer: Hexagon.IAudioPlayer
   tts: Hexagon.ITextToSpeechGenerator
   cuePackRepository: Hexagon.ICuePackRepository
+  userSettingsRepository: Hexagon.IUserSettingsRepository
 }
 
 export class CompositionRoot {
@@ -90,6 +91,11 @@ export class CompositionRoot {
     const getCuesUseCase = new Hexagon.GetCuesUseCase(cuePackRepository)
     const removeCueUseCase = new Hexagon.RemoveCueUseCase(cuePackRepository)
 
+    const userSettingsRepository = await Outbound.UserSettingsRepositoryFactory.create(
+      isProd,
+      this._dataPath
+    )
+
     const cueService = new Hexagon.CueService(
       addCueToPackUseCase,
       getCuesUseCase,
@@ -97,7 +103,8 @@ export class CompositionRoot {
       eventBus,
       audioPlayer,
       logger,
-      cuePackRepository
+      cuePackRepository,
+      userSettingsRepository
     )
 
     const appController = new Hexagon.AppController(
@@ -105,7 +112,8 @@ export class CompositionRoot {
       logger,
       cueService,
       eventBus,
-      cuePackService
+      cuePackService,
+      userSettingsRepository
     )
     this._created = true
     return appController
