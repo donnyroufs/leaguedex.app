@@ -52,8 +52,14 @@ export class CueService {
       throw new Error(`Cue with id ${cueId} not found`)
     }
 
-    // TODO: add volume control
-    await this._audioPlayer.play(cue.audioUrl.fullPath)
+    const settings = await this._userSettingsRepository.load()
+
+    if (settings.isErr()) {
+      this._logger.error('Failed to load user settings', { error: settings.getError() })
+      throw new Error('Failed to load user settings')
+    }
+
+    await this._audioPlayer.play(cue.audioUrl.fullPath, settings.getValue().volume)
   }
 
   public async getCues(): Promise<ICueDto[]> {
