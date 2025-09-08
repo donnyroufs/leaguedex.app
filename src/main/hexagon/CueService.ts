@@ -34,6 +34,34 @@ export class CueService {
     return this._addCueToPackUseCase.execute(data)
   }
 
+  /**
+   * Used for testing the generated cue audio. This is so that you can
+   * get an idea of what it sounds like.
+   */
+  public async playCue(cueId: string): Promise<void> {
+    const pack = await this._cueRepository.active()
+
+    if (!pack) {
+      throw new Error('No active pack')
+    }
+
+    const cues = pack.unwrap()!.cues
+    const cue = cues.find((x) => x.id === cueId)
+
+    if (!cue) {
+      throw new Error(`Cue with id ${cueId} not found`)
+    }
+
+    const settings = await this._userSettingsRepository.load()
+
+    if (settings.isErr()) {
+      this._logger.error('Failed to load user settings', { error: settings.getError() })
+      throw new Error('Failed to load user settings')
+    }
+
+    await this._audioPlayer.play(cue.audioUrl.fullPath, settings.getValue().volume)
+  }
+
   public async getCues(): Promise<ICueDto[]> {
     return this._getCuesUseCase.execute()
   }

@@ -20,6 +20,10 @@ export class ElectronAdapter {
       return this._appController.getUserSettings()
     })
 
+    ipcMain.handle('play-cue', async (_, id: string) => {
+      return this._appController.playCue(id)
+    })
+
     ipcMain.handle('export-pack', async (_, id: string) => {
       return this._appController.exportPack(id)
     })

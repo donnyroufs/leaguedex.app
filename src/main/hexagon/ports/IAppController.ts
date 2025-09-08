@@ -12,6 +12,7 @@ export interface IAppController {
   updateUserSettings(data: IUserSettingsDto): Promise<void>
   getUserSettings(): Promise<IUserSettingsDto>
 
+  playCue(id: string): Promise<void>
   activateCuePack(id: string): Promise<void>
   createCuePack(data: CreateCuePackDto): Promise<string>
   importPack(code: string): Promise<void>

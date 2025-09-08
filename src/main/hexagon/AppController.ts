@@ -51,19 +51,28 @@ export class AppController implements IAppController {
     this._logger.info('app stopped')
   }
 
+  public async playCue(id: string): Promise<void> {
+    this._logger.info('playCue', { id })
+    return this._cueService.playCue(id)
+  }
+
   public async activateCuePack(id: string): Promise<void> {
+    this._logger.info('activateCuePack', { id })
     return this._cuePackService.activateCuePack(id)
   }
 
   public async getCuePacks(): Promise<ICuePackDto[]> {
+    this._logger.info('getCuePacks')
     return this._cuePackService.getCuePacks()
   }
 
   public async createCuePack(data: CreateCuePackDto): Promise<string> {
+    this._logger.info('createCuePack', { data })
     return this._cuePackService.createCuePack(data.name)
   }
 
   public async getActiveCuePack(): Promise<ICuePackDto | null> {
+    this._logger.info('getActiveCuePack')
     return this._cuePackService.getActiveCuePack()
   }
 
@@ -73,15 +82,17 @@ export class AppController implements IAppController {
   }
 
   public async exportPack(id: string): Promise<string> {
+    this._logger.info('exporting pack', { id })
     return this._cuePackService.exportPack(id)
   }
 
   public async importPack(code: string): Promise<void> {
+    this._logger.info('importing pack', { code })
     return this._cuePackService.importPack(code)
   }
 
   public async removeCuePack(id: string): Promise<void> {
-    this._logger.info('removeCuePack', { id })
+    this._logger.info('removing cue pack', { id })
     return this._cuePackService.removeCuePack(id)
   }
 
