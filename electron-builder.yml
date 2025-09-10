@@ -26,8 +26,6 @@ nsis:
 npmRebuild: false
 
 publish:
-  provider: spaces
-  name: leaguedex-releases
-  region: ams3
-  acl: public-read
-
+  provider: github
+  owner: donnyroufs
+  repo: leaguedex.app
