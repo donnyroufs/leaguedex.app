@@ -35,3 +35,6 @@ eyJuYW1lIjoiTmV1dHJhbCBPYmplY3RpdmVzIiwiY3VlcyI6W3sidGV4dCI6IlByZXBhcmUgZm9yIGRy
 ## For Developers
 
 I will add issues every now and then to this repository but I'm not actively looking for contribution, if you are really motivated to help out then you can reach me on discord. You can find the invite link [here](https://join.leaguedex.app)
+
+
+![Overview](/docs/overview.png)
