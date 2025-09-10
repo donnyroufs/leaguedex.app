@@ -1,0 +1,27 @@
+@startuml Game Detection Flow
+
+!theme plain
+
+participant "League of Legends" as League
+participant "Game Monitor" as Monitor
+participant "Game State Assembler" as Assembler
+participant "App" as App
+
+== Game Detection ==
+
+loop Every 1 second
+    Monitor -> League: HTTP GET /liveclientdata/allgamedata
+    alt Game is running
+        League -> Monitor: Game data (JSON)
+        Monitor -> Assembler: Raw game data
+        Assembler -> Assembler: Track unprocessed events
+        Assembler -> Assembler: Update objectives tracker
+        Assembler -> App: Assembled game state
+        App -> App: Trigger cues based on game events
+    else No game running
+        League -> Monitor: Connection refused
+        Monitor -> Monitor: Wait for next poll
+    end
+end
+
+@enduml
