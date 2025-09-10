@@ -29,3 +29,4 @@ publish:
   provider: github
   owner: donnyroufs
   repo: leaguedex.app
+  releaseType: release
