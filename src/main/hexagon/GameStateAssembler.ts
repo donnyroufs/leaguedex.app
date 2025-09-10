@@ -5,13 +5,12 @@ import { GameState } from './GameState'
 
 export class GameStateAssembler {
   private _processedEvents = new Set<number>()
-  private _lastGameState: GameState | null = null
 
   public assemble(data: GameData): GameState {
     const events = this.getAndTrackUnprocessedEvents(data)
-    const objectives = GameObjectiveTracker.track(this._lastGameState?.objectives ?? null, data)
+    const objectives = GameObjectiveTracker.track(data)
 
-    return new GameState(
+    const state = new GameState(
       data.gameTime,
       events,
       {
@@ -21,11 +20,8 @@ export class GameStateAssembler {
       },
       objectives
     )
-  }
 
-  public reset(): void {
-    this._processedEvents.clear()
-    this._lastGameState = null
+    return state
   }
 
   private getAndTrackUnprocessedEvents(data: GameData): GameEvent<unknown>[] {

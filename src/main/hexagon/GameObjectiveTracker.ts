@@ -4,11 +4,8 @@ import { ObjectiveState } from './GameState'
 import { Team } from './Team'
 
 export class GameObjectiveTracker {
-  public static track(
-    previousObjectiveState: ObjectiveState | null,
-    gameData: GameData
-  ): ObjectiveState {
-    const state = this.createObjectiveState(previousObjectiveState)
+  public static track(gameData: GameData): ObjectiveState {
+    const state = this.createObjectiveState()
 
     for (const evt of gameData.events) {
       switch (evt.constructor.name) {
@@ -18,7 +15,7 @@ export class GameObjectiveTracker {
 
           this.incrementTeamDragonKills(state, killedByTeam)
 
-          if (this.anyTeamMoreThanFourDragonKills(state)) {
+          if (this.anyTeamHasFourDragonKills(state)) {
             state.dragon.nextSpawn = dragonEvent.data.gameTime + 360
           } else {
             state.dragon.nextSpawn = dragonEvent.data.gameTime + 300
@@ -60,41 +57,38 @@ export class GameObjectiveTracker {
     }
 
     if (gameData.gameTime === 480) {
+      console.log('grubs')
       state.grubs.isAlive = true
       state.grubs.nextSpawn = null
     }
 
     if (gameData.gameTime === 900) {
-      if (state.grubs.isAlive) {
-        state.grubs.isAlive = false
-        state.grubs.nextSpawn = null
-      }
+      console.log('herald')
+
+      state.grubs.isAlive = false
+      state.grubs.nextSpawn = null
 
       state.herald.isAlive = true
       state.herald.nextSpawn = null
     }
 
     if (gameData.gameTime === 1200) {
-      if (state.herald.isAlive) {
-        state.herald.isAlive = false
-        state.herald.nextSpawn = null
-      }
-
       state.atakhan.isAlive = true
       state.atakhan.nextSpawn = null
     }
 
     if (gameData.gameTime === 1500) {
-      if (state.herald.isAlive) {
-        state.herald.isAlive = false
-        state.herald.nextSpawn = null
-      }
+      state.herald.isAlive = false
+      state.herald.nextSpawn = null
+
+      state.baron.isAlive = true
+      state.baron.nextSpawn = null
     }
 
     return state
   }
 
-  private static anyTeamMoreThanFourDragonKills(state: ObjectiveState): boolean {
+  private static anyTeamHasFourDragonKills(state: ObjectiveState): boolean {
     return state.dragon.teamStats.red >= 4 || state.dragon.teamStats.blue >= 4
   }
 
@@ -102,15 +96,7 @@ export class GameObjectiveTracker {
     state.dragon.teamStats[killedByTeam]++
   }
 
-  private static createObjectiveState(
-    previousObjectiveState: ObjectiveState | null
-  ): ObjectiveState {
-    if (previousObjectiveState !== null) {
-      return {
-        ...previousObjectiveState
-      }
-    }
-
+  private static createObjectiveState(): ObjectiveState {
     return {
       dragon: {
         isAlive: false,
