@@ -39,7 +39,5 @@ jobs:
       - name: Publish application
         run: yarn publish-app
         env:
-          # DigitalOcean Spaces credentials (for reference)
-          DO_KEY_ID: ${{ secrets.DO_SPACES_KEY }}
-          DO_SECRET_KEY: ${{ secrets.DO_SPACES_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

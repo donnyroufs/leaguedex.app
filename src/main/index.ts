@@ -102,10 +102,9 @@ app.whenReady().then(async () => {
 
   if (!is.dev) {
     autoUpdater.setFeedURL({
-      provider: 'spaces',
-      name: 'leaguedex-releases',
-      region: 'ams3',
-      acl: 'public-read'
+      provider: 'github',
+      owner: 'donnyroufs',
+      repo: 'leaguedex.app'
     })
     autoUpdater.checkForUpdatesAndNotify()
 
