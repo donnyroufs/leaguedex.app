@@ -23,8 +23,11 @@ export class GameMonitor {
   }
 
   public async stop(): Promise<void> {
-    this._timer.stop()
     this._logger.info('GameMonitor stopped')
+    this._recognizeGameStarted = false
+    this._timer.stop()
+    this._gameStateAssembler = new GameStateAssembler()
+    this._eventBus.publish('game-stopped', new GameStoppedEvent({}))
   }
 
   private async onStartTimer(): Promise<void> {
@@ -32,9 +35,7 @@ export class GameMonitor {
 
     if (data.isErr()) {
       if (this._recognizeGameStarted) {
-        this._recognizeGameStarted = false
-        this._gameStateAssembler.reset()
-        this._eventBus.publish('game-stopped', new GameStoppedEvent({}))
+        await this.stop()
       }
 
       return
