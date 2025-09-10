@@ -57,14 +57,11 @@ export class GameObjectiveTracker {
     }
 
     if (gameData.gameTime === 480) {
-      console.log('grubs')
       state.grubs.isAlive = true
       state.grubs.nextSpawn = null
     }
 
     if (gameData.gameTime === 900) {
-      console.log('herald')
-
       state.grubs.isAlive = false
       state.grubs.nextSpawn = null
 
