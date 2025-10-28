@@ -1,7 +1,7 @@
 import { IAudioPlayer } from '../../hexagon'
 import { Result } from '../../shared-kernel'
 import { ILogger } from '../../hexagon'
-import soundPlay from 'sound-play'
+import { soundPlay } from './SoundPlay'
 import { join } from 'path'
 
 export class AudioPlayer implements IAudioPlayer {
