@@ -8,6 +8,7 @@ import { GameStateAssembler } from './GameStateAssembler'
 
 export class GameMonitor {
   private _recognizeGameStarted = false
+  private _lastTick = 0
   private _gameStateAssembler = new GameStateAssembler()
 
   public constructor(
@@ -27,6 +28,7 @@ export class GameMonitor {
     this._recognizeGameStarted = false
     this._timer.stop()
     this._gameStateAssembler = new GameStateAssembler()
+    this._lastTick = 0
     this._eventBus.publish('game-stopped', new GameStoppedEvent({}))
   }
 
@@ -35,6 +37,7 @@ export class GameMonitor {
 
     if (data.isErr()) {
       if (this._recognizeGameStarted) {
+        this._logger.info('Game stopped', { lastTick: this._lastTick })
         await this.stop()
       }
 
@@ -52,6 +55,7 @@ export class GameMonitor {
     if (hasStarted && !this._recognizeGameStarted) {
       this._recognizeGameStarted = true
       this._eventBus.publish('game-started', new GameStartedEvent({ gameTime: gameData.gameTime }))
+      this._logger.info('Game started', { gameTime: gameData.gameTime })
     }
 
     const currentGameState = this._gameStateAssembler.assemble(gameData)
@@ -64,5 +68,6 @@ export class GameMonitor {
   private onPublishGameTick(state: GameState): void {
     const evt = new GameTickEvent({ state })
     this._eventBus.publish(evt.eventType, evt)
+    this._lastTick = state.gameTime
   }
 }
