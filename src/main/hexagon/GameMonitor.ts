@@ -23,10 +23,13 @@ export class GameMonitor {
     this._timer.start(this.onStartTimer.bind(this))
   }
 
-  public async stop(): Promise<void> {
+  public async dispose(): Promise<void> {
+    this._timer.stop()
+  }
+
+  protected stop(): void {
     this._logger.info('GameMonitor stopped')
     this._recognizeGameStarted = false
-    this._timer.stop()
     this._gameStateAssembler = new GameStateAssembler()
     this._lastTick = 0
     this._eventBus.publish('game-stopped', new GameStoppedEvent({}))
@@ -38,7 +41,7 @@ export class GameMonitor {
     if (data.isErr()) {
       if (this._recognizeGameStarted) {
         this._logger.info('Game stopped', { lastTick: this._lastTick })
-        await this.stop()
+        this.stop()
       }
 
       return
