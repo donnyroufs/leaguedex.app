@@ -17,7 +17,9 @@ describe('GameStateAssembler', () => {
       activePlayer: {
         summonerName: 'test#123',
         isAlive: true,
-        respawnsIn: null
+        respawnsIn: null,
+        currentMana: null,
+        totalMana: null
       }
     }
 
@@ -44,7 +46,9 @@ describe('GameStateAssembler', () => {
       activePlayer: {
         summonerName: 'test#123',
         isAlive: true,
-        respawnsIn: null
+        respawnsIn: null,
+        currentMana: null,
+        totalMana: null
       }
     }
 
@@ -64,7 +68,9 @@ describe('GameStateAssembler', () => {
       activePlayer: {
         summonerName: 'test#123',
         isAlive: true,
-        respawnsIn: null
+        respawnsIn: null,
+        currentMana: null,
+        totalMana: null
       }
     }
 

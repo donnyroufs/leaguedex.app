@@ -3,17 +3,30 @@ import { IUseCase } from '../shared-kernel/IUseCase'
 
 import { Cue, ICuePackRepository, ITextToSpeechGenerator } from '.'
 
-const createCueSchema = z.object({
-  text: z.string().min(1),
-  triggerType: z.enum(['interval', 'oneTime', 'event', 'objective']),
-  interval: z.number().min(1).optional(),
-  triggerAt: z.number().min(0).optional(),
-  // TODO: validation
-  event: z.string().optional(),
-  objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
-  beforeObjective: z.number().min(0).optional(),
-  packId: z.string().min(1)
-})
+const createCueSchema = z
+  .object({
+    text: z.string().min(1),
+    triggerType: z.enum(['interval', 'oneTime', 'event', 'objective']),
+    interval: z.number().min(1).optional(),
+    triggerAt: z.number().min(0).optional(),
+    // TODO: validation
+    event: z.string().optional(),
+    objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
+    beforeObjective: z.number().min(0).optional(),
+    packId: z.string().min(1),
+    value: z.number().optional()
+  })
+  .superRefine((data, ctx) => {
+    if (data.event === 'mana-changed') {
+      if (data.value === undefined || data.value === null) {
+        ctx.addIssue({
+          code: 'custom',
+          message: "Value is required when event is 'mana-changed'",
+          path: ['value']
+        })
+      }
+    }
+  })
 
 export type CreateCueDto = z.infer<typeof createCueSchema>
 
@@ -45,7 +58,8 @@ export class AddCueToPackUseCase implements IUseCase<CreateCueDto, string> {
       triggerAt: parsedData.triggerAt,
       event: parsedData.event,
       objective: parsedData.objective,
-      beforeObjective: parsedData.beforeObjective
+      beforeObjective: parsedData.beforeObjective,
+      value: parsedData.value
     }
 
     cuePackResult.add(cue)

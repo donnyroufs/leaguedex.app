@@ -33,7 +33,9 @@ export class StubGameDataProvider implements IGameDataProvider {
       activePlayer: {
         summonerName: 'test#123',
         isAlive: true,
-        respawnsIn: 0
+        respawnsIn: 0,
+        currentMana: null,
+        totalMana: null
       }
     }
   }

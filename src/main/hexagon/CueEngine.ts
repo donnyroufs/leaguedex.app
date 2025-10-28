@@ -2,6 +2,8 @@ import { GameState } from './GameState'
 import { Cue } from './Cue'
 
 export class CueEngine {
+  private static lastTriggeredByEvent: Map<string, number> = new Map<string, number>()
+
   public static getDueCues(state: GameState, cues: ReadonlyArray<Cue>): Cue[] {
     return cues.filter((cue) => {
       if (cue.triggerType === 'interval' && cue.interval) {
@@ -33,6 +35,18 @@ export class CueEngine {
         return elapsed % 90 === 0
       }
 
+      if (cue.triggerType === 'event' && cue.event === 'mana-changed') {
+        const isDue = this.onManaChangedEvent(state, cue)
+        const lastTriggered = this.lastTriggeredByEvent.get(cue.id)
+
+        if (isDue && lastTriggered === undefined) {
+          this.lastTriggeredByEvent.set(cue.id, state.gameTime)
+          return true
+        }
+
+        return isDue && lastTriggered !== undefined && state.gameTime - lastTriggered >= 60
+      }
+
       if (cue.triggerType === 'objective' && cue.objective != null) {
         const nextSpawn = state.objectives[cue.objective]?.nextSpawn
 
@@ -45,5 +59,27 @@ export class CueEngine {
 
       return false
     })
+  }
+
+  public static clear(): void {
+    this.lastTriggeredByEvent.clear()
+  }
+
+  private static onManaChangedEvent(state: GameState, cue: Cue): boolean {
+    const isManaChampion = state.activePlayer.currentMana != null
+
+    if (!isManaChampion) {
+      return false
+    }
+
+    if (!cue.value || state.activePlayer.currentMana === null) {
+      return false
+    }
+
+    if (state.activePlayer.currentMana === cue.value) {
+      return false
+    }
+
+    return state.activePlayer.currentMana <= cue.value
   }
 }
