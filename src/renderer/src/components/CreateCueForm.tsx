@@ -2,6 +2,7 @@ import { JSX, useState } from 'react'
 import { Button } from './Button'
 import { Timer, Clock, Zap, Target } from 'lucide-react'
 import { CreateCueDto } from '@contracts'
+import { TimeInput } from './TimeInput'
 
 type CreateCueFormProps = {
   onSubmit: (data: CreateCueDto) => Promise<void>
@@ -27,6 +28,12 @@ export function CreateCueForm({
     'dragon'
   )
   const [beforeObjective, setBeforeObjective] = useState<string>('')
+
+  // Add toggle states for MM:ss mode
+  const [useMMSSInterval, setUseMMSSInterval] = useState(true)
+  const [useMMSSTriggerAt, setUseMMSSTriggerAt] = useState(true)
+  const [useMMSSBeforeObjective, setUseMMSSBeforeObjective] = useState(true)
+
   const [errors, setErrors] = useState<{
     text?: string
     interval?: string
@@ -35,6 +42,24 @@ export function CreateCueForm({
     objective?: string
     beforeObjective?: string
   }>({})
+
+  const mmssToSeconds = (mmss: string): number | null => {
+    const parts = mmss.split(':')
+    if (parts.length !== 2) return null
+    const mins = parseInt(parts[0], 10)
+    const secs = parseInt(parts[1], 10)
+    if (isNaN(mins) || isNaN(secs)) return null
+    return mins * 60 + secs
+  }
+
+  // Helper to parse input value based on mode
+  const parseToSeconds = (value: string, isMMSS: boolean): number | null => {
+    if (!value.trim()) return null
+    if (isMMSS) {
+      return mmssToSeconds(value)
+    }
+    return Number(value)
+  }
 
   const getTriggerTypeIcon = (type: string): JSX.Element => {
     switch (type) {
@@ -84,9 +109,11 @@ export function CreateCueForm({
       if (!interval.trim()) {
         newErrors.interval = 'Interval is required'
       } else {
-        const intervalNum = Number(interval)
-        if (isNaN(intervalNum) || intervalNum < 1) {
-          newErrors.interval = 'Interval must be a positive number'
+        const intervalNum = parseToSeconds(interval, useMMSSInterval)
+        if (intervalNum === null || isNaN(intervalNum) || intervalNum < 1) {
+          newErrors.interval = useMMSSInterval
+            ? 'Interval must be in MM:ss format and positive'
+            : 'Interval must be a positive number'
         }
       }
     }
@@ -95,9 +122,11 @@ export function CreateCueForm({
       if (!triggerAt.trim()) {
         newErrors.triggerAt = 'Trigger time is required'
       } else {
-        const triggerAtNum = Number(triggerAt)
-        if (isNaN(triggerAtNum) || triggerAtNum < 0) {
-          newErrors.triggerAt = 'Trigger time must be a non-negative number'
+        const triggerAtNum = parseToSeconds(triggerAt, useMMSSTriggerAt)
+        if (triggerAtNum === null || isNaN(triggerAtNum) || triggerAtNum < 0) {
+          newErrors.triggerAt = useMMSSTriggerAt
+            ? 'Trigger time must be in MM:ss format'
+            : 'Trigger time must be a non-negative number'
         }
       }
     }
@@ -112,9 +141,11 @@ export function CreateCueForm({
       if (!beforeObjective.trim()) {
         newErrors.beforeObjective = 'Time before objective is required'
       } else {
-        const beforeObjectiveNum = Number(beforeObjective)
-        if (isNaN(beforeObjectiveNum) || beforeObjectiveNum < 0) {
-          newErrors.beforeObjective = 'Time before objective must be a non-negative number'
+        const beforeObjectiveNum = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
+        if (beforeObjectiveNum === null || isNaN(beforeObjectiveNum) || beforeObjectiveNum < 0) {
+          newErrors.beforeObjective = useMMSSBeforeObjective
+            ? 'Time before objective must be in MM:ss format'
+            : 'Time before objective must be a non-negative number'
         }
       }
     }
@@ -137,14 +168,23 @@ export function CreateCueForm({
     }
 
     if (triggerType === 'interval') {
-      formData.interval = Number(interval)
+      const intervalNum = parseToSeconds(interval, useMMSSInterval)
+      if (intervalNum !== null) {
+        formData.interval = intervalNum
+      }
     } else if (triggerType === 'oneTime') {
-      formData.triggerAt = Number(triggerAt)
+      const triggerAtNum = parseToSeconds(triggerAt, useMMSSTriggerAt)
+      if (triggerAtNum !== null) {
+        formData.triggerAt = triggerAtNum
+      }
     } else if (triggerType === 'event') {
       formData.event = event.trim()
     } else if (triggerType === 'objective') {
       formData.objective = objective
-      formData.beforeObjective = Number(beforeObjective)
+      const beforeObjectiveNum = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
+      if (beforeObjectiveNum !== null) {
+        formData.beforeObjective = beforeObjectiveNum
+      }
     }
 
     await onSubmit(formData)
@@ -203,7 +243,7 @@ export function CreateCueForm({
             {[
               {
                 value: 'interval',
-                label: 'Every X seconds',
+                label: 'Every Interval',
                 icon: 'interval',
                 description: 'Repeats at regular intervals'
               },
@@ -267,28 +307,16 @@ export function CreateCueForm({
                 <p className="text-sm text-text-tertiary">How often should this cue repeat?</p>
               </div>
 
-              <div>
-                <label
-                  htmlFor="cue-interval"
-                  className="block text-sm font-medium text-text-primary mb-2"
-                >
-                  Interval (seconds)
-                </label>
-                <input
-                  id="cue-interval"
-                  type="number"
-                  value={interval}
-                  onChange={(e) => setInterval(e.target.value)}
-                  placeholder="60"
-                  min="1"
-                  className={`w-full px-4 py-3 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info/40 transition-all duration-200 ${
-                    errors.interval ? 'border-status-danger' : 'border-border-primary'
-                  }`}
-                />
-                {errors.interval && (
-                  <p className="mt-2 text-sm text-status-danger">{errors.interval}</p>
-                )}
-              </div>
+              <TimeInput
+                id="cue-interval"
+                label="Interval"
+                value={interval}
+                onChange={setInterval}
+                error={errors.interval}
+                placeholder={useMMSSInterval ? '1:30' : '90'}
+                useMMSS={useMMSSInterval}
+                onToggleMMSS={() => setUseMMSSInterval(!useMMSSInterval)}
+              />
             </div>
           )}
 
@@ -299,28 +327,16 @@ export function CreateCueForm({
                 <p className="text-sm text-text-tertiary">When exactly should this cue trigger?</p>
               </div>
 
-              <div>
-                <label
-                  htmlFor="cue-trigger-time"
-                  className="block text-sm font-medium text-text-primary mb-2"
-                >
-                  Trigger Time (seconds)
-                </label>
-                <input
-                  id="cue-trigger-time"
-                  type="number"
-                  value={triggerAt}
-                  onChange={(e) => setTriggerAt(e.target.value)}
-                  placeholder="150"
-                  min="0"
-                  className={`w-full px-4 py-3 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-success/20 focus:border-success/40 transition-all duration-200 ${
-                    errors.triggerAt ? 'border-status-danger' : 'border-border-primary'
-                  }`}
-                />
-                {errors.triggerAt && (
-                  <p className="mt-2 text-sm text-status-danger">{errors.triggerAt}</p>
-                )}
-              </div>
+              <TimeInput
+                id="cue-trigger-time"
+                label="Trigger Time"
+                value={triggerAt}
+                onChange={setTriggerAt}
+                error={errors.triggerAt}
+                placeholder={useMMSSTriggerAt ? '2:30' : '150'}
+                useMMSS={useMMSSTriggerAt}
+                onToggleMMSS={() => setUseMMSSTriggerAt(!useMMSSTriggerAt)}
+              />
             </div>
           )}
 
@@ -388,28 +404,16 @@ export function CreateCueForm({
                   </select>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="cue-before-objective"
-                    className="block text-sm font-medium text-text-primary mb-2"
-                  >
-                    Time Before Spawn (seconds)
-                  </label>
-                  <input
-                    id="cue-before-objective"
-                    type="number"
-                    value={beforeObjective}
-                    onChange={(e) => setBeforeObjective(e.target.value)}
-                    placeholder="30"
-                    min="0"
-                    className={`w-full px-4 py-3 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-premium/20 focus:border-premium/40 transition-all duration-200 ${
-                      errors.beforeObjective ? 'border-status-danger' : 'border-border-primary'
-                    }`}
-                  />
-                  {errors.beforeObjective && (
-                    <p className="mt-2 text-sm text-status-danger">{errors.beforeObjective}</p>
-                  )}
-                </div>
+                <TimeInput
+                  id="cue-before-objective"
+                  label="Time Before Spawn"
+                  value={beforeObjective}
+                  onChange={setBeforeObjective}
+                  error={errors.beforeObjective}
+                  placeholder={useMMSSBeforeObjective ? '0:30' : '30'}
+                  useMMSS={useMMSSBeforeObjective}
+                  onToggleMMSS={() => setUseMMSSBeforeObjective(!useMMSSBeforeObjective)}
+                />
               </div>
             </div>
           )}
