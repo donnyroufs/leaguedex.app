@@ -45,7 +45,7 @@ export class AppController implements IAppController {
   }
 
   public async stop(): Promise<void> {
-    await this._gameMonitor.stop()
+    await this._gameMonitor.dispose()
     await this._cueService.stop()
     await this._cuePackService.stop()
     this._logger.info('app stopped')

@@ -78,6 +78,29 @@ describe('Game Monitor', () => {
     expect(eventBus.hasAllEvents(['game-started', 'game-tick', 'game-tick'])).toBe(true)
   })
 
+  test('Does not stop looking for an active game after a game has been finished', async () => {
+    gameDataProvider.setStarted(0)
+    await sut.start()
+
+    await tick(timer, gameDataProvider)
+    await tick(timer, gameDataProvider)
+
+    gameDataProvider.setStopped()
+
+    await tick(timer, gameDataProvider)
+
+    expect(eventBus.totalCalls).toBe(4)
+    expect(eventBus.hasEvent('game-stopped')).toBe(true)
+
+    eventBus.clear()
+    gameDataProvider.setStarted(0)
+
+    await tick(timer, gameDataProvider)
+    console.log(eventBus.events)
+
+    expect(eventBus.totalCalls).toBe(2)
+  })
+
   test.todo('Passes the computed game state to the game tick event')
 
   // Later optimization
