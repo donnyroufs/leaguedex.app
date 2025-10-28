@@ -58,6 +58,10 @@ export class GameMonitor {
       this._logger.info('Game started', { gameTime: gameData.gameTime })
     }
 
+    if (this.isGamePaused(gameData.gameTime)) {
+      return
+    }
+
     const currentGameState = this._gameStateAssembler.assemble(gameData)
 
     if (currentGameState) {
@@ -69,5 +73,9 @@ export class GameMonitor {
     const evt = new GameTickEvent({ state })
     this._eventBus.publish(evt.eventType, evt)
     this._lastTick = state.gameTime
+  }
+
+  private isGamePaused(currentTick: number): boolean {
+    return currentTick === this._lastTick
   }
 }

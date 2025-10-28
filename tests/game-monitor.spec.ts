@@ -6,6 +6,11 @@ import { EventBusSpy } from './EventBusSpy'
 import { FakeTimer } from './FakeTimer'
 import { StubGameDataProvider } from './StubGameDataProvider'
 
+async function tick(timer: FakeTimer, gameDataProvider: StubGameDataProvider): Promise<void> {
+  gameDataProvider.tick()
+  await timer.tick()
+}
+
 describe('Game Monitor', () => {
   let sut: GameMonitor
   let timer: FakeTimer
@@ -21,23 +26,23 @@ describe('Game Monitor', () => {
 
   test('Does not publish a game tick event if game has not started', async () => {
     await sut.start()
-    await timer.tick()
+    await tick(timer, gameDataProvider)
     expect(eventBus.totalCalls).toBe(0)
   })
 
   test('Publishes game started event when game has started', async () => {
     gameDataProvider.setStarted()
     await sut.start()
-    await timer.tick()
+    await tick(timer, gameDataProvider)
     expect(eventBus.hasEvent('game-started')).toBe(true)
   })
 
   test('Only publishes game started event once', async () => {
     gameDataProvider.setStarted()
     await sut.start()
-    await timer.tick()
-    await timer.tick()
-    await timer.tick()
+    await tick(timer, gameDataProvider)
+    await tick(timer, gameDataProvider)
+    await tick(timer, gameDataProvider)
     expect(eventBus.hasEventOnce('game-started')).toBe(true)
   })
 
@@ -46,8 +51,8 @@ describe('Game Monitor', () => {
 
     await sut.start()
 
-    await timer.tick()
-    await timer.tick()
+    await tick(timer, gameDataProvider)
+    await tick(timer, gameDataProvider)
 
     expect(eventBus.totalCalls).toBe(3)
     expect(eventBus.hasAllEvents(['game-started', 'game-tick', 'game-tick'])).toBe(true)
@@ -56,9 +61,9 @@ describe('Game Monitor', () => {
   test('Publishes game stopped event when game has stopped', async () => {
     gameDataProvider.setStarted()
     await sut.start()
-    await timer.tick()
+    await tick(timer, gameDataProvider)
     gameDataProvider.setStopped()
-    await timer.tick()
+    await tick(timer, gameDataProvider)
     expect(eventBus.hasEvent('game-stopped')).toBe(true)
   })
 
@@ -66,8 +71,8 @@ describe('Game Monitor', () => {
     gameDataProvider.setStarted(30) // 30 seconds into the game already
     await sut.start()
 
-    await timer.tick()
-    await timer.tick()
+    await tick(timer, gameDataProvider)
+    await tick(timer, gameDataProvider)
 
     expect(eventBus.totalCalls).toBe(3)
     expect(eventBus.hasAllEvents(['game-started', 'game-tick', 'game-tick'])).toBe(true)
