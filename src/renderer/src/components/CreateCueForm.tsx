@@ -203,7 +203,7 @@ export function CreateCueForm({
             {[
               {
                 value: 'interval',
-                label: 'Every X seconds',
+                label: 'Every Interval',
                 icon: 'interval',
                 description: 'Repeats at regular intervals'
               },
