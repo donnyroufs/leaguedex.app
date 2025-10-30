@@ -47,7 +47,15 @@ export class RiotLiveClientApi implements IGameDataProvider {
       activePlayer: {
         summonerName: activePlayer.summonerName,
         isAlive: !player.isDead,
-        respawnsIn: Math.round(player.respawnTimer) || null
+        respawnsIn: Math.round(player.respawnTimer) || null,
+        currentMana:
+          activePlayer.championStats.resourceType === 'MANA'
+            ? activePlayer.championStats.resourceValue
+            : null,
+        totalMana:
+          activePlayer.championStats.resourceType === 'MANA'
+            ? activePlayer.championStats.resourceMax
+            : null
       }
     })
   }
