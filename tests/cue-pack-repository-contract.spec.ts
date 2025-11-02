@@ -30,7 +30,10 @@ describe.each(instances)('$name Contract Tests', (x) => {
 
   test('saves a cue pack', async () => {
     const sut = await x.create()
-    const cuePack1 = new TestCuePackBuilder().withName('My Pack').build()
+    const cuePack1 = new TestCuePackBuilder()
+      .withName('My Pack')
+      .withCues([new CueBuilder().withText('My cue').withValue(100).build()])
+      .build()
 
     await sut.save(cuePack1)
 
