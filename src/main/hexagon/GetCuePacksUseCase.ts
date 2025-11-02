@@ -31,6 +31,7 @@ export class GetCuePacksUseCase
         interval: cue.interval,
         triggerAt: cue.triggerAt,
         event: cue.event,
+        value: cue.value,
         objective: cue.objective,
         beforeObjective: cue.beforeObjective
       }))

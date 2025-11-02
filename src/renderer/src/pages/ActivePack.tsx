@@ -59,6 +59,10 @@ export function ActivePackPage(): JSX.Element {
           return 'When a canon wave spawns'
         case 'respawn':
           return 'When you respawn'
+        case 'mana-changed':
+          return cue.value !== undefined
+            ? `When mana is less or equal to ${cue.value}`
+            : 'When mana changes'
         default:
           console.warn('Missing event', cue.event)
           return `On ${cue.event}`
