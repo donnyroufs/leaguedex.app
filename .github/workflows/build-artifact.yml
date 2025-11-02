@@ -41,7 +41,12 @@ jobs:
         run: yarn build
 
       - name: Build Windows installer
-        run: yarn build:win
+        if: inputs.build_type == 'installer'
+        run: electron-builder --win --publish never
+
+      - name: Build Windows unpacked
+        if: inputs.build_type == 'unpacked'
+        run: electron-builder --win --dir --publish never
 
       - name: List build artifacts
         run: dir dist
