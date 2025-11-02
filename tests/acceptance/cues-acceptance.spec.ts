@@ -402,8 +402,6 @@ describeFeature(
         const createdCueId = await createCue(data)
         const cues = await app.getCues()
 
-        console.log(cues)
-
         expect(cues).toHaveLength(1)
         expect(cues[0].id).toBe(createdCueId)
       })

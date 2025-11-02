@@ -37,10 +37,10 @@ export class CueEngine {
 
       if (cue.triggerType === 'event' && cue.event === 'mana-changed') {
         const isDue = this.onManaChangedEvent(state, cue)
-        const lastTriggered = this.lastTriggeredByEvent.get(cue.id)
+        const lastTriggered = this.lastTriggeredByEvent.get(cue.event)
 
         if (isDue && lastTriggered === undefined) {
-          this.lastTriggeredByEvent.set(cue.id, state.gameTime)
+          this.lastTriggeredByEvent.set(cue.event, state.gameTime)
           return true
         }
 

@@ -1,10 +1,14 @@
 import { CueEngine } from '@hexagon/CueEngine'
-import { test, describe, expect } from 'vitest'
+import { test, describe, expect, beforeEach } from 'vitest'
 import { CueBuilder } from './CueBuilder'
 import { TestGameDataBuilder } from './TestGameDataBuilder'
 import { GameStateAssembler } from '@hexagon/GameStateAssembler'
 
 describe('CueEngine', () => {
+  beforeEach(() => {
+    CueEngine.clear()
+  })
+
   // TODO: use fastcheck
   test.each([
     [150, 0],
@@ -84,34 +88,28 @@ describe('CueEngine', () => {
     expect(due).toEqual([])
   })
 
-  // Need to decide if we make the cue engine stateful or not
-  test.each([
-    { tick: 150, expectedDueCount: 1, desc: 'first tick triggers' },
-    { tick: 180, expectedDueCount: 0, desc: '30 ticks later does not trigger again' },
-    { tick: 209, expectedDueCount: 0, desc: '59 ticks later does not trigger again' }
-  ])('Should not keep triggering the mana cue: $desc', ({ tick, expectedDueCount }) => {
+  test('Should not keep triggering the mana cue', () => {
     const assembler = new GameStateAssembler()
     const cue = new CueBuilder().asManaChanged().withValue(100).build()
 
-    if (tick !== 150) {
-      const gameDataFirst = new TestGameDataBuilder()
-        .withGameTime(150)
-        .hasStarted()
-        .withCurrentPlayerMana(99)
-        .build()
-      const stateFirst = assembler.assemble(gameDataFirst)
-      CueEngine.getDueCues(stateFirst, [cue])
-    }
-
     const gameData = new TestGameDataBuilder()
-      .withGameTime(tick)
+      .withGameTime(150)
       .hasStarted()
-      .withCurrentPlayerMana(99)
+      .withCurrentPlayerMana(90)
       .build()
 
     const state = assembler.assemble(gameData)
     const due = CueEngine.getDueCues(state, [cue])
+    expect(due).toHaveLength(1)
 
-    expect(due).toHaveLength(expectedDueCount)
+    const gameData2 = new TestGameDataBuilder()
+      .withGameTime(151)
+      .hasStarted()
+      .withCurrentPlayerMana(95)
+      .build()
+
+    const state2 = assembler.assemble(gameData2)
+    const due2 = CueEngine.getDueCues(state2, [cue])
+    expect(due2).toHaveLength(0)
   })
 })
