@@ -167,7 +167,6 @@ export function CreateCueForm({
       }
     }
 
-    // Validate endTime if provided (optional field)
     if (endTime.trim()) {
       const endTimeNum = parseToSeconds(endTime, useMMSSEndTime)
       if (endTimeNum === null || isNaN(endTimeNum) || endTimeNum < 1) {
@@ -220,7 +219,6 @@ export function CreateCueForm({
       }
     }
 
-    // Add endTime if provided (optional field)
     if (endTime.trim()) {
       const endTimeNum = parseToSeconds(endTime, useMMSSEndTime)
       if (endTimeNum !== null && endTimeNum > 0) {
@@ -497,7 +495,6 @@ export function CreateCueForm({
         </div>
       </div>
 
-      {/* End Time Section - Optional */}
       <div className="space-y-4">
         <div>
           <h3 className="text-xl font-semibold text-text-primary">End Time (Optional)</h3>
