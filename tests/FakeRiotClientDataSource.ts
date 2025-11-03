@@ -110,6 +110,23 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
     player.respawnTimer = respawnTimer
   }
 
+  public changeCurrentPlayerMana(mana: number): void {
+    this._state!.activePlayer.championStats.resourceValue = mana
+  }
+
+  public setCurrentPlayerResourceStats(stats: {
+    resourceType: string
+    resourceValue: number
+    resourceMax: number
+  }): void {
+    this._state!.activePlayer.championStats = {
+      ...this._state!.activePlayer.championStats,
+      resourceType: stats.resourceType,
+      resourceValue: stats.resourceValue,
+      resourceMax: stats.resourceMax
+    }
+  }
+
   /**
    * @param ticker The ticker which will make sure that the clock is on sync with the game
    * this will ALWAYS be called AFTER the gameTime has been incremented to the next tick.

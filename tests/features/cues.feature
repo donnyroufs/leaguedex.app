@@ -95,5 +95,12 @@ Feature: Cues
     And another "90" seconds pass in game time
     Then I should hear the cue again
 
+  Scenario: Cue on low mana
+    Given I have a cue configured:
+      | text     | triggerType | event        | value |
+      | Low mana | event       | mana-changed | 100   |
+    And we are in a League of Legends match
+    When we reach a mana value of "100" 
+    Then I should hear the audio "low_mana"
 
     # Scenario: Cue on canon wave spawned event after 15:05

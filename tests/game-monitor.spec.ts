@@ -96,7 +96,6 @@ describe('Game Monitor', () => {
     gameDataProvider.setStarted(0)
 
     await tick(timer, gameDataProvider)
-    console.log(eventBus.events)
 
     expect(eventBus.totalCalls).toBe(2)
   })
