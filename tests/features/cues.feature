@@ -103,10 +103,10 @@ Feature: Cues
     When we reach a mana value of "100"
     Then I should hear the audio "low_mana"
 
-  Scenario: Cue does not trigger when time equals or exceeds end time
+  Scenario: Cue does not trigger when time exceeds end time
     Given I have a cue configured:
       | text          | triggerType | interval | endTime |
-      | Check minimap | interval    | 60       | 180     |
+      | Check minimap | interval    | 60       | 120     |
     And we are in a League of Legends match
     When "60" seconds pass in game time
     Then I should hear the audio "check_minimap"

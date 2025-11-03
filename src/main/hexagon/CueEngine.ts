@@ -6,7 +6,7 @@ export class CueEngine {
 
   public static getDueCues(state: GameState, cues: ReadonlyArray<Cue>): Cue[] {
     return cues.filter((cue) => {
-      if (cue.endTime && state.gameTime >= cue.endTime) {
+      if (cue.endTime && state.gameTime > cue.endTime) {
         return false
       }
 
