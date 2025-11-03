@@ -134,7 +134,8 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
       event: cue.event,
       objective: cue.objective,
       beforeObjective: cue.beforeObjective,
-      value: cue.value !== undefined ? Number(cue.value) : undefined
+      value: cue.value !== undefined ? Number(cue.value) : undefined,
+      endTime: cue.endTime !== undefined ? Number(cue.endTime) : undefined
     }
   }
 
@@ -165,7 +166,8 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
       event: fsCue.event,
       objective: fsCue.objective,
       beforeObjective: fsCue.beforeObjective,
-      value: fsCue.value !== undefined ? Number(fsCue.value) : undefined
+      value: fsCue.value !== undefined ? Number(fsCue.value) : undefined,
+      endTime: fsCue.endTime !== undefined ? Number(fsCue.endTime) : undefined
     }
   }
 
@@ -199,6 +201,7 @@ type FSCue = {
   objective?: CueObjective
   beforeObjective?: number
   value?: number
+  endTime?: number
 }
 
 type FSCuePack = {

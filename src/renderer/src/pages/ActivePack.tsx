@@ -224,13 +224,26 @@ export function ActivePackPage(): JSX.Element {
                       </h3>
 
                       {/* Trigger details */}
-                      <div className="pt-3 border-t border-border-primary/10 mt-4">
+                      <div className="pt-3 border-t border-border-primary/10 mt-4 space-y-2.5">
                         <div className="flex items-start space-x-2.5 text-text-secondary">
                           <Timer className="w-4 h-4 text-text-tertiary mt-0.5 flex-shrink-0" />
                           <span className="text-sm font-medium leading-relaxed">
                             {formatTriggerDisplay(cue)}
                           </span>
                         </div>
+                        {cue.endTime !== undefined && (
+                          <div className="flex items-start space-x-2.5 text-text-secondary">
+                            <Clock className="w-4 h-4 text-text-tertiary mt-0.5 flex-shrink-0" />
+                            <span className="text-sm font-medium leading-relaxed">
+                              Ends at{' '}
+                              {(() => {
+                                const minutes = Math.floor(cue.endTime / 60)
+                                const seconds = cue.endTime % 60
+                                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+                              })()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

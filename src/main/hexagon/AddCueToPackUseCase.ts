@@ -14,7 +14,8 @@ const createCueSchema = z
     objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
     beforeObjective: z.number().min(0).optional(),
     packId: z.string().min(1),
-    value: z.number().optional()
+    value: z.number().optional(),
+    endTime: z.number().int().positive().optional()
   })
   .superRefine((data, ctx) => {
     if (data.event === 'mana-changed') {
@@ -59,7 +60,8 @@ export class AddCueToPackUseCase implements IUseCase<CreateCueDto, string> {
       event: parsedData.event,
       objective: parsedData.objective,
       beforeObjective: parsedData.beforeObjective,
-      value: parsedData.value
+      value: parsedData.value,
+      endTime: parsedData.endTime
     }
 
     cuePackResult.add(cue)

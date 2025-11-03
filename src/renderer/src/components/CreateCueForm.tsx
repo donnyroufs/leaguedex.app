@@ -29,11 +29,13 @@ export function CreateCueForm({
     'dragon'
   )
   const [beforeObjective, setBeforeObjective] = useState<string>('')
+  const [endTime, setEndTime] = useState<string>('')
 
   // Add toggle states for MM:ss mode
   const [useMMSSInterval, setUseMMSSInterval] = useState(true)
   const [useMMSSTriggerAt, setUseMMSSTriggerAt] = useState(true)
   const [useMMSSBeforeObjective, setUseMMSSBeforeObjective] = useState(true)
+  const [useMMSSEndTime, setUseMMSSEndTime] = useState(true)
 
   const [errors, setErrors] = useState<{
     text?: string
@@ -43,6 +45,7 @@ export function CreateCueForm({
     eventValue?: string
     objective?: string
     beforeObjective?: string
+    endTime?: string
   }>({})
 
   const mmssToSeconds = (mmss: string): number | null => {
@@ -102,6 +105,7 @@ export function CreateCueForm({
       eventValue?: string
       objective?: string
       beforeObjective?: string
+      endTime?: string
     } = {}
 
     if (!text.trim()) {
@@ -163,6 +167,15 @@ export function CreateCueForm({
       }
     }
 
+    if (endTime.trim()) {
+      const endTimeNum = parseToSeconds(endTime, useMMSSEndTime)
+      if (endTimeNum === null || isNaN(endTimeNum) || endTimeNum < 1) {
+        newErrors.endTime = useMMSSEndTime
+          ? 'End time must be in MM:ss format and positive'
+          : 'End time must be a positive number'
+      }
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -203,6 +216,13 @@ export function CreateCueForm({
       const beforeObjectiveNum = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
       if (beforeObjectiveNum !== null) {
         formData.beforeObjective = beforeObjectiveNum
+      }
+    }
+
+    if (endTime.trim()) {
+      const endTimeNum = parseToSeconds(endTime, useMMSSEndTime)
+      if (endTimeNum !== null && endTimeNum > 0) {
+        formData.endTime = endTimeNum
       }
     }
 
@@ -385,7 +405,7 @@ export function CreateCueForm({
                   >
                     <option value="">Select an event</option>
                     <option value="respawn">Player respawn</option>
-                    <option value="canon-wave-spawned">Canon wave spawned (until 15:05)</option>
+                    <option value="canon-wave-spawned">Canon wave spawned</option>
                     <option value="mana-changed">Mana changed</option>
                   </select>
                   {errors.event && (
@@ -473,6 +493,26 @@ export function CreateCueForm({
             </div>
           )}
         </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-xl font-semibold text-text-primary">End Time (Optional)</h3>
+          <p className="text-sm text-text-tertiary mt-1">
+            When should this cue stop triggering? Leave empty if it should continue indefinitely.
+          </p>
+        </div>
+
+        <TimeInput
+          id="cue-end-time"
+          label="End Time"
+          value={endTime}
+          onChange={setEndTime}
+          error={errors.endTime}
+          placeholder={useMMSSEndTime ? '20:00' : '1200'}
+          useMMSS={useMMSSEndTime}
+          onToggleMMSS={() => setUseMMSSEndTime(!useMMSSEndTime)}
+        />
       </div>
 
       {/* Action Buttons */}
