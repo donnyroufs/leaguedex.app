@@ -11,6 +11,17 @@ import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
 
 const feature = await loadFeature('tests/features/cues.feature')
 
+type CueData = {
+  text: string
+  triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
+  value?: number
+  interval?: number
+  triggerAt?: number
+  event?: string
+  objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+  beforeObjective?: number
+}
+
 describeFeature(
   feature,
   ({
@@ -32,15 +43,7 @@ describeFeature(
     async function createCue(data: CreateCueDto): Promise<string> {
       const packId = await app.createCuePack({ name: 'My Pack' })
 
-      const cueData: {
-        text: string
-        triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
-        interval?: number
-        triggerAt?: number
-        event?: string
-        objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-        beforeObjective?: number
-      } = {
+      const cueData: CueData = {
         text: data.text,
         triggerType: data.triggerType
       }
@@ -51,6 +54,7 @@ describeFeature(
         cueData.triggerAt = Number(data.triggerAt)
       } else if (data.triggerType === 'event' && data.event) {
         cueData.event = data.event
+        cueData.value = data.value !== undefined ? Number(data.value) : undefined
       } else if (
         data.triggerType === 'objective' &&
         data.objective != null &&
@@ -390,6 +394,39 @@ describeFeature(
       Then(`I should hear the cue again`, () => {
         expect(audioPlayer.lastCalledWith).toContain('canon_wave_spawned')
         expect(audioPlayer.totalCalls).toBe(3)
+      })
+    })
+
+    Scenario(`Cue on low mana`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
+        const cues = await app.getCues()
+
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
+      })
+
+      And(`we are in a League of Legends match`, () => {
+        dataSource.addGameStartedEvent()
+      })
+
+      When(`we reach a mana value of {string}`, async (_, value: string) => {
+        await dataSource.nextTick(timer)
+
+        dataSource.setCurrentPlayerResourceStats({
+          resourceType: 'MANA',
+          resourceValue: Number(value),
+          resourceMax: Number(value) + 100
+        })
+
+        dataSource.changeCurrentPlayerMana(Number(value))
+
+        await dataSource.nextTick(timer)
+      })
+
+      Then(`I should hear the audio "low_mana"`, () => {
+        expect(audioPlayer.lastCalledWith).toContain('low_mana')
+        expect(audioPlayer.totalCalls).toBe(1)
       })
     })
   }

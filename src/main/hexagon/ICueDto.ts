@@ -7,6 +7,7 @@ export interface ICueDto {
   interval?: number
   triggerAt?: number
   event?: string
+  value?: number
   objective?: CueObjective
   beforeObjective?: number
 }

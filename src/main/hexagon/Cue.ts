@@ -17,6 +17,10 @@ export type Cue = {
   interval?: number
   triggerAt?: number
   event?: string
+  /**
+   * The value of an event trigger. In this case, the current mana value.
+   */
+  value?: number
   objective?: CueObjective
   beforeObjective?: number
 }

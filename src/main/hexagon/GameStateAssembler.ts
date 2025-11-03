@@ -16,7 +16,9 @@ export class GameStateAssembler {
       {
         summonerName: data.activePlayer.summonerName,
         isAlive: data.activePlayer.isAlive,
-        respawnsIn: data.activePlayer.respawnsIn
+        respawnsIn: data.activePlayer.respawnsIn,
+        currentMana: data.activePlayer.currentMana,
+        totalMana: data.activePlayer.totalMana
       },
       objectives
     )

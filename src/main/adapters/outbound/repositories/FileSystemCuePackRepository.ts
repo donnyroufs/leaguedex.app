@@ -133,7 +133,8 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
       triggerAt: cue.triggerAt,
       event: cue.event,
       objective: cue.objective,
-      beforeObjective: cue.beforeObjective
+      beforeObjective: cue.beforeObjective,
+      value: cue.value !== undefined ? Number(cue.value) : undefined
     }
   }
 
@@ -163,7 +164,8 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
       triggerAt: fsCue.triggerAt,
       event: fsCue.event,
       objective: fsCue.objective,
-      beforeObjective: fsCue.beforeObjective
+      beforeObjective: fsCue.beforeObjective,
+      value: fsCue.value !== undefined ? Number(fsCue.value) : undefined
     }
   }
 
@@ -196,6 +198,7 @@ type FSCue = {
   event?: string
   objective?: CueObjective
   beforeObjective?: number
+  value?: number
 }
 
 type FSCuePack = {

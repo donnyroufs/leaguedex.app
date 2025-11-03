@@ -24,6 +24,7 @@ export function CreateCueForm({
   const [interval, setInterval] = useState<string>('')
   const [triggerAt, setTriggerAt] = useState<string>('')
   const [event, setEvent] = useState<string>('')
+  const [eventValue, setEventValue] = useState<string>('')
   const [objective, setObjective] = useState<'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'>(
     'dragon'
   )
@@ -39,6 +40,7 @@ export function CreateCueForm({
     interval?: string
     triggerAt?: string
     event?: string
+    eventValue?: string
     objective?: string
     beforeObjective?: string
   }>({})
@@ -97,6 +99,7 @@ export function CreateCueForm({
       interval?: string
       triggerAt?: string
       event?: string
+      eventValue?: string
       objective?: string
       beforeObjective?: string
     } = {}
@@ -134,6 +137,16 @@ export function CreateCueForm({
     if (triggerType === 'event') {
       if (!event.trim()) {
         newErrors.event = 'Event is required'
+      }
+      if (event === 'mana-changed') {
+        if (!eventValue.trim()) {
+          newErrors.eventValue = 'Mana threshold is required'
+        } else {
+          const eventValueNum = Number(eventValue)
+          if (isNaN(eventValueNum) || eventValueNum < 0) {
+            newErrors.eventValue = 'Mana threshold must be a non-negative number'
+          }
+        }
       }
     }
 
@@ -179,6 +192,12 @@ export function CreateCueForm({
       }
     } else if (triggerType === 'event') {
       formData.event = event.trim()
+      if (event === 'mana-changed' && eventValue.trim()) {
+        const eventValueNum = Number(eventValue)
+        if (!isNaN(eventValueNum)) {
+          formData.value = eventValueNum
+        }
+      }
     } else if (triggerType === 'objective') {
       formData.objective = objective
       const beforeObjectiveNum = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
@@ -198,6 +217,9 @@ export function CreateCueForm({
       return Boolean(text.trim() && triggerAt.trim())
     }
     if (triggerType === 'event') {
+      if (event === 'mana-changed') {
+        return Boolean(text.trim() && event.trim() && eventValue.trim())
+      }
       return Boolean(text.trim() && event.trim())
     }
     if (triggerType === 'objective') {
@@ -347,24 +369,57 @@ export function CreateCueForm({
                 <p className="text-sm text-text-tertiary">What event should trigger this cue?</p>
               </div>
 
-              <div>
-                <label
-                  htmlFor="cue-event"
-                  className="block text-sm font-medium text-text-primary mb-2"
-                >
-                  Event
-                </label>
-                <select
-                  id="cue-event"
-                  value={event}
-                  onChange={(e) => setEvent(e.target.value)}
-                  className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-warning/20 focus:border-warning/40 transition-all duration-200"
-                >
-                  <option value="">Select an event</option>
-                  <option value="respawn">Player respawn</option>
-                  <option value="canon-wave-spawned">Canon wave spawned (until 15:05)</option>
-                </select>
-                {errors.event && <p className="mt-2 text-sm text-status-danger">{errors.event}</p>}
+              <div className="space-y-3">
+                <div>
+                  <label
+                    htmlFor="cue-event"
+                    className="block text-sm font-medium text-text-primary mb-2"
+                  >
+                    Event
+                  </label>
+                  <select
+                    id="cue-event"
+                    value={event}
+                    onChange={(e) => setEvent(e.target.value)}
+                    className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-warning/20 focus:border-warning/40 transition-all duration-200"
+                  >
+                    <option value="">Select an event</option>
+                    <option value="respawn">Player respawn</option>
+                    <option value="canon-wave-spawned">Canon wave spawned (until 15:05)</option>
+                    <option value="mana-changed">Mana changed</option>
+                  </select>
+                  {errors.event && (
+                    <p className="mt-2 text-sm text-status-danger">{errors.event}</p>
+                  )}
+                </div>
+
+                {event === 'mana-changed' && (
+                  <div>
+                    <label
+                      htmlFor="cue-event-value"
+                      className="block text-sm font-medium text-text-primary mb-2"
+                    >
+                      Mana Threshold
+                    </label>
+                    <input
+                      id="cue-event-value"
+                      type="number"
+                      min="0"
+                      value={eventValue}
+                      onChange={(e) => setEventValue(e.target.value)}
+                      placeholder="e.g., 100"
+                      className={`w-full px-4 py-3 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-warning/20 focus:border-warning/40 transition-all duration-200 ${
+                        errors.eventValue ? 'border-status-danger' : 'border-border-primary'
+                      }`}
+                    />
+                    <p className="mt-1.5 text-xs text-text-tertiary">
+                      The cue will trigger when mana is at or below this value
+                    </p>
+                    {errors.eventValue && (
+                      <p className="mt-2 text-sm text-status-danger">{errors.eventValue}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -11,7 +11,9 @@ const CreateCuePackUseCaseInput = z.object({
 export type CreateCuePackDto = z.infer<typeof CreateCuePackUseCaseInput>
 type CreateCuePackUseCaseOutput = string
 
-export class CreateCuePackUseCase implements IUseCase<CreateCuePackDto, CreateCuePackUseCaseOutput> {
+export class CreateCuePackUseCase
+  implements IUseCase<CreateCuePackDto, CreateCuePackUseCaseOutput>
+{
   public constructor(private readonly _cuePackRepository: ICuePackRepository) {}
 
   public async execute(input: CreateCuePackDto): Promise<CreateCuePackUseCaseOutput> {

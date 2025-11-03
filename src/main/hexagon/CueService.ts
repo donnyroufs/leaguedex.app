@@ -28,6 +28,7 @@ export class CueService {
 
   public async stop(): Promise<void> {
     this._eventBus.unsubscribe('game-tick', this.onGameTick.bind(this))
+    CueEngine.clear()
   }
 
   public async addCue(data: CreateCueDto): Promise<string> {

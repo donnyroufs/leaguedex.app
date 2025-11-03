@@ -18,7 +18,9 @@ describe('Game Data Provider', () => {
       activePlayer: {
         summonerName: 'test#1234',
         isAlive: true,
-        respawnsIn: null
+        respawnsIn: null,
+        currentMana: 0,
+        totalMana: 0
       }
     })
   })
