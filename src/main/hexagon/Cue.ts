@@ -23,6 +23,9 @@ export type Cue = {
   value?: number
   objective?: CueObjective
   beforeObjective?: number
+
+  // TODO: validate endTime. A user can now pass an endTime that is before the trigger time.
+  // This is not breaking, but it should be validated.
   /**
    * The time when the cue should stop triggering. If the cue is triggered after this time, it will not trigger again.
    */

@@ -10,4 +10,5 @@ export interface ICueDto {
   value?: number
   objective?: CueObjective
   beforeObjective?: number
+  endTime?: number
 }
