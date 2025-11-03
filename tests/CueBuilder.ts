@@ -7,6 +7,7 @@ export class CueBuilder {
   private _interval?: number = 1000
   private _event: string = 'canon-wave-spawned'
   private _value?: number
+  private _endTime?: number
 
   public withText(text: string): CueBuilder {
     this._text = text
@@ -32,6 +33,11 @@ export class CueBuilder {
     return this
   }
 
+  public withEndTime(endTime: number): CueBuilder {
+    this._endTime = endTime
+    return this
+  }
+
   public build(): Cue {
     return {
       id: crypto.randomUUID(),
@@ -40,7 +46,8 @@ export class CueBuilder {
       triggerType: this._triggerType,
       event: this._event,
       audioUrl: AudioFileName.createMP3(this._text, 'https://example.com'),
-      value: this._value != null ? this._value : undefined
+      value: this._value != null ? this._value : undefined,
+      endTime: this._endTime
     }
   }
 }

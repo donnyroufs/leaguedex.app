@@ -23,4 +23,8 @@ export type Cue = {
   value?: number
   objective?: CueObjective
   beforeObjective?: number
+  /**
+   * The time when the cue should stop triggering. If the cue is triggered after this time, it will not trigger again.
+   */
+  endTime?: number
 }

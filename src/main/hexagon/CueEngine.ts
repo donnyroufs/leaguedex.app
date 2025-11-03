@@ -6,6 +6,10 @@ export class CueEngine {
 
   public static getDueCues(state: GameState, cues: ReadonlyArray<Cue>): Cue[] {
     return cues.filter((cue) => {
+      if (cue.endTime && state.gameTime >= cue.endTime) {
+        return false
+      }
+
       if (cue.triggerType === 'interval' && cue.interval) {
         return state.gameTime % cue.interval === 0
       }

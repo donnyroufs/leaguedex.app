@@ -20,6 +20,7 @@ type CueData = {
   event?: string
   objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
   beforeObjective?: number
+  endTime?: number
 }
 
 describeFeature(
@@ -45,7 +46,8 @@ describeFeature(
 
       const cueData: CueData = {
         text: data.text,
-        triggerType: data.triggerType
+        triggerType: data.triggerType,
+        endTime: data.endTime !== undefined ? Number(data.endTime) : undefined
       }
 
       if (data.triggerType === 'interval' && data.interval) {
@@ -429,6 +431,50 @@ describeFeature(
         expect(audioPlayer.totalCalls).toBe(1)
       })
     })
+
+    Scenario(
+      `Cue does not trigger when time equals or exceeds end time`,
+      ({ Given, When, Then, And }) => {
+        let createdCueId: string
+
+        Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+          createdCueId = await createCue(data)
+          const cues = await app.getCues()
+          expect(cues).toHaveLength(1)
+          expect(cues[0].id).toBe(createdCueId)
+        })
+
+        And(`we are in a League of Legends match`, () => {
+          dataSource.addGameStartedEvent()
+        })
+
+        When(`{string} seconds pass in game time`, async (_, seconds: string) => {
+          await dataSource.tickMultipleTimes(timer, Number(seconds))
+        })
+
+        Then(`I should hear the audio {string}`, (_, audio: string) => {
+          expect(audioPlayer.lastCalledWith).toContain(audio)
+          expect(audioPlayer.totalCalls).toBe(1)
+        })
+
+        When(`another {string} seconds pass in game time`, async (_, seconds: string) => {
+          await dataSource.tickMultipleTimes(timer, Number(seconds))
+        })
+
+        Then(`I should hear the audio {string} again`, (_, audio: string) => {
+          expect(audioPlayer.lastCalledWith).toContain(audio)
+          expect(audioPlayer.totalCalls).toBe(2)
+        })
+
+        When(`another {string} seconds pass`, async (_, seconds: string) => {
+          await dataSource.tickMultipleTimes(timer, Number(seconds))
+        })
+
+        Then(`I should not hear the audio {string}`, () => {
+          expect(audioPlayer.totalCalls).toBe(2)
+        })
+      }
+    )
   }
 )
 
