@@ -407,7 +407,7 @@ export function CreateCueForm({
                   >
                     <option value="">Select an event</option>
                     <option value="respawn">Player respawn</option>
-                    <option value="canon-wave-spawned">Canon wave spawned (until 15:05)</option>
+                    <option value="canon-wave-spawned">Canon wave spawned</option>
                     <option value="mana-changed">Mana changed</option>
                   </select>
                   {errors.event && (
