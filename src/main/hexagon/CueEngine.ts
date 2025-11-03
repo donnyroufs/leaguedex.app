@@ -24,9 +24,8 @@ export class CueEngine {
 
       if (cue.triggerType === 'event' && cue.event === 'canon-wave-spawned') {
         const firstCanonWave = 155
-        const lastCanonWave = 905
 
-        if (state.gameTime < firstCanonWave || state.gameTime > lastCanonWave) {
+        if (state.gameTime < firstCanonWave) {
           return false
         }
 
