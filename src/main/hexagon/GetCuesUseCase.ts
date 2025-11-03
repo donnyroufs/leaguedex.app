@@ -23,7 +23,8 @@ export class GetCuesUseCase implements IUseCase<void, ICueDto[]> {
       event: cue.event,
       value: cue.value,
       objective: cue.objective,
-      beforeObjective: cue.beforeObjective
+      beforeObjective: cue.beforeObjective,
+      endTime: cue.endTime
     }))
   }
 }

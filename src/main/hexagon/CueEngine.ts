@@ -6,6 +6,10 @@ export class CueEngine {
 
   public static getDueCues(state: GameState, cues: ReadonlyArray<Cue>): Cue[] {
     return cues.filter((cue) => {
+      if (cue.endTime && state.gameTime >= cue.endTime) {
+        return false
+      }
+
       if (cue.triggerType === 'interval' && cue.interval) {
         return state.gameTime % cue.interval === 0
       }
@@ -20,9 +24,8 @@ export class CueEngine {
 
       if (cue.triggerType === 'event' && cue.event === 'canon-wave-spawned') {
         const firstCanonWave = 155
-        const lastCanonWave = 905
 
-        if (state.gameTime < firstCanonWave || state.gameTime > lastCanonWave) {
+        if (state.gameTime < firstCanonWave) {
           return false
         }
 
