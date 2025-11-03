@@ -40,14 +40,20 @@ export class CueEngine {
 
       if (cue.triggerType === 'event' && cue.event === 'mana-changed') {
         const isDue = this.onManaChangedEvent(state, cue)
-        const lastTriggered = this.lastTriggeredByEvent.get(cue.event)
+        if (!isDue) return false
 
-        if (isDue && lastTriggered === undefined) {
+        const lastTriggered = this.lastTriggeredByEvent.get(cue.event)
+        const cooldown = 60
+
+        if (lastTriggered === undefined) {
           this.lastTriggeredByEvent.set(cue.event, state.gameTime)
           return true
         }
 
-        return isDue && lastTriggered !== undefined && state.gameTime - lastTriggered >= 60
+        if (state.gameTime - lastTriggered < cooldown) return false
+
+        this.lastTriggeredByEvent.set(cue.event, state.gameTime)
+        return true
       }
 
       if (cue.triggerType === 'objective' && cue.objective != null) {

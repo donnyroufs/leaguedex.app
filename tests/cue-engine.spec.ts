@@ -103,13 +103,23 @@ describe('CueEngine', () => {
     expect(due).toHaveLength(1)
 
     const gameData2 = new TestGameDataBuilder()
-      .withGameTime(151)
+      .withGameTime(210)
       .hasStarted()
       .withCurrentPlayerMana(95)
       .build()
 
     const state2 = assembler.assemble(gameData2)
     const due2 = CueEngine.getDueCues(state2, [cue])
-    expect(due2).toHaveLength(0)
+    expect(due2).toHaveLength(1)
+
+    const gameData3 = new TestGameDataBuilder()
+      .withGameTime(211)
+      .hasStarted()
+      .withCurrentPlayerMana(96)
+      .build()
+
+    const state3 = assembler.assemble(gameData3)
+    const due3 = CueEngine.getDueCues(state3, [cue])
+    expect(due3).toHaveLength(0)
   })
 })
