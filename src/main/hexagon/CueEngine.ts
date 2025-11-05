@@ -1,8 +1,10 @@
 import { GameState } from './GameState'
 import { Cue } from './Cue'
+import { SupportItems } from './SupportItems'
 
 export class CueEngine {
   private static lastTriggeredByEvent: Map<string, number> = new Map<string, number>()
+  private static previousItems: readonly number[] = []
 
   public static getDueCues(state: GameState, cues: ReadonlyArray<Cue>): Cue[] {
     return cues.filter((cue) => {
@@ -56,6 +58,10 @@ export class CueEngine {
         return true
       }
 
+      if (cue.triggerType === 'event' && cue.event === 'support-item-upgraded') {
+        return this.hasSupportItemUpgrade(state.activePlayer.items)
+      }
+
       if (cue.triggerType === 'objective' && cue.objective != null) {
         const nextSpawn = state.objectives[cue.objective]?.nextSpawn
 
@@ -72,6 +78,25 @@ export class CueEngine {
 
   public static clear(): void {
     this.lastTriggeredByEvent.clear()
+    this.previousItems = []
+  }
+
+  private static hasSupportItemUpgrade(currentItems: readonly number[]): boolean {
+    const items = currentItems ?? []
+    const addedItems = items.filter((itemId) => !this.previousItems.includes(itemId))
+    const removedItems = this.previousItems.filter((itemId) => !items.includes(itemId))
+
+    for (const removedItemId of removedItems) {
+      for (const addedItemId of addedItems) {
+        if (SupportItems.isUpgrade(removedItemId, addedItemId)) {
+          this.previousItems = items
+          return true
+        }
+      }
+    }
+
+    this.previousItems = items
+    return false
   }
 
   private static onManaChangedEvent(state: GameState, cue: Cue): boolean {

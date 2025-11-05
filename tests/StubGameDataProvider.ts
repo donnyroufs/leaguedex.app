@@ -35,7 +35,8 @@ export class StubGameDataProvider implements IGameDataProvider {
         isAlive: true,
         respawnsIn: 0,
         currentMana: null,
-        totalMana: null
+        totalMana: null,
+        items: []
       }
     }
   }

@@ -1,4 +1,5 @@
 import { Result } from '../../../shared-kernel'
+import { Item } from './Item'
 
 /**
  * Chaos = red
@@ -121,7 +122,7 @@ export type AllPlayer = {
   readonly championName: string
   readonly isBot: boolean
   readonly isDead: boolean
-  readonly items: never[]
+  readonly items: Item[]
   readonly level: number
   readonly position: string
   readonly rawChampionName: string

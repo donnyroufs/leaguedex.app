@@ -19,7 +19,8 @@ describe('GameStateAssembler', () => {
         isAlive: true,
         respawnsIn: null,
         currentMana: null,
-        totalMana: null
+        totalMana: null,
+        items: []
       }
     }
 
@@ -48,7 +49,8 @@ describe('GameStateAssembler', () => {
         isAlive: true,
         respawnsIn: null,
         currentMana: null,
-        totalMana: null
+        totalMana: null,
+        items: []
       }
     }
 
@@ -70,7 +72,8 @@ describe('GameStateAssembler', () => {
         isAlive: true,
         respawnsIn: null,
         currentMana: null,
-        totalMana: null
+        totalMana: null,
+        items: []
       }
     }
 

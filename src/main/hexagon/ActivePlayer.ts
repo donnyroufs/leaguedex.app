@@ -8,4 +8,5 @@ export type ActivePlayer = {
    */
   currentMana: number | null
   totalMana: number | null
+  items: readonly number[]
 }
