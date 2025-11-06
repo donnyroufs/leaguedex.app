@@ -20,8 +20,6 @@ declare global {
         addCue: (data: CreateCueDto) => Promise<string>
         getCues: () => Promise<ICueDto[]>
         removeCue: (id: string) => Promise<void>
-        updateLicense: (key: string) => Promise<void>
-        getLicense: () => Promise<string>
         createCuePack: (data: CreateCuePackDto) => Promise<string>
         activateCuePack: (id: string) => Promise<void>
         getCuePacks: () => Promise<ICuePackDto[]>

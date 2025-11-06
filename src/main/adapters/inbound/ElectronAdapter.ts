@@ -64,14 +64,6 @@ export class ElectronAdapter {
       return this._appController.removeCue(id)
     })
 
-    ipcMain.handle('update-license', async (_, key: string) => {
-      return this._appController.updateLicense(key)
-    })
-
-    ipcMain.handle('get-license', async () => {
-      return this._appController.getLicense()
-    })
-
     this._appController.onGameTick((evt) => {
       BrowserWindow.getAllWindows().forEach((window) => {
         window.webContents.send('game-data', evt)
