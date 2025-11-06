@@ -39,12 +39,8 @@ export class AudioFileName {
     return new AudioFileName(text, 'wav')
   }
 
-  public static fromJSON(json: { fileName: string; extension: 'mp3' | 'wav' }): AudioFileName {
-    // Create instance directly without going through constructor
-    const instance = Object.create(AudioFileName.prototype)
-    instance._fileName = json.fileName
-    instance._extension = json.extension
-    return instance
+  public static fromJSON(json: JSONAudioFileName): AudioFileName {
+    return new AudioFileName(json.fileName, json.extension)
   }
 
   public toJSON(): {
@@ -56,4 +52,9 @@ export class AudioFileName {
       extension: this._extension
     }
   }
+}
+
+type JSONAudioFileName = {
+  fileName: string
+  extension: 'mp3' | 'wav'
 }
