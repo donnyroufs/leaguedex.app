@@ -59,9 +59,9 @@ export function AudioRegenerationModal({
               </span>
               <span className="text-text-primary font-semibold">{percentage}%</span>
             </div>
-            <div className="w-full bg-background-tertiary rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-bg-tertiary rounded-full h-3 overflow-hidden">
               <div
-                className="h-full bg-accent-primary transition-all duration-300 ease-out rounded-full"
+                className="h-full bg-info transition-all duration-300 ease-out rounded-full shadow-[0_0_10px_rgba(0,212,255,0.5)]"
                 style={{ width: `${percentage}%` }}
               />
             </div>
