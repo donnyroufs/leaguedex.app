@@ -13,6 +13,8 @@ import { ICuePackDto } from './GetCuePacksUseCase'
 import { CreateCuePackDto } from './CreateCuePackUseCase'
 
 export class AppController implements IAppController {
+  private _regenerateAudioCallback: (() => Promise<void>) | null = null
+
   public constructor(
     private readonly _gameMonitor: GameMonitor,
     private readonly _logger: ILogger,
@@ -21,6 +23,10 @@ export class AppController implements IAppController {
     private readonly _cuePackService: CuePackService,
     private readonly _userSettingsRepository: IUserSettingsRepository
   ) {}
+
+  public setRegenerateAudioCallback(callback: () => Promise<void>): void {
+    this._regenerateAudioCallback = callback
+  }
 
   public async updateUserSettings(data: IUserSettingsDto): Promise<void> {
     const res = await this._userSettingsRepository.save(data)
@@ -100,6 +106,14 @@ export class AppController implements IAppController {
   public async removeCue(id: string): Promise<void> {
     this._logger.info('removeCue', { id })
     return this._cueService.removeCue(id)
+  }
+
+  public async regenerateAudio(): Promise<void> {
+    this._logger.info('regenerateAudio')
+    if (!this._regenerateAudioCallback) {
+      throw new Error('Regenerate audio callback not set')
+    }
+    return this._regenerateAudioCallback()
   }
 
   public onGameTick(callback: (gameData: GameDataDto) => void): void {

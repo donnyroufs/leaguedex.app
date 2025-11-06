@@ -1,19 +1,25 @@
 export class AudioFileName {
   private readonly _fileName: string
   private readonly _extension: 'mp3' | 'wav'
-  private readonly _path: string
 
-  public get fullPath(): string {
-    return this._path + '/' + this._fileName + '.' + this._extension
+  public fullPath(audioDir: string): string {
+    return audioDir + '/' + this._fileName + '.' + this._extension
+  }
+
+  public get fileName(): string {
+    return this._fileName
+  }
+
+  public get extension(): 'mp3' | 'wav' {
+    return this._extension
   }
 
   /**
    * @param text The cue text.
    */
-  private constructor(text: string, extension: 'mp3' | 'wav', path: string) {
+  private constructor(text: string, extension: 'mp3' | 'wav') {
     this._fileName = this.createFileName(text)
     this._extension = extension
-    this._path = path
   }
 
   private createFileName(text: string): string {
@@ -25,31 +31,29 @@ export class AudioFileName {
       .toLowerCase()
   }
 
-  public static createMP3(text: string, path: string = ''): AudioFileName {
-    return new AudioFileName(text, 'mp3', path)
+  public static createMP3(text: string): AudioFileName {
+    return new AudioFileName(text, 'mp3')
   }
 
-  public static createWAV(text: string, path: string = ''): AudioFileName {
-    return new AudioFileName(text, 'wav', path)
+  public static createWAV(text: string): AudioFileName {
+    return new AudioFileName(text, 'wav')
   }
 
-  public static fromJSON(json: {
-    fileName: string
-    extension: 'mp3' | 'wav'
-    path: string
-  }): AudioFileName {
-    return new AudioFileName(json.fileName, json.extension as 'mp3' | 'wav', json.path)
+  public static fromJSON(json: { fileName: string; extension: 'mp3' | 'wav' }): AudioFileName {
+    // Create instance directly without going through constructor
+    const instance = Object.create(AudioFileName.prototype)
+    instance._fileName = json.fileName
+    instance._extension = json.extension
+    return instance
   }
 
   public toJSON(): {
     fileName: string
     extension: 'mp3' | 'wav'
-    path: string
   } {
     return {
       fileName: this._fileName,
-      extension: this._extension,
-      path: this._path
+      extension: this._extension
     }
   }
 }

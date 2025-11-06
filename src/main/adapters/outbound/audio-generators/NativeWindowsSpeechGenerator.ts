@@ -12,17 +12,18 @@ export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
   ) {}
 
   public async generate(text: string): Promise<Result<AudioFileName, Error>> {
-    const fileName = AudioFileName.createWAV(text, this._audioDir)
+    const fileName = AudioFileName.createWAV(text)
+    const fullPath = fileName.fullPath(this._audioDir)
 
     try {
-      const psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.SetOutputToWaveFile('${fileName.fullPath}');$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()`
+      const psCommand = `Add-Type -AssemblyName System.speech;$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer;$speak.SetOutputToWaveFile('${fullPath}');$speak.Speak([Console]::In.ReadToEnd());$speak.Dispose()`
       const ps = spawn('powershell', ['-Command', psCommand], { shell: true })
 
       await new Promise((resolve, reject) => {
         ps.on('error', reject)
         ps.on('close', (code) => {
           if (code === 0) {
-            this._logger.info(`TTS audio saved to ${fileName.fullPath}`)
+            this._logger.info(`TTS audio saved to ${fullPath}`)
             resolve(Result.ok(fileName))
           } else {
             reject(new Error(`PowerShell exited with code ${code}`))
@@ -33,7 +34,7 @@ export class NativeWindowsSpeechGenerator implements ITextToSpeechGenerator {
         ps.stdin.end()
       })
 
-      this._logger.info('TTS audio saved to', { fileName: fileName.fullPath })
+      this._logger.info('TTS audio saved to', { fileName: fullPath })
       return Result.ok(fileName)
     } catch (err) {
       this._logger.error('TTS generation failed', { err })

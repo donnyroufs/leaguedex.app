@@ -41,6 +41,7 @@ describe('FIleSystemCuePackRepository', () => {
     const cues = await sut.all()
     const confirmation = cues.unwrap().at(-1)!
 
-    expect(confirmation.cues.at(-1)!.audioUrl.fullPath).toContain('test_my_apple.mp3')
+    const audioDir = '/test/audio'
+    expect(confirmation.cues.at(-1)!.audioUrl.fullPath(audioDir)).toContain('test_my_apple.mp3')
   })
 })

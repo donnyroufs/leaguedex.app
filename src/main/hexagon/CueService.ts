@@ -19,7 +19,8 @@ export class CueService {
     private readonly _audioPlayer: IAudioPlayer,
     private readonly _logger: ILogger,
     private readonly _cueRepository: ICuePackRepository,
-    private readonly _userSettingsRepository: IUserSettingsRepository
+    private readonly _userSettingsRepository: IUserSettingsRepository,
+    private readonly _audioDir: string
   ) {}
 
   public async start(): Promise<void> {
@@ -60,7 +61,7 @@ export class CueService {
       throw new Error('Failed to load user settings')
     }
 
-    await this._audioPlayer.play(cue.audioUrl.fullPath, settings.getValue().volume)
+    await this._audioPlayer.play(cue.audioUrl.fullPath(this._audioDir), settings.getValue().volume)
   }
 
   public async getCues(): Promise<ICueDto[]> {
@@ -104,7 +105,7 @@ export class CueService {
 
     // TODO: instead of awaiting it, we should create a queue so that we process it in the background
     for (const cue of dueCues) {
-      await this._audioPlayer.play(cue.audioUrl.fullPath, volume)
+      await this._audioPlayer.play(cue.audioUrl.fullPath(this._audioDir), volume)
     }
   }
 }

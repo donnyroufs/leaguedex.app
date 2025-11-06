@@ -23,6 +23,8 @@ export interface IAppController {
   addCue(data: CreateCueDto): Promise<string>
   getCues(): Promise<ICueDto[]>
   removeCue(id: string): Promise<void>
+  regenerateAudio(): Promise<void>
+  setRegenerateAudioCallback(callback: () => Promise<void>): void
 
   onGameTick(callback: (gameData: GameDataDto) => void): void
   onGameStarted(callback: (gameData: GameDataDto) => void): void

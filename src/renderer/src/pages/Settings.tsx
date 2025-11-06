@@ -1,10 +1,11 @@
-import { JSX, useState } from 'react'
+import { JSX, useState, useEffect } from 'react'
 import { Volume2 } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { useToast } from '@renderer/hooks'
 import { IUserSettingsDto } from '@contracts'
+import { AudioRegenerationModal } from '@renderer/components/AudioRegenerationModal'
 
 type SettingsSectionProps = {
   title: string
@@ -37,7 +38,19 @@ export function Settings(): JSX.Element {
   const settings = useLoaderData<IUserSettingsDto>()
   const { revalidate } = useRevalidator()
   const [volume, setVolume] = useState<number>(settings.volume)
+  const [isRegenerating, setIsRegenerating] = useState<boolean>(false)
   const toast = useToast()
+
+  useEffect(() => {
+    const unsubscribe = window.api.app.onRegenerateComplete(() => {
+      setIsRegenerating(false)
+      toast.success('Audio files regenerated successfully!')
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [toast])
 
   const handleUpdateVolume = async (): Promise<void> => {
     await window.api.app.updateUserSettings({ volume })
@@ -45,10 +58,22 @@ export function Settings(): JSX.Element {
     toast.success('Volume settings saved.')
   }
 
+  const handleRegenerateAudio = async (): Promise<void> => {
+    try {
+      setIsRegenerating(true)
+      await window.api.app.regenerateAudio()
+    } catch (error) {
+      setIsRegenerating(false)
+      toast.error('Failed to regenerate audio files.')
+      console.error('Regeneration error:', error)
+    }
+  }
+
   const volumeNotChanged = volume === settings.volume
 
   return (
     <PageWrapper>
+      <AudioRegenerationModal isOpen={isRegenerating} />
       <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
         <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
       </div>
@@ -84,6 +109,21 @@ export function Settings(): JSX.Element {
               <Button onClick={handleUpdateVolume} disabled={volumeNotChanged}>
                 Save Volume
               </Button>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-border-primary">
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-text-primary">Audio Files</h3>
+              <p className="text-sm text-text-tertiary leading-5">
+                Regenerate all audio files with the latest voice model. This will replace all
+                existing audio files.
+              </p>
+              <div className="flex justify-end">
+                <Button onClick={handleRegenerateAudio} disabled={isRegenerating}>
+                  {isRegenerating ? 'Regenerating...' : 'Regenerate Audio Files'}
+                </Button>
+              </div>
             </div>
           </div>
         </SettingsSection>
