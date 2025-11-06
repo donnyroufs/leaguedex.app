@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Cloud, Eye, EyeOff, Volume2 } from 'lucide-react'
+import { Volume2 } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -34,21 +34,10 @@ export type ToggleSwitchProps = {
 }
 
 export function Settings(): JSX.Element {
-  const { license, settings } = useLoaderData<{
-    license: string | null
-    settings: IUserSettingsDto
-  }>()
+  const settings = useLoaderData<IUserSettingsDto>()
   const { revalidate } = useRevalidator()
-  const [licenseKey, setLicenseKey] = useState<string>(license ?? '')
-  const [showLicenseKey, setShowLicenseKey] = useState<boolean>(false)
   const [volume, setVolume] = useState<number>(settings.volume)
   const toast = useToast()
-
-  const handleUpdateLicense = async (): Promise<void> => {
-    await window.api.app.updateLicense(licenseKey)
-    await revalidate()
-    toast.success('Restart app to apply the new license.')
-  }
 
   const handleUpdateVolume = async (): Promise<void> => {
     await window.api.app.updateUserSettings({ volume })
@@ -56,7 +45,6 @@ export function Settings(): JSX.Element {
     toast.success('Volume settings saved.')
   }
 
-  const notChanged = licenseKey === license
   const volumeNotChanged = volume === settings.volume
 
   return (
@@ -65,50 +53,6 @@ export function Settings(): JSX.Element {
         <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
       </div>
       <div className="flex-1 overflow-y-auto min-h-0 p-8 space-y-8">
-        <SettingsSection title="General" icon={Cloud}>
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <label htmlFor="licenseKey" className="block text-sm font-medium text-text-primary">
-                License
-              </label>
-              <div className="relative">
-                <input
-                  id="licenseKey"
-                  type={showLicenseKey ? 'text' : 'password'}
-                  value={licenseKey}
-                  onChange={(e) => setLicenseKey(e.target.value)}
-                  placeholder="Enter your license key"
-                  className="w-full px-3 py-3 pr-10 bg-bg-primary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLicenseKey(!showLicenseKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary transition-colors"
-                >
-                  {showLicenseKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              <p className="text-sm text-text-tertiary leading-5">
-                Restart the app to apply your license. You can get a license on{' '}
-                <a
-                  href="https://discord.gg/JShSD3ehw3"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-info hover:underline"
-                >
-                  Discord
-                </a>
-                .
-              </p>
-            </div>
-            <div className="flex justify-end">
-              <Button onClick={handleUpdateLicense} disabled={notChanged}>
-                Update License
-              </Button>
-            </div>
-          </div>
-        </SettingsSection>
-
         <SettingsSection title="Cues" icon={Volume2}>
           <div className="space-y-6">
             <div className="space-y-3">

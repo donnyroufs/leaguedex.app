@@ -1,0 +1,2 @@
+resources/sherpa/voices/**/*.onnx filter=lfs diff=lfs merge=lfs -text
+resources/sherpa/voices/**/*.bin filter=lfs diff=lfs merge=lfs -text

@@ -23,8 +23,6 @@ export interface IAppController {
   addCue(data: CreateCueDto): Promise<string>
   getCues(): Promise<ICueDto[]>
   removeCue(id: string): Promise<void>
-  getLicense(): Promise<string>
-  updateLicense(key: string): Promise<void>
 
   onGameTick(callback: (gameData: GameDataDto) => void): void
   onGameStarted(callback: (gameData: GameDataDto) => void): void

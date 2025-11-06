@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -40,4 +42,3 @@ jobs:
         run: yarn publish-app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
