@@ -432,6 +432,48 @@ describeFeature(
       })
     })
 
+    Scenario(`Cue on support item upgraded event`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
+        const cues = await app.getCues()
+
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
+      })
+
+      And(`we are in a League of Legends match`, async () => {
+        dataSource.addGameStartedEvent()
+        dataSource.upgradePlayerItem(0, 3865)
+        await dataSource.nextTick(timer)
+      })
+
+      When(
+        `the player upgrades their support item from {string} to {string}`,
+        async (_, fromItemId: string, toItemId: string) => {
+          dataSource.upgradePlayerItem(Number(fromItemId), Number(toItemId))
+          await dataSource.nextTick(timer)
+        }
+      )
+
+      Then(`I should hear the audio "support_item_upgraded"`, () => {
+        expect(audioPlayer.lastCalledWith).toContain('support_item_upgraded')
+        expect(audioPlayer.totalCalls).toBe(1)
+      })
+
+      When(
+        `the player upgrades their support item again from {string} to {string}`,
+        async (_, fromItemId: string, toItemId: string) => {
+          dataSource.upgradePlayerItem(Number(fromItemId), Number(toItemId))
+          await dataSource.nextTick(timer)
+        }
+      )
+
+      Then(`I should hear the audio "support_item_upgraded" again`, () => {
+        expect(audioPlayer.lastCalledWith).toContain('support_item_upgraded')
+        expect(audioPlayer.totalCalls).toBe(2)
+      })
+    })
+
     Scenario(`Cue does not trigger when time exceeds end time`, ({ Given, When, Then, And }) => {
       let createdCueId: string
 

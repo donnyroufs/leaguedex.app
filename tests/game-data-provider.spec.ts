@@ -20,7 +20,8 @@ describe('Game Data Provider', () => {
         isAlive: true,
         respawnsIn: null,
         currentMana: 0,
-        totalMana: 0
+        totalMana: 0,
+        items: []
       }
     })
   })

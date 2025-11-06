@@ -54,7 +54,8 @@ export class TestGameDataBuilder {
         isAlive: true,
         respawnsIn: null,
         currentMana: this._currentMana,
-        totalMana: this._totalMana
+        totalMana: this._totalMana,
+        items: []
       }
     }
   }

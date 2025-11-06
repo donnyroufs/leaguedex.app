@@ -127,6 +127,39 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
     }
   }
 
+  public upgradePlayerItem(
+    fromItemId: number,
+    toItemId: number,
+    playerName: string = 'test#1234'
+  ): void {
+    if (this._state == null) {
+      throw new Error('Game not started')
+    }
+
+    const player = this._state!.allPlayers.find((p) => p.summonerName === playerName)
+
+    if (!player) {
+      throw new Error('Player not found')
+    }
+
+    const itemIndex = player.items.findIndex((item) => item.itemID === fromItemId)
+    if (itemIndex !== -1) {
+      player.items.splice(itemIndex, 1)
+    }
+
+    player.items.push({
+      canUse: false,
+      consumable: false,
+      count: 1,
+      displayName: `Item ${toItemId}`,
+      itemID: toItemId,
+      price: 0,
+      rawDescription: '',
+      rawDisplayName: '',
+      slot: player.items.length
+    })
+  }
+
   /**
    * @param ticker The ticker which will make sure that the clock is on sync with the game
    * this will ALWAYS be called AFTER the gameTime has been incremented to the next tick.

@@ -407,6 +407,7 @@ export function CreateCueForm({
                     <option value="respawn">Player respawn</option>
                     <option value="canon-wave-spawned">Canon wave spawned</option>
                     <option value="mana-changed">Mana changed</option>
+                    <option value="support-item-upgraded">Support item upgraded</option>
                   </select>
                   {errors.event && (
                     <p className="mt-2 text-sm text-status-danger">{errors.event}</p>

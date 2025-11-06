@@ -100,4 +100,18 @@ describe.each(instances)('$name Contract Tests', (x) => {
     expect(cuePacks.unwrap()).toHaveLength(1)
     expect(cuePacks.unwrap()[0]!.id).toEqual(cuePack2.id)
   })
+
+  test('saves and loads a cue pack with support-item-upgraded event', async () => {
+    const sut = await x.create()
+    const cue = new CueBuilder()
+      .withText('Support item upgraded')
+      .asEvent('support-item-upgraded')
+      .build()
+    const cuePack = new TestCuePackBuilder().withCues([cue]).build()
+
+    await sut.save(cuePack)
+    const loaded = await sut.load(cuePack.id)
+
+    expect(loaded.unwrap()?.cues[0]?.event).toBe('support-item-upgraded')
+  })
 })

@@ -28,6 +28,13 @@ export class CueBuilder {
     return this
   }
 
+  public asEvent(event: string): CueBuilder {
+    this._triggerType = 'event'
+    this._event = event
+    this._interval = undefined
+    return this
+  }
+
   public withValue(value: number): CueBuilder {
     this._value = value
     return this

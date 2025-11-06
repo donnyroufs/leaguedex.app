@@ -63,6 +63,8 @@ export function ActivePackPage(): JSX.Element {
           return cue.value !== undefined
             ? `When mana is less or equal to ${cue.value}`
             : 'When mana changes'
+        case 'support-item-upgraded':
+          return 'When support item upgrades'
         default:
           console.warn('Missing event', cue.event)
           return `On ${cue.event}`
