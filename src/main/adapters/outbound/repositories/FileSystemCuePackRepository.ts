@@ -192,7 +192,7 @@ type FSCue = {
   audioUrl: {
     fileName: string
     extension: 'mp3' | 'wav'
-    path: string
+    path?: string // Optional for backwards compatibility
   }
   triggerType: CueTriggerType
   interval?: number

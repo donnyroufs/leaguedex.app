@@ -6,7 +6,8 @@ import {
   CueService,
   CuePackService,
   IUserSettingsDto,
-  IUserSettingsRepository
+  IUserSettingsRepository,
+  RegenerateAudioUseCase
 } from '.'
 import { CreateCueDto, GameDataDto, ICueDto } from '@contracts'
 import { ICuePackDto } from './GetCuePacksUseCase'
@@ -19,7 +20,8 @@ export class AppController implements IAppController {
     private readonly _cueService: CueService,
     private readonly _eventBus: IEventBus,
     private readonly _cuePackService: CuePackService,
-    private readonly _userSettingsRepository: IUserSettingsRepository
+    private readonly _userSettingsRepository: IUserSettingsRepository,
+    private readonly _regenerateAudioUseCase: RegenerateAudioUseCase
   ) {}
 
   public async updateUserSettings(data: IUserSettingsDto): Promise<void> {
@@ -100,6 +102,11 @@ export class AppController implements IAppController {
   public async removeCue(id: string): Promise<void> {
     this._logger.info('removeCue', { id })
     return this._cueService.removeCue(id)
+  }
+
+  public async regenerateAudio(): Promise<void> {
+    this._logger.info('regenerateAudio')
+    return this._regenerateAudioUseCase.execute()
   }
 
   public onGameTick(callback: (gameData: GameDataDto) => void): void {

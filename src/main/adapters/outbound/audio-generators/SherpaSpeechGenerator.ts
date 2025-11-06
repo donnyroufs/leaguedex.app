@@ -19,7 +19,8 @@ export class SherpaSpeechGenerator implements ITextToSpeechGenerator {
   ) {}
 
   public async generate(text: string): Promise<Result<AudioFileName, Error>> {
-    const fileName = AudioFileName.createWAV(text, this._audioDir)
+    const fileName = AudioFileName.createWAV(text)
+    const fullPath = fileName.fullPath(this._audioDir)
 
     try {
       const args = [
@@ -28,13 +29,13 @@ export class SherpaSpeechGenerator implements ITextToSpeechGenerator {
         `--kokoro-data-dir=${this._dataDir}`,
         `--kokoro-voices=${this._voicesPath}`,
         `--sid=${this._speakerId}`,
-        `--output-filename=${fileName.fullPath}`,
+        `--output-filename=${fullPath}`,
         text
       ]
 
       this._logger.info('Generating TTS audio with Sherpa-ONNX', {
         sherpaPath: this._sherpaPath,
-        outputFile: fileName.fullPath
+        outputFile: fullPath
       })
 
       const sherpa = spawn(this._sherpaPath, args)
@@ -53,7 +54,7 @@ export class SherpaSpeechGenerator implements ITextToSpeechGenerator {
         sherpa.on('close', (code) => {
           if (code === 0) {
             this._logger.info('TTS audio saved successfully', {
-              fileName: fileName.fullPath
+              fileName: fullPath
             })
             resolve(Result.ok(fileName))
           } else {

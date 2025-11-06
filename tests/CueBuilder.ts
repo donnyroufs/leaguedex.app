@@ -52,7 +52,7 @@ export class CueBuilder {
       text: this._text,
       triggerType: this._triggerType,
       event: this._event,
-      audioUrl: AudioFileName.createMP3(this._text, 'https://example.com'),
+      audioUrl: AudioFileName.createMP3(this._text),
       value: this._value != null ? this._value : undefined,
       endTime: this._endTime
     }

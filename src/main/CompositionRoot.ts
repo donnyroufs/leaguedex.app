@@ -22,8 +22,12 @@ type AppDependencies = {
 
 export class CompositionRoot {
   private _dataPath!: string
+  private _audioDir!: string
   private _created: boolean = false
   private _isProd!: boolean
+  private _logger!: Hexagon.ILogger
+  private _tts!: Hexagon.ITextToSpeechGenerator
+  private _cuePackRepository!: Hexagon.ICuePackRepository
 
   public constructor(private readonly _dependencies: Partial<AppDependencies> = {}) {}
 
@@ -35,53 +39,64 @@ export class CompositionRoot {
     this._dataPath = isProd ? app.getPath('userData') : path.join(process.cwd(), 'data')
     this._isProd = isProd
 
-    const logger =
+    this._logger =
       this._dependencies.logger ??
       new Outbound.ElectronLogger(path.join(this._dataPath, 'logs.log'), 'info')
-    const eventBus = this._dependencies.eventBus ?? new Outbound.EventBus(logger)
+    const eventBus = this._dependencies.eventBus ?? new Outbound.EventBus(this._logger)
 
     const dataSource =
       this._dependencies.dataSource ?? (await Outbound.DataSourceFactory.create(isProd))
     const gameDataProvider = new Outbound.RiotLiveClientApi(dataSource)
 
     const timer = this._dependencies.timer ?? new Outbound.Timer()
-    const gameMonitor = new Hexagon.GameMonitor(logger, timer, eventBus, gameDataProvider)
+    const gameMonitor = new Hexagon.GameMonitor(this._logger, timer, eventBus, gameDataProvider)
 
-    const audioPlayer = this._dependencies.audioPlayer ?? new Outbound.AudioPlayer(logger, isProd)
-    const audioDir = path.join(this._dataPath, 'audio')
+    const audioPlayer =
+      this._dependencies.audioPlayer ?? new Outbound.AudioPlayer(this._logger, isProd)
+    this._audioDir = path.join(this._dataPath, 'audio')
 
     const resourcesPath = isProd
       ? path.join(process.resourcesPath)
       : path.join(process.cwd(), 'resources')
 
-    const tts =
+    this._tts =
       this._dependencies.tts ??
-      (await Outbound.AudioGeneratorFactory.create(isProd, audioDir, logger, resourcesPath))
+      (await Outbound.AudioGeneratorFactory.create(
+        isProd,
+        this._audioDir,
+        this._logger,
+        resourcesPath
+      ))
 
-    const cuePackRepository =
+    this._cuePackRepository =
       this._dependencies.cuePackRepository ??
       (await Outbound.CuePackRepositoryFactory.create(isProd, this._dataPath))
-    const getCuePacksUseCase = new Hexagon.GetCuePacksUseCase(cuePackRepository)
-    const createCuePackUseCase = new Hexagon.CreateCuePackUseCase(cuePackRepository)
-    const getActiveCuePackUseCase = new Hexagon.GetActiveCuePackUseCase(cuePackRepository)
-    const activateCuePackUseCase = new Hexagon.ActivateCuePackUseCase(cuePackRepository)
-    const removeCuePackUseCase = new Hexagon.RemoveCuePackUseCase(cuePackRepository)
-    const importPackUseCase = new Hexagon.ImportPackUseCase(cuePackRepository, tts, logger)
-    const exportPackUseCase = new Hexagon.ExportPackUseCase(cuePackRepository)
+    const getCuePacksUseCase = new Hexagon.GetCuePacksUseCase(this._cuePackRepository)
+    const createCuePackUseCase = new Hexagon.CreateCuePackUseCase(this._cuePackRepository)
+    const getActiveCuePackUseCase = new Hexagon.GetActiveCuePackUseCase(this._cuePackRepository)
+    const activateCuePackUseCase = new Hexagon.ActivateCuePackUseCase(this._cuePackRepository)
+    const removeCuePackUseCase = new Hexagon.RemoveCuePackUseCase(this._cuePackRepository)
+    const importPackUseCase = new Hexagon.ImportPackUseCase(
+      this._cuePackRepository,
+      this._tts,
+      this._logger
+    )
+    const exportPackUseCase = new Hexagon.ExportPackUseCase(this._cuePackRepository)
+
     const cuePackService = new Hexagon.CuePackService(
       createCuePackUseCase,
       activateCuePackUseCase,
       getCuePacksUseCase,
       getActiveCuePackUseCase,
-      logger,
+      this._logger,
       removeCuePackUseCase,
       importPackUseCase,
       exportPackUseCase
     )
 
-    const addCueToPackUseCase = new Hexagon.AddCueToPackUseCase(tts, cuePackRepository)
-    const getCuesUseCase = new Hexagon.GetCuesUseCase(cuePackRepository)
-    const removeCueUseCase = new Hexagon.RemoveCueUseCase(cuePackRepository)
+    const addCueToPackUseCase = new Hexagon.AddCueToPackUseCase(this._tts, this._cuePackRepository)
+    const getCuesUseCase = new Hexagon.GetCuesUseCase(this._cuePackRepository)
+    const removeCueUseCase = new Hexagon.RemoveCueUseCase(this._cuePackRepository)
 
     const userSettingsRepository = await Outbound.UserSettingsRepositoryFactory.create(
       isProd,
@@ -94,18 +109,31 @@ export class CompositionRoot {
       removeCueUseCase,
       eventBus,
       audioPlayer,
-      logger,
-      cuePackRepository,
-      userSettingsRepository
+      this._logger,
+      this._cuePackRepository,
+      userSettingsRepository,
+      this._audioDir
+    )
+
+    const fileSystem = new Outbound.FileSystem()
+    const progressReporter = new Outbound.IpcAudioRegenerationProgressReporter()
+    const regenerateAudioUseCase = new Hexagon.RegenerateAudioUseCase(
+      this._cuePackRepository,
+      this._tts,
+      progressReporter,
+      this._logger,
+      fileSystem,
+      this._audioDir
     )
 
     const appController = new Hexagon.AppController(
       gameMonitor,
-      logger,
+      this._logger,
       cueService,
       eventBus,
       cuePackService,
-      userSettingsRepository
+      userSettingsRepository,
+      regenerateAudioUseCase
     )
     this._created = true
     return appController
@@ -132,14 +160,6 @@ export class CompositionRoot {
   }
 }
 
-async function createApp(
-  overrides: Partial<AppDependencies>,
-  isProd: boolean
-): Promise<Hexagon.IAppController> {
-  const root = new CompositionRoot(overrides)
-  return root.create(isProd)
-}
-
 export async function createTestApp(
   overrides: Partial<AppDependencies>
 ): Promise<Hexagon.IAppController> {
@@ -158,7 +178,8 @@ export async function createTestApp(
 
 export async function createElectronAppAndStart(ipcMain: IpcMain): Promise<ElectronAdapter> {
   const isProd = app.isPackaged
-  const appController = await createApp({}, isProd)
+  const root = new CompositionRoot({})
+  const appController = await root.create(isProd)
   const adapter = new ElectronAdapter(appController)
 
   await adapter.setup(ipcMain)

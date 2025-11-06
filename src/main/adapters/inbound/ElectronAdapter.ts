@@ -64,6 +64,15 @@ export class ElectronAdapter {
       return this._appController.removeCue(id)
     })
 
+    ipcMain.handle('regenerate-audio', async (event) => {
+      const window = BrowserWindow.fromWebContents(event.sender)
+      if (!window) {
+        throw new Error('Window not found')
+      }
+
+      return this._appController.regenerateAudio()
+    })
+
     this._appController.onGameTick((evt) => {
       BrowserWindow.getAllWindows().forEach((window) => {
         window.webContents.send('game-data', evt)

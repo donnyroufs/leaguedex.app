@@ -25,7 +25,34 @@ const api = {
     exportPack: (id: string) => ipcRenderer.invoke('export-pack', id),
     playCue: (id: string) => ipcRenderer.invoke('play-cue', id),
     getUserSettings: () => ipcRenderer.invoke('get-user-settings'),
-    updateUserSettings: (data: IUserSettingsDto) => ipcRenderer.invoke('update-user-settings', data)
+    updateUserSettings: (data: IUserSettingsDto) =>
+      ipcRenderer.invoke('update-user-settings', data),
+    regenerateAudio: () => ipcRenderer.invoke('regenerate-audio'),
+    onRegenerateProgress: (
+      callback: (data: {
+        completedPacks: number
+        totalPacks: number
+        completedCues: number
+        totalUniqueCues: number
+      }) => void
+    ) => {
+      ipcRenderer.on('regenerate-audio-progress', (_, data) => {
+        callback(data)
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('regenerate-audio-progress')
+      }
+    },
+    onRegenerateComplete: (callback: () => void) => {
+      ipcRenderer.on('regenerate-audio-complete', () => {
+        callback()
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('regenerate-audio-complete')
+      }
+    }
   },
 
   minimizeWindow: () => ipcRenderer.send('window-minimize'),

@@ -30,6 +30,16 @@ declare global {
         updateUserSettings: (data: IUserSettingsDto) => Promise<void>
         getUserSettings: () => Promise<IUserSettingsDto>
         playCue: (id: string) => Promise<void>
+        regenerateAudio: () => Promise<void>
+        onRegenerateProgress: (
+          callback: (data: {
+            completedPacks: number
+            totalPacks: number
+            completedCues: number
+            totalUniqueCues: number
+          }) => void
+        ) => () => void
+        onRegenerateComplete: (callback: () => void) => () => void
       }
 
       getVersion: () => Promise<string>
