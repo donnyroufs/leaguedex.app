@@ -6,7 +6,15 @@ import { EventBusSpy } from './EventBusSpy'
 import { GameTickEvent } from '../src/main/hexagon'
 import { Timer } from '../src/main/adapters/outbound/Timer'
 
-describe('Timer Integration', () => {
+describe('Timer Unit', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   test('Syncs in-game ticks with the nextTick method', async () => {
     const timer = new FakeTimer()
     const dataSource = new FakeRiotClientDataSource()
@@ -24,16 +32,6 @@ describe('Timer Integration', () => {
     const tickEvents = eventBus.events.filter((x) => x instanceof GameTickEvent)
     expect(tickEvents.map(getTickFromEvent)).toEqual([1, 2, 3, 4])
     expect(tickEvents.length).toBe(4)
-  })
-})
-
-describe('Timer Unit', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.restoreAllMocks()
   })
 
   test('Waits for async callback to complete before scheduling next tick', async () => {
