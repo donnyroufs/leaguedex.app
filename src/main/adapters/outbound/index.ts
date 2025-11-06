@@ -13,3 +13,6 @@ export * from './repositories'
 export * from './game-data'
 
 export * from './audio-generators'
+
+export * from './IpcAudioRegenerationProgressReporter'
+export * from './FileSystem'

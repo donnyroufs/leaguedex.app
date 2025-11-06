@@ -6,27 +6,23 @@ import {
   CueService,
   CuePackService,
   IUserSettingsDto,
-  IUserSettingsRepository
+  IUserSettingsRepository,
+  RegenerateAudioUseCase
 } from '.'
 import { CreateCueDto, GameDataDto, ICueDto } from '@contracts'
 import { ICuePackDto } from './GetCuePacksUseCase'
 import { CreateCuePackDto } from './CreateCuePackUseCase'
 
 export class AppController implements IAppController {
-  private _regenerateAudioCallback: (() => Promise<void>) | null = null
-
   public constructor(
     private readonly _gameMonitor: GameMonitor,
     private readonly _logger: ILogger,
     private readonly _cueService: CueService,
     private readonly _eventBus: IEventBus,
     private readonly _cuePackService: CuePackService,
-    private readonly _userSettingsRepository: IUserSettingsRepository
+    private readonly _userSettingsRepository: IUserSettingsRepository,
+    private readonly _regenerateAudioUseCase: RegenerateAudioUseCase
   ) {}
-
-  public setRegenerateAudioCallback(callback: () => Promise<void>): void {
-    this._regenerateAudioCallback = callback
-  }
 
   public async updateUserSettings(data: IUserSettingsDto): Promise<void> {
     const res = await this._userSettingsRepository.save(data)
@@ -110,10 +106,7 @@ export class AppController implements IAppController {
 
   public async regenerateAudio(): Promise<void> {
     this._logger.info('regenerateAudio')
-    if (!this._regenerateAudioCallback) {
-      throw new Error('Regenerate audio callback not set')
-    }
-    return this._regenerateAudioCallback()
+    return this._regenerateAudioUseCase.execute()
   }
 
   public onGameTick(callback: (gameData: GameDataDto) => void): void {

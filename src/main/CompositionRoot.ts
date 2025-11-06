@@ -115,32 +115,28 @@ export class CompositionRoot {
       this._audioDir
     )
 
+    const fileSystem = new Outbound.FileSystem()
+    const progressReporter = new Outbound.IpcAudioRegenerationProgressReporter()
+    const regenerateAudioUseCase = new Hexagon.RegenerateAudioUseCase(
+      this._cuePackRepository,
+      this._tts,
+      progressReporter,
+      this._logger,
+      fileSystem,
+      this._audioDir
+    )
+
     const appController = new Hexagon.AppController(
       gameMonitor,
       this._logger,
       cueService,
       eventBus,
       cuePackService,
-      userSettingsRepository
+      userSettingsRepository,
+      regenerateAudioUseCase
     )
     this._created = true
     return appController
-  }
-
-  public createRegenerateAudioUseCase(
-    progressReporter: Hexagon.IAudioRegenerationProgressReporter
-  ): Hexagon.RegenerateAudioUseCase {
-    if (!this._created) {
-      throw new Error('Root not created')
-    }
-
-    return new Hexagon.RegenerateAudioUseCase(
-      this._cuePackRepository,
-      this._tts,
-      progressReporter,
-      this._logger,
-      this._audioDir
-    )
   }
 
   public getMetadata(): {
@@ -184,7 +180,7 @@ export async function createElectronAppAndStart(ipcMain: IpcMain): Promise<Elect
   const isProd = app.isPackaged
   const root = new CompositionRoot({})
   const appController = await root.create(isProd)
-  const adapter = new ElectronAdapter(appController, root)
+  const adapter = new ElectronAdapter(appController)
 
   await adapter.setup(ipcMain)
 

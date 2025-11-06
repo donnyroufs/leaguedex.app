@@ -3,6 +3,7 @@ import { ICuePackRepository } from './ports/ICuePackRepository'
 import { ITextToSpeechGenerator } from './ports/ITextToSpeechGenerator'
 import { IAudioRegenerationProgressReporter } from './ports/IAudioRegenerationProgressReporter'
 import { ILogger } from './ports/ILogger'
+import { IFileSystem } from './ports/IFileSystem'
 import { AudioFileName } from './AudioFileName'
 
 export class RegenerateAudioUseCase implements IUseCase<void, void> {
@@ -11,7 +12,8 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
     private readonly _textToSpeechGenerator: ITextToSpeechGenerator,
     private readonly _progressReporter: IAudioRegenerationProgressReporter,
     private readonly _logger: ILogger,
-    private readonly _audioDir: string // Used for logging and future extensions
+    private readonly _fileSystem: IFileSystem,
+    private readonly _audioDir: string
   ) {}
 
   public async execute(): Promise<void> {
@@ -19,7 +21,15 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
       audioDir: this._audioDir
     })
 
-    // Load all cue packs
+    this._logger.info('Clearing existing audio files', { audioDir: this._audioDir })
+    try {
+      await this._fileSystem.clearDirectory(this._audioDir)
+      this._logger.info('Successfully cleared audio directory')
+    } catch (error) {
+      this._logger.error('Failed to clear audio directory', { error })
+      throw new Error('Failed to clear audio directory')
+    }
+
     const packsResult = await this._cuePackRepository.all()
     if (packsResult.isErr()) {
       this._logger.error('Failed to load cue packs', { error: packsResult.getError() })
@@ -31,7 +41,6 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
 
     this._logger.info(`Found ${totalPacks} cue packs to process`)
 
-    // Collect all unique cue texts across all packs
     const uniqueCueTexts = new Set<string>()
     for (const pack of packs) {
       for (const cue of pack.cues) {
@@ -45,15 +54,12 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
 
     this._logger.info(`Total unique cues to regenerate: ${totalUniqueCues}`)
 
-    // Process each pack
     let currentPackIndex = 0
     for (const pack of packs) {
       currentPackIndex++
       this._logger.info(`Processing pack: ${pack.name} (${currentPackIndex}/${totalPacks})`)
 
-      // Regenerate audio for each cue in the pack
       for (const cue of pack.cues) {
-        // Check if we've already generated this cue text
         if (!generatedCues.has(cue.text)) {
           this._logger.info(`Generating audio for: "${cue.text}"`)
 
@@ -63,17 +69,14 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
             this._logger.error(`Failed to generate audio for cue: "${cue.text}"`, {
               error: audioResult.getError()
             })
-            // Continue with other cues instead of failing completely
             continue
           }
 
           const newAudioFileName = audioResult.unwrap()
 
-          // Store the new audio file name so we can update all cues with this text
           generatedCues.set(cue.text, newAudioFileName)
           completedUniqueCues++
 
-          // Report progress after each unique cue is generated
           this._progressReporter.reportProgress(
             currentPackIndex,
             totalPacks,
@@ -82,14 +85,12 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
           )
         }
 
-        // Update this cue's audioUrl with the newly generated audio file
         const generatedAudioFileName = generatedCues.get(cue.text)
         if (generatedAudioFileName) {
           cue.audioUrl = generatedAudioFileName
         }
       }
 
-      // Save the pack (in case the AudioFileName changed)
       const saveResult = await this._cuePackRepository.save(pack)
       if (saveResult.isErr()) {
         this._logger.error(`Failed to save pack: ${pack.name}`, {
@@ -99,7 +100,6 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
 
       this._logger.info(`Completed pack: ${pack.name} (${currentPackIndex}/${totalPacks})`)
 
-      // Report progress after each pack is completed
       this._progressReporter.reportProgress(
         currentPackIndex,
         totalPacks,

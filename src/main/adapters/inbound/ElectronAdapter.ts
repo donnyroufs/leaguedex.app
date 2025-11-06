@@ -1,16 +1,11 @@
 import { BrowserWindow, type IpcMain } from 'electron'
 import { IAppController } from '../../hexagon'
 import { IUserSettingsDto, CreateCueDto, CreateCuePackDto } from '@contracts'
-import { CompositionRoot } from '../../CompositionRoot'
-import { IpcAudioRegenerationProgressReporter } from './IpcAudioRegenerationProgressReporter'
 
 export class ElectronAdapter {
   private _configured: boolean = false
 
-  public constructor(
-    private readonly _appController: IAppController,
-    private readonly _compositionRoot: CompositionRoot
-  ) {}
+  public constructor(private readonly _appController: IAppController) {}
 
   public async setup(ipcMain: IpcMain): Promise<void> {
     if (this._configured) {
@@ -74,12 +69,6 @@ export class ElectronAdapter {
       if (!window) {
         throw new Error('Window not found')
       }
-
-      const progressReporter = new IpcAudioRegenerationProgressReporter(window)
-      const regenerateUseCase = this._compositionRoot.createRegenerateAudioUseCase(progressReporter)
-
-      // Set the callback on AppController
-      this._appController.setRegenerateAudioCallback(() => regenerateUseCase.execute())
 
       return this._appController.regenerateAudio()
     })
