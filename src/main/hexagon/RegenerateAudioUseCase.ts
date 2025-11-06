@@ -3,6 +3,7 @@ import { ICuePackRepository } from './ports/ICuePackRepository'
 import { ITextToSpeechGenerator } from './ports/ITextToSpeechGenerator'
 import { IAudioRegenerationProgressReporter } from './ports/IAudioRegenerationProgressReporter'
 import { ILogger } from './ports/ILogger'
+import { AudioFileName } from './AudioFileName'
 
 export class RegenerateAudioUseCase implements IUseCase<void, void> {
   public constructor(
@@ -40,7 +41,7 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
 
     const totalUniqueCues = uniqueCueTexts.size
     let completedUniqueCues = 0
-    const generatedCues = new Map<string, boolean>()
+    const generatedCues = new Map<string, AudioFileName>()
 
     this._logger.info(`Total unique cues to regenerate: ${totalUniqueCues}`)
 
@@ -66,8 +67,10 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
             continue
           }
 
-          // Mark this cue text as generated
-          generatedCues.set(cue.text, true)
+          const newAudioFileName = audioResult.unwrap()
+
+          // Store the new audio file name so we can update all cues with this text
+          generatedCues.set(cue.text, newAudioFileName)
           completedUniqueCues++
 
           // Report progress after each unique cue is generated
@@ -77,6 +80,12 @@ export class RegenerateAudioUseCase implements IUseCase<void, void> {
             completedUniqueCues,
             totalUniqueCues
           )
+        }
+
+        // Update this cue's audioUrl with the newly generated audio file
+        const generatedAudioFileName = generatedCues.get(cue.text)
+        if (generatedAudioFileName) {
+          cue.audioUrl = generatedAudioFileName
         }
       }
 
