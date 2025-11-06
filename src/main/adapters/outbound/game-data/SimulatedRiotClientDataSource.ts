@@ -46,7 +46,9 @@ export class SimulatedRiotClientDataSource implements IRiotClientDataSource {
         this._response.events.Events.push({
           EventID: this.generateEventId(),
           EventName: 'DragonKill',
-          EventTime: deathTime
+          EventTime: deathTime,
+          KillerName: 'test',
+          Assisters: []
         })
         break
       case 'baron':

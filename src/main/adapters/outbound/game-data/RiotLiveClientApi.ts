@@ -42,7 +42,7 @@ export class RiotLiveClientApi implements IGameDataProvider {
 
     return Result.ok({
       hasStarted: true,
-      gameTime: Math.round(value.gameData.gameTime),
+      gameTime: Math.floor(value.gameData.gameTime),
       events,
       activePlayer: {
         summonerName: activePlayer.summonerName,
@@ -72,12 +72,12 @@ export class RiotLiveClientApi implements IGameDataProvider {
     switch (evt.EventName) {
       case 'DragonKill':
         return new DragonKilledEvent(evt.EventID, {
-          gameTime: Math.round(evt.EventTime),
+          gameTime: Math.floor(evt.EventTime),
           killedByTeam: teams.find((x) => x.summonerName.includes(evt.KillerName!))!.team
         })
       case 'BaronKill':
         return new BaronKilledEvent(evt.EventID, {
-          gameTime: Math.round(evt.EventTime)
+          gameTime: Math.floor(evt.EventTime)
         })
       default:
         return null
