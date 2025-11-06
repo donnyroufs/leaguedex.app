@@ -1,21 +1,22 @@
 import { ILogger, ITextToSpeechGenerator } from '../../../hexagon'
-import { OpenAISpeechGenerator } from './OpenAISpeechGenerator'
 import { NativeWindowsSpeechGenerator } from './NativeWindowsSpeechGenerator'
+import { SherpaSpeechGenerator } from './SherpaSpeechGenerator'
 import { DevSpeechGenerator } from './DevSpeechGenerator'
-import { AxiosInstance } from 'axios'
 
 export class AudioGeneratorFactory {
   public static async create(
     isProd: boolean,
     audioDir: string,
-    licenseKey: string,
-    axios: AxiosInstance,
-    logger: ILogger
+    logger: ILogger,
+    resourcesPath: string
   ): Promise<ITextToSpeechGenerator> {
-    if (isProd && licenseKey.length > 0) {
-      return OpenAISpeechGenerator.create(axios, audioDir)
-    } else if (isProd && !licenseKey) {
-      return await NativeWindowsSpeechGenerator.create(logger, audioDir)
+    if (isProd) {
+      try {
+        return await SherpaSpeechGenerator.create(logger, audioDir, resourcesPath)
+      } catch (err) {
+        logger.error('Failed to initialize Sherpa-ONNX, falling back to Windows SAPI', { err })
+        return await NativeWindowsSpeechGenerator.create(logger, audioDir)
+      }
     } else {
       return new DevSpeechGenerator()
     }

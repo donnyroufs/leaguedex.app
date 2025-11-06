@@ -1,11 +1,9 @@
 import path from 'path'
-import axios from 'axios'
 import { app, IpcMain } from 'electron'
 
 import * as Hexagon from './hexagon'
 import * as Outbound from './adapters/outbound'
 
-import { getLicenseKey } from './getLicenseKey'
 import { ElectronAdapter } from './adapters/inbound'
 
 /**
@@ -37,7 +35,6 @@ export class CompositionRoot {
     this._dataPath = isProd ? app.getPath('userData') : path.join(process.cwd(), 'data')
     this._isProd = isProd
 
-    const licenseKey = await getLicenseKey()
     const logger =
       this._dependencies.logger ??
       new Outbound.ElectronLogger(path.join(this._dataPath, 'logs.log'), 'info')
@@ -53,18 +50,13 @@ export class CompositionRoot {
     const audioPlayer = this._dependencies.audioPlayer ?? new Outbound.AudioPlayer(logger, isProd)
     const audioDir = path.join(this._dataPath, 'audio')
 
-    const axiosInstance = axios.create({
-      baseURL: isProd ? 'https://api.leaguedex.app' : 'http://localhost:5005'
-    })
+    const resourcesPath = isProd
+      ? path.join(process.resourcesPath)
+      : path.join(process.cwd(), 'resources')
+
     const tts =
       this._dependencies.tts ??
-      (await Outbound.AudioGeneratorFactory.create(
-        isProd,
-        audioDir,
-        licenseKey,
-        axiosInstance,
-        logger
-      ))
+      (await Outbound.AudioGeneratorFactory.create(isProd, audioDir, logger, resourcesPath))
 
     const cuePackRepository =
       this._dependencies.cuePackRepository ??
