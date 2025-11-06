@@ -26,6 +26,10 @@ describe('Game Data Provider', () => {
     })
   })
 
+  test.todo('should floor gameTime from float to integer')
+  test.todo('should floor dragon kill EventTime from float to integer')
+  test.todo('should floor baron kill EventTime from float to integer')
+
   test.todo('Should transform dragon kill event')
   test.todo('Should transform baron kill event')
 })

@@ -12,4 +12,8 @@ export class NullLogger implements ILogger {
   public debug(): void {
     return
   }
+
+  public warn(): void {
+    return
+  }
 }

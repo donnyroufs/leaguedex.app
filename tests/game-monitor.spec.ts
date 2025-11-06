@@ -100,8 +100,72 @@ describe('Game Monitor', () => {
     expect(eventBus.totalCalls).toBe(2)
   })
 
+  test('Publishes backfill ticks when gameTime jumps by 2', async () => {
+    gameDataProvider.setStarted(1)
+    await sut.start()
+
+    await tick(timer, gameDataProvider)
+
+    gameDataProvider.setStarted(3)
+    await tick(timer, gameDataProvider)
+
+    const tickEvents = eventBus.events.filter((e) => e.eventType === 'game-tick')
+    expect(tickEvents.length).toBe(3)
+  })
+
+  test('Publishes backfill ticks when gameTime jumps by 5', async () => {
+    gameDataProvider.setStarted(5)
+    await sut.start()
+
+    await tick(timer, gameDataProvider)
+
+    gameDataProvider.setStarted(10)
+    await tick(timer, gameDataProvider)
+
+    const tickEvents = eventBus.events.filter((e) => e.eventType === 'game-tick')
+    expect(tickEvents.length).toBe(6)
+  })
+
+  test('Does not publish backfill ticks when gameTime progresses normally', async () => {
+    gameDataProvider.setStarted(1)
+    await sut.start()
+
+    await tick(timer, gameDataProvider)
+
+    gameDataProvider.setStarted(2)
+    await tick(timer, gameDataProvider)
+
+    const tickEvents = eventBus.events.filter((e) => e.eventType === 'game-tick')
+    expect(tickEvents.length).toBe(2)
+  })
+
+  test('Does not publish ticks when game is paused', async () => {
+    gameDataProvider.setStarted(5)
+    await sut.start()
+
+    await tick(timer, gameDataProvider)
+
+    gameDataProvider.setStarted(5)
+    await tick(timer, gameDataProvider)
+
+    const tickEvents = eventBus.events.filter((e) => e.eventType === 'game-tick')
+    expect(tickEvents.length).toBe(1)
+  })
+
+  test('Limits backfill to maximum 10 ticks', async () => {
+    gameDataProvider.setStarted(1)
+    await sut.start()
+
+    await tick(timer, gameDataProvider)
+
+    gameDataProvider.setStarted(20)
+    await tick(timer, gameDataProvider)
+
+    const tickEvents = eventBus.events.filter((e) => e.eventType === 'game-tick')
+    expect(tickEvents.length).toBe(12)
+  })
+
   test.todo('Passes the computed game state to the game tick event')
 
-  // Later optimization
   test.todo('Polls every 5s until game is started')
 })

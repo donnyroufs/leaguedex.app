@@ -19,4 +19,8 @@ export class ElectronLogger implements ILogger {
   public debug(message: string, data: Record<string, unknown> = {}): void {
     log.debug(message, data)
   }
+
+  public warn(message: string, data: Record<string, unknown> = {}): void {
+    log.warn(message, data)
+  }
 }
