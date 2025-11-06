@@ -56,7 +56,8 @@ export class AppController implements IAppController {
 
   public async activateCuePack(id: string): Promise<void> {
     this._logger.info('activateCuePack', { id })
-    return this._cuePackService.activateCuePack(id)
+    await this._cuePackService.activateCuePack(id)
+    this._cueService.clearProcessor()
   }
 
   public async getCuePacks(): Promise<ICuePackDto[]> {

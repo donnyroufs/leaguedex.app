@@ -29,6 +29,7 @@ export * from './AddCueToPackUseCase'
 export * from './GetCuesUseCase'
 export * from './RemoveCueUseCase'
 export * from './CueService'
+export * from './CueProcessor'
 
 export * from './CreateCuePackUseCase'
 export * from './GetCuePacksUseCase'
