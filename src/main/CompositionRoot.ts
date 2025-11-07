@@ -103,6 +103,13 @@ export class CompositionRoot {
       this._dataPath
     )
 
+    const cueProcessor = new Hexagon.CueProcessor(
+      audioPlayer,
+      this._logger,
+      userSettingsRepository,
+      this._audioDir
+    )
+
     const cueService = new Hexagon.CueService(
       addCueToPackUseCase,
       getCuesUseCase,
@@ -112,6 +119,7 @@ export class CompositionRoot {
       this._logger,
       this._cuePackRepository,
       userSettingsRepository,
+      cueProcessor,
       this._audioDir
     )
 

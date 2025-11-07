@@ -9,6 +9,7 @@ import { RemoveCueUseCase } from './RemoveCueUseCase'
 import { GetCuesUseCase } from './GetCuesUseCase'
 import { ICuePackRepository } from './ports/ICuePackRepository'
 import { IUserSettingsRepository } from './ports/IUserSettingsRepository'
+import { CueProcessor } from './CueProcessor'
 
 export class CueService {
   public constructor(
@@ -20,6 +21,7 @@ export class CueService {
     private readonly _logger: ILogger,
     private readonly _cueRepository: ICuePackRepository,
     private readonly _userSettingsRepository: IUserSettingsRepository,
+    private readonly _cueProcessor: CueProcessor,
     private readonly _audioDir: string
   ) {}
 
@@ -30,6 +32,11 @@ export class CueService {
   public async stop(): Promise<void> {
     this._eventBus.unsubscribe('game-tick', this.onGameTick.bind(this))
     CueEngine.clear()
+    this._cueProcessor.clear()
+  }
+
+  public clearProcessor(): void {
+    this._cueProcessor.clear()
   }
 
   public async addCue(data: CreateCueDto): Promise<string> {
@@ -94,18 +101,6 @@ export class CueService {
       dueCues: dueCues.map((x) => x.id)
     })
 
-    const settings = await this._userSettingsRepository.load()
-
-    if (settings.isErr()) {
-      this._logger.error('Failed to load user settings', { error: settings.getError() })
-      throw new Error('Failed to load user settings')
-    }
-
-    const volume = settings.unwrap().volume
-
-    // TODO: instead of awaiting it, we should create a queue so that we process it in the background
-    for (const cue of dueCues) {
-      await this._audioPlayer.play(cue.audioUrl.fullPath(this._audioDir), volume)
-    }
+    dueCues.forEach((cue) => this._cueProcessor.enqueue(cue))
   }
 }
