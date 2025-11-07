@@ -3,7 +3,7 @@ import { IUseCase } from '../shared-kernel/IUseCase'
 import { ICuePackRepository } from './ports/ICuePackRepository'
 
 const renameCuePackInputSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string().min(1, 'Pack name cannot be empty')
 })
 

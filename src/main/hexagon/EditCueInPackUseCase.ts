@@ -27,12 +27,21 @@ const editCueInputSchema = z
     }
   })
 
-const editCueSchema = editCueInputSchema.extend({
-  id: z.string().uuid()
-})
-
 export type EditCueDto = z.infer<typeof editCueInputSchema>
-type EditCueInput = z.infer<typeof editCueSchema>
+
+type EditCueInput = {
+  id: string
+  text: string
+  triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
+  interval?: number
+  triggerAt?: number
+  event?: string
+  objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+  beforeObjective?: number
+  packId: string
+  value?: number
+  endTime?: number
+}
 
 export class EditCueInPackUseCase implements IUseCase<EditCueInput, void> {
   public constructor(
@@ -41,8 +50,6 @@ export class EditCueInPackUseCase implements IUseCase<EditCueInput, void> {
   ) {}
 
   public async execute(data: EditCueInput): Promise<void> {
-    const parsedData = editCueSchema.parse(data)
-
     const cuePack = await this._cuePackRepository.load(data.packId)
     const cuePackResult = cuePack.unwrap()
 
@@ -50,35 +57,32 @@ export class EditCueInPackUseCase implements IUseCase<EditCueInput, void> {
       throw new Error('Cue pack not found')
     }
 
-    // Find the existing cue
-    const existingCue = cuePackResult.cues.find((c) => c.id === parsedData.id)
+    const existingCue = cuePackResult.cues.find((c) => c.id === data.id)
     if (!existingCue) {
       throw new Error('Cue not found')
     }
 
-    // Regenerate audio if text has changed
     let audioUrl = existingCue.audioUrl
-    if (existingCue.text !== parsedData.text) {
-      const result = await this._audioGenerator.generate(parsedData.text)
+    if (existingCue.text !== data.text) {
+      const result = await this._audioGenerator.generate(data.text)
       audioUrl = result.unwrap()
     }
 
     const updatedCue: Cue = {
-      id: parsedData.id,
-      text: parsedData.text,
+      id: data.id,
+      text: data.text,
       audioUrl: audioUrl,
-      triggerType: parsedData.triggerType,
-      interval: parsedData.interval,
-      triggerAt: parsedData.triggerAt,
-      event: parsedData.event,
-      objective: parsedData.objective,
-      beforeObjective: parsedData.beforeObjective,
-      value: parsedData.value,
-      endTime: parsedData.endTime
+      triggerType: data.triggerType,
+      interval: data.interval,
+      triggerAt: data.triggerAt,
+      event: data.event,
+      objective: data.objective,
+      beforeObjective: data.beforeObjective,
+      value: data.value,
+      endTime: data.endTime
     }
 
-    // Remove old cue and add updated one
-    cuePackResult.remove(parsedData.id)
+    cuePackResult.remove(data.id)
     cuePackResult.add(updatedCue)
 
     const saveResult = await this._cuePackRepository.save(cuePackResult)
