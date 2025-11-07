@@ -114,6 +114,14 @@ export class FakeRiotClientDataSource implements IRiotClientDataSource {
     this._state!.activePlayer.championStats.resourceValue = mana
   }
 
+  public changeCurrentPlayerGold(gold: number): void {
+    if (this._state == null) {
+      throw new Error('Game not started')
+    }
+
+    this._state!.activePlayer.currentGold = gold
+  }
+
   public setCurrentPlayerResourceStats(stats: {
     resourceType: string
     resourceValue: number

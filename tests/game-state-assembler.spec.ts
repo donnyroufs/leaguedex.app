@@ -20,6 +20,7 @@ describe('GameStateAssembler', () => {
         respawnsIn: null,
         currentMana: null,
         totalMana: null,
+        currentGold: 0,
         items: []
       }
     }
@@ -50,6 +51,7 @@ describe('GameStateAssembler', () => {
         respawnsIn: null,
         currentMana: null,
         totalMana: null,
+        currentGold: 0,
         items: []
       }
     }
@@ -73,6 +75,7 @@ describe('GameStateAssembler', () => {
         respawnsIn: null,
         currentMana: null,
         totalMana: null,
+        currentGold: 0,
         items: []
       }
     }

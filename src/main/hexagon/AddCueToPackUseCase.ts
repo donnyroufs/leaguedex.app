@@ -27,6 +27,16 @@ const createCueSchema = z
         })
       }
     }
+
+    if (data.event === 'gold-threshold') {
+      if (data.value === undefined || data.value === null) {
+        ctx.addIssue({
+          code: 'custom',
+          message: "Value is required when event is 'gold-threshold'",
+          path: ['value']
+        })
+      }
+    }
   })
 
 export type CreateCueDto = z.infer<typeof createCueSchema>

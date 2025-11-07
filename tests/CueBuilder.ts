@@ -28,6 +28,13 @@ export class CueBuilder {
     return this
   }
 
+  public asGoldThreshold(): CueBuilder {
+    this._triggerType = 'event'
+    this._event = 'gold-threshold'
+    this._interval = undefined
+    return this
+  }
+
   public asEvent(event: string): CueBuilder {
     this._triggerType = 'event'
     this._event = event

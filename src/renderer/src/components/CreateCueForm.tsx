@@ -81,7 +81,6 @@ export function CreateCueForm({
     return Number(value)
   }
 
-
   const validateForm = (): boolean => {
     const newErrors: {
       text?: string
@@ -135,6 +134,16 @@ export function CreateCueForm({
           const eventValueNum = Number(eventValue)
           if (isNaN(eventValueNum) || eventValueNum < 0) {
             newErrors.eventValue = 'Mana threshold must be a non-negative number'
+          }
+        }
+      }
+      if (event === 'gold-threshold') {
+        if (!eventValue.trim()) {
+          newErrors.eventValue = 'Gold threshold is required'
+        } else {
+          const eventValueNum = Number(eventValue)
+          if (isNaN(eventValueNum) || eventValueNum < 0) {
+            newErrors.eventValue = 'Gold threshold must be a non-negative number'
           }
         }
       }
@@ -197,6 +206,12 @@ export function CreateCueForm({
           formData.value = eventValueNum
         }
       }
+      if (event === 'gold-threshold' && eventValue.trim()) {
+        const eventValueNum = Number(eventValue)
+        if (!isNaN(eventValueNum)) {
+          formData.value = eventValueNum
+        }
+      }
     } else if (triggerType === 'objective') {
       formData.objective = objective
       const beforeObjectiveNum = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
@@ -224,6 +239,9 @@ export function CreateCueForm({
     }
     if (triggerType === 'event') {
       if (event === 'mana-changed') {
+        return Boolean(text.trim() && event.trim() && eventValue.trim())
+      }
+      if (event === 'gold-threshold') {
         return Boolean(text.trim() && event.trim() && eventValue.trim())
       }
       return Boolean(text.trim() && event.trim())
@@ -286,7 +304,9 @@ export function CreateCueForm({
                 <div className="flex-1 min-w-0">
                   <div
                     className={`text-sm font-semibold mb-1 transition-colors ${
-                      triggerType === option.value ? 'text-info' : 'text-text-primary group-hover:text-text-secondary'
+                      triggerType === option.value
+                        ? 'text-info'
+                        : 'text-text-primary group-hover:text-text-secondary'
                     }`}
                   >
                     {option.label}
@@ -319,7 +339,9 @@ export function CreateCueForm({
                   onChange={(e) => setText(e.target.value)}
                   placeholder="e.g., Check minimap, Ward pixel brush, Stack tear..."
                   className={`w-full px-4 py-3 text-base bg-bg-primary border rounded-xl text-text-primary placeholder-text-tertiary/60 focus:outline-none focus:ring-2 focus:ring-info/30 focus:border-info/50 transition-all duration-200 ${
-                    errors.text ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20' : 'border-border-primary/60'
+                    errors.text
+                      ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20'
+                      : 'border-border-primary/60'
                   }`}
                 />
                 {errors.text && (
@@ -333,7 +355,9 @@ export function CreateCueForm({
               {triggerType === 'interval' && (
                 <div>
                   <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Interval Settings</h2>
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">
+                      Interval Settings
+                    </h2>
                     <p className="text-sm text-text-tertiary/80">
                       How often should this cue repeat?
                     </p>
@@ -354,7 +378,9 @@ export function CreateCueForm({
               {triggerType === 'oneTime' && (
                 <div>
                   <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Timing Settings</h2>
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">
+                      Timing Settings
+                    </h2>
                     <p className="text-sm text-text-tertiary/80">
                       At what game time should this cue trigger?
                     </p>
@@ -375,7 +401,9 @@ export function CreateCueForm({
               {triggerType === 'event' && (
                 <div>
                   <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Event Settings</h2>
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">
+                      Event Settings
+                    </h2>
                     <p className="text-sm text-text-tertiary/80">
                       Select which game event should trigger this cue.
                     </p>
@@ -398,10 +426,13 @@ export function CreateCueForm({
                         <option value="respawn">Player respawn</option>
                         <option value="canon-wave-spawned">Canon wave spawned</option>
                         <option value="mana-changed">Mana changed</option>
+                        <option value="gold-threshold">Gold threshold</option>
                         <option value="support-item-upgraded">Support item upgraded</option>
                       </select>
                       {errors.event && (
-                        <p className="mt-2 text-sm text-status-danger font-medium">{errors.event}</p>
+                        <p className="mt-2 text-sm text-status-danger font-medium">
+                          {errors.event}
+                        </p>
                       )}
                     </div>
 
@@ -421,11 +452,45 @@ export function CreateCueForm({
                           onChange={(e) => setEventValue(e.target.value)}
                           placeholder="e.g., 100"
                           className={`w-full px-4 py-3 text-base bg-bg-primary border rounded-xl text-text-primary placeholder-text-tertiary/60 focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200 ${
-                            errors.eventValue ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20' : 'border-border-primary/60'
+                            errors.eventValue
+                              ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20'
+                              : 'border-border-primary/60'
                           }`}
                         />
                         <p className="mt-2 text-sm text-text-tertiary/70">
                           The cue will trigger when your mana is at or below this value
+                        </p>
+                        {errors.eventValue && (
+                          <p className="mt-2 text-sm text-status-danger font-medium">
+                            {errors.eventValue}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {event === 'gold-threshold' && (
+                      <div>
+                        <label
+                          htmlFor="cue-event-value"
+                          className="block text-base font-medium text-text-primary mb-2"
+                        >
+                          Gold Threshold
+                        </label>
+                        <input
+                          id="cue-event-value"
+                          type="number"
+                          min="0"
+                          value={eventValue}
+                          onChange={(e) => setEventValue(e.target.value)}
+                          placeholder="e.g., 3000"
+                          className={`w-full px-4 py-3 text-base bg-bg-primary border rounded-xl text-text-primary placeholder-text-tertiary/60 focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200 ${
+                            errors.eventValue
+                              ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20'
+                              : 'border-border-primary/60'
+                          }`}
+                        />
+                        <p className="mt-2 text-sm text-text-tertiary/70">
+                          The cue will trigger when your gold is at or above this value
                         </p>
                         {errors.eventValue && (
                           <p className="mt-2 text-sm text-status-danger font-medium">
@@ -441,7 +506,9 @@ export function CreateCueForm({
               {triggerType === 'objective' && (
                 <div>
                   <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Objective Settings</h2>
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">
+                      Objective Settings
+                    </h2>
                     <p className="text-sm text-text-tertiary/80">
                       Choose which objective to track and when to trigger.
                     </p>
@@ -490,7 +557,9 @@ export function CreateCueForm({
             {/* Optional End Time */}
             <div className="bg-bg-secondary/80 rounded-xl p-5 border border-border-primary/50 shadow-sm">
               <div className="mb-4">
-                <h2 className="text-lg font-semibold text-text-primary mb-1.5">End Time (Optional)</h2>
+                <h2 className="text-lg font-semibold text-text-primary mb-1.5">
+                  End Time (Optional)
+                </h2>
                 <p className="text-sm text-text-tertiary/80">
                   When should this cue stop triggering? Leave empty to continue indefinitely.
                 </p>
