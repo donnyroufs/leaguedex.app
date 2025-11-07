@@ -1,0 +1,1 @@
+This folder contains simple scripts for spinning up development servers, so you don't have to launch the full production server. Some servers or endpoints may remain private, especially during early development stages or for security purposes.
