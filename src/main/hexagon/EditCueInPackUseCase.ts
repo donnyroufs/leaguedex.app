@@ -1,33 +1,18 @@
-import z from 'zod'
 import { IUseCase } from '../shared-kernel/IUseCase'
 import { Cue, ICuePackRepository, ITextToSpeechGenerator } from '.'
 
-const editCueInputSchema = z
-  .object({
-    text: z.string().min(1),
-    triggerType: z.enum(['interval', 'oneTime', 'event', 'objective']),
-    interval: z.number().min(1).optional(),
-    triggerAt: z.number().min(0).optional(),
-    event: z.string().optional(),
-    objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
-    beforeObjective: z.number().min(0).optional(),
-    packId: z.string().min(1),
-    value: z.number().optional(),
-    endTime: z.number().int().positive().optional()
-  })
-  .superRefine((data, ctx) => {
-    if (data.event === 'mana-changed') {
-      if (data.value === undefined || data.value === null) {
-        ctx.addIssue({
-          code: 'custom',
-          message: "Value is required when event is 'mana-changed'",
-          path: ['value']
-        })
-      }
-    }
-  })
-
-export type EditCueDto = z.infer<typeof editCueInputSchema>
+export type EditCueDto = {
+  text: string
+  triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
+  interval?: number
+  triggerAt?: number
+  event?: string
+  objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+  beforeObjective?: number
+  packId: string
+  value?: number
+  endTime?: number
+}
 
 type EditCueInput = {
   id: string
