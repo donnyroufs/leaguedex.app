@@ -62,17 +62,17 @@ export class CueEngine {
         const isDue = this.onGoldThresholdEvent(state, cue)
         if (!isDue) return false
 
-        const lastTriggered = this.lastTriggeredByEvent.get(cue.event)
+        const lastTriggered = this.lastTriggeredByEvent.get(cue.id)
         const cooldown = 60
 
         if (lastTriggered === undefined) {
-          this.lastTriggeredByEvent.set(cue.event, state.gameTime)
+          this.lastTriggeredByEvent.set(cue.id, state.gameTime)
           return true
         }
 
         if (state.gameTime - lastTriggered < cooldown) return false
 
-        this.lastTriggeredByEvent.set(cue.event, state.gameTime)
+        this.lastTriggeredByEvent.set(cue.id, state.gameTime)
         return true
       }
 

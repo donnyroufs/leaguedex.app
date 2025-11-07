@@ -193,4 +193,58 @@ describe('CueEngine', () => {
     const due3 = CueEngine.getDueCues(state3, [cue])
     expect(due3).toHaveLength(1)
   })
+
+  test('should handle multiple gold threshold cues with different values independently', () => {
+    const assembler = new GameStateAssembler()
+    const cue3000 = new CueBuilder().asGoldThreshold().withValue(3000).build()
+    const cue3001 = new CueBuilder().asGoldThreshold().withValue(3001).build()
+
+    const gameData1 = new TestGameDataBuilder()
+      .withGameTime(300)
+      .hasStarted()
+      .withCurrentGold(3001)
+      .build()
+
+    const state1 = assembler.assemble(gameData1)
+    const due1 = CueEngine.getDueCues(state1, [cue3000, cue3001])
+    expect(due1).toHaveLength(2)
+    expect(due1).toContainEqual(expect.objectContaining({ id: cue3000.id }))
+    expect(due1).toContainEqual(expect.objectContaining({ id: cue3001.id }))
+
+    const gameData2 = new TestGameDataBuilder()
+      .withGameTime(330)
+      .hasStarted()
+      .withCurrentGold(3001)
+      .build()
+
+    const state2 = assembler.assemble(gameData2)
+    const due2 = CueEngine.getDueCues(state2, [cue3000, cue3001])
+    expect(due2).toHaveLength(0)
+    expect(due2.find((c) => c.id === cue3000.id)).toBeUndefined()
+    expect(due2.find((c) => c.id === cue3001.id)).toBeUndefined()
+
+    const gameData2b = new TestGameDataBuilder()
+      .withGameTime(359)
+      .hasStarted()
+      .withCurrentGold(3001)
+      .build()
+
+    const state2b = assembler.assemble(gameData2b)
+    const due2b = CueEngine.getDueCues(state2b, [cue3000, cue3001])
+    expect(due2b).toHaveLength(0)
+    expect(due2b.find((c) => c.id === cue3000.id)).toBeUndefined()
+    expect(due2b.find((c) => c.id === cue3001.id)).toBeUndefined()
+
+    const gameData3 = new TestGameDataBuilder()
+      .withGameTime(360)
+      .hasStarted()
+      .withCurrentGold(3001)
+      .build()
+
+    const state3 = assembler.assemble(gameData3)
+    const due3 = CueEngine.getDueCues(state3, [cue3000, cue3001])
+    expect(due3).toHaveLength(2)
+    expect(due3).toContainEqual(expect.objectContaining({ id: cue3000.id }))
+    expect(due3).toContainEqual(expect.objectContaining({ id: cue3001.id }))
+  })
 })
