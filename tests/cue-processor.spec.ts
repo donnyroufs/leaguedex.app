@@ -4,21 +4,21 @@ import { CueProcessor } from '@hexagon/CueProcessor'
 import { AudioSpy } from './AudioSpy'
 import { AudioPlayerFake } from './AudioPlayerFake'
 import { LoggerStub } from './LoggerSpy'
-import { UserSettingsRepositorySpy } from './UserSettingsRepositorySpy'
+import { UserSettingsRepositoryDummy } from './UserSettingsRepositoryDummy'
 
 describe('CueProcessor', () => {
   let processor: CueProcessor
   let audioSpy: AudioSpy
   let audioFake: AudioPlayerFake
   let logger: LoggerStub
-  let userSettingsRepo: UserSettingsRepositorySpy
+  let userSettingsRepo: UserSettingsRepositoryDummy
   const audioDir = '/test/audio'
 
   beforeEach(() => {
     audioSpy = new AudioSpy()
     audioFake = new AudioPlayerFake()
     logger = new LoggerStub()
-    userSettingsRepo = new UserSettingsRepositorySpy()
+    userSettingsRepo = new UserSettingsRepositoryDummy()
 
     processor = new CueProcessor(audioSpy, logger, userSettingsRepo, audioDir)
   })
