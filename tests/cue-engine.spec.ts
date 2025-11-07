@@ -122,4 +122,75 @@ describe('CueEngine', () => {
     const due3 = CueEngine.getDueCues(state3, [cue])
     expect(due3).toHaveLength(0)
   })
+
+  test('should trigger the gold threshold cue if gold is greater than or equal to the value', () => {
+    const assembler = new GameStateAssembler()
+    const cue = new CueBuilder().asGoldThreshold().withValue(3000).build()
+
+    const gameData = new TestGameDataBuilder()
+      .withGameTime(300)
+      .hasStarted()
+      .withCurrentGold(3000)
+      .build()
+
+    const state = assembler.assemble(gameData)
+    const due = CueEngine.getDueCues(state, [cue])
+
+    expect(due).toHaveLength(1)
+    expect(due[0].id).toBe(cue.id)
+  })
+
+  test('should not trigger the gold threshold cue if gold is less than the value', () => {
+    const assembler = new GameStateAssembler()
+    const cue = new CueBuilder().asGoldThreshold().withValue(3000).build()
+
+    const gameData = new TestGameDataBuilder()
+      .withGameTime(300)
+      .hasStarted()
+      .withCurrentGold(2999)
+      .build()
+
+    const state = assembler.assemble(gameData)
+    const due = CueEngine.getDueCues(state, [cue])
+
+    expect(due).toHaveLength(0)
+  })
+
+  test('should not keep triggering the gold threshold cue within cooldown period', () => {
+    const assembler = new GameStateAssembler()
+    const cue = new CueBuilder().asGoldThreshold().withValue(3000).build()
+
+    // First trigger at 300 seconds
+    const gameData = new TestGameDataBuilder()
+      .withGameTime(300)
+      .hasStarted()
+      .withCurrentGold(3000)
+      .build()
+
+    const state = assembler.assemble(gameData)
+    const due = CueEngine.getDueCues(state, [cue])
+    expect(due).toHaveLength(1)
+
+    // Should not trigger at 330 seconds (within 60s cooldown)
+    const gameData2 = new TestGameDataBuilder()
+      .withGameTime(330)
+      .hasStarted()
+      .withCurrentGold(3500)
+      .build()
+
+    const state2 = assembler.assemble(gameData2)
+    const due2 = CueEngine.getDueCues(state2, [cue])
+    expect(due2).toHaveLength(0)
+
+    // Should trigger again at 360 seconds (60s cooldown passed)
+    const gameData3 = new TestGameDataBuilder()
+      .withGameTime(360)
+      .hasStarted()
+      .withCurrentGold(4000)
+      .build()
+
+    const state3 = assembler.assemble(gameData3)
+    const due3 = CueEngine.getDueCues(state3, [cue])
+    expect(due3).toHaveLength(1)
+  })
 })

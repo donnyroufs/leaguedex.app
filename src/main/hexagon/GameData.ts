@@ -17,5 +17,6 @@ type RawActivePlayer = {
    */
   currentMana: number | null
   totalMana: number | null
+  currentGold: number
   items: readonly number[]
 }

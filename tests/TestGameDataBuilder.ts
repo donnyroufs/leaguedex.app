@@ -7,6 +7,7 @@ export class TestGameDataBuilder {
   private _idCounter: number = 0
   private _currentMana: number = 0
   private _totalMana: number = 1000
+  private _currentGold: number = 0
 
   public hasStarted(): TestGameDataBuilder {
     this._hasStarted = true
@@ -35,6 +36,11 @@ export class TestGameDataBuilder {
     return this
   }
 
+  public withCurrentGold(gold: number): TestGameDataBuilder {
+    this._currentGold = gold
+    return this
+  }
+
   /**
    * Starts the game at a specific moment
    */
@@ -55,6 +61,7 @@ export class TestGameDataBuilder {
         respawnsIn: null,
         currentMana: this._currentMana,
         totalMana: this._totalMana,
+        currentGold: this._currentGold,
         items: []
       }
     }

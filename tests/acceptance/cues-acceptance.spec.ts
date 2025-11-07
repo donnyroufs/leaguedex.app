@@ -514,6 +514,31 @@ describeFeature(
         expect(audioPlayer.totalCalls).toBe(2)
       })
     })
+
+    Scenario(`Cue on gold threshold`, ({ Given, When, Then, And }) => {
+      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        const createdCueId = await createCue(data)
+        const cues = await app.getCues()
+
+        expect(cues).toHaveLength(1)
+        expect(cues[0].id).toBe(createdCueId)
+      })
+
+      And(`we are in a League of Legends match`, () => {
+        dataSource.addGameStartedEvent()
+      })
+
+      When(`the player reaches {string} gold`, async (_, gold: string) => {
+        await dataSource.nextTick(timer)
+        dataSource.changeCurrentPlayerGold(Number(gold))
+        await dataSource.nextTick(timer)
+      })
+
+      Then(`I should hear the audio "time_to_recall"`, () => {
+        expect(audioPlayer.lastCalledWith).toContain('time_to_recall')
+        expect(audioPlayer.totalCalls).toBe(1)
+      })
+    })
   }
 )
 

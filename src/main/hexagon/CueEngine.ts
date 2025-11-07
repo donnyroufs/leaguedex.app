@@ -58,6 +58,24 @@ export class CueEngine {
         return true
       }
 
+      if (cue.triggerType === 'event' && cue.event === 'gold-threshold') {
+        const isDue = this.onGoldThresholdEvent(state, cue)
+        if (!isDue) return false
+
+        const lastTriggered = this.lastTriggeredByEvent.get(cue.event)
+        const cooldown = 60
+
+        if (lastTriggered === undefined) {
+          this.lastTriggeredByEvent.set(cue.event, state.gameTime)
+          return true
+        }
+
+        if (state.gameTime - lastTriggered < cooldown) return false
+
+        this.lastTriggeredByEvent.set(cue.event, state.gameTime)
+        return true
+      }
+
       if (cue.triggerType === 'event' && cue.event === 'support-item-upgraded') {
         return this.hasSupportItemUpgrade(state.activePlayer.items)
       }
@@ -115,5 +133,13 @@ export class CueEngine {
     }
 
     return state.activePlayer.currentMana <= cue.value
+  }
+
+  private static onGoldThresholdEvent(state: GameState, cue: Cue): boolean {
+    if (!cue.value) {
+      return false
+    }
+
+    return state.activePlayer.currentGold >= cue.value
   }
 }
