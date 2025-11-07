@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { CreateCueDto, CreateCuePackDto, GameDataDto, IUserSettingsDto } from '@contracts'
+import {
+  CreateCueDto,
+  CreateCuePackDto,
+  EditCueDto,
+  GameDataDto,
+  IUserSettingsDto
+} from '@contracts'
 
 const api = {
   app: {
@@ -16,11 +22,13 @@ const api = {
     addCue: (data: CreateCueDto) => ipcRenderer.invoke('add-cue', data),
     getCues: () => ipcRenderer.invoke('get-cues'),
     removeCue: (id: string) => ipcRenderer.invoke('remove-cue', id),
+    editCue: (id: string, data: EditCueDto) => ipcRenderer.invoke('edit-cue', id, data),
     createCuePack: (data: CreateCuePackDto) => ipcRenderer.invoke('create-cue-pack', data),
     activateCuePack: (id: string) => ipcRenderer.invoke('activate-cue-pack', id),
     getCuePacks: () => ipcRenderer.invoke('get-cue-packs'),
     getActiveCuePack: () => ipcRenderer.invoke('get-active-cue-pack'),
     removeCuePack: (id: string) => ipcRenderer.invoke('remove-cue-pack', id),
+    renameCuePack: (id: string, name: string) => ipcRenderer.invoke('rename-cue-pack', id, name),
     importPack: (code: string) => ipcRenderer.invoke('import-pack', code),
     exportPack: (id: string) => ipcRenderer.invoke('export-pack', id),
     playCue: (id: string) => ipcRenderer.invoke('play-cue', id),

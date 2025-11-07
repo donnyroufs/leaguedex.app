@@ -40,7 +40,7 @@ Feature: Cue Pack Management
   Scenario: Import cue pack from encoded data
     Given I have an encoded base64 string that contains a cue pack named "A shared cue pack" with the following cues:
       | text          | triggerType | interval |
-      | Check minimap | interval    | 60       |
+      | Check minimap | interval    |       60 |
     And I have a cue pack called "My First Pack" with no cues
     When I import the cue pack using the encoded string
     Then I should have a new cue pack called "A shared cue pack"
@@ -50,26 +50,23 @@ Feature: Cue Pack Management
 
   Scenario: Export cue pack to encoded data
     Given I have a cue pack called "Mid Fundamentals" with the following cues:
-      | text          | triggerType | interval |
-      | Check wards   | interval    | 45       |
+      | text        | triggerType | interval |
+      | Check wards | interval    |       45 |
     When I export the cue pack to encoded data
     Then I should have a base64 encoded string that contains the cue pack
 
-# Scenario: Editing a cue pack
+  Scenario: Rename a cue pack
+    Given I have a cue pack called "Donny's Pack"
+    When I rename the cue pack to "My Custom Pack"
+    Then I should have a cue pack called "My Custom Pack"
+    And I should not have a cue pack called "Donny's Pack"
+
+  Scenario: Edit a cue in a pack
+    Given I have a cue pack called "My Pack"
+    And I have a cue with the name "Check minimap" for the interval "60" seconds in the pack
+    When I edit the cue to have the name "Watch minimap" and interval "30" seconds
+    Then the cue should have the name "Watch minimap"
+    And the cue should be triggered every "30" seconds
+    And audio should be regenerated
 # Scenario: Forking a cue pack
 # Scenario: Adding existing cues to a pack
-
-# Scenario: Remove a cue pack
-#   Given I have a cue pack called "My Pack"
-#   And I have a cue pack called "My Pack 2"
-#   When I remove the "My Pack" cue pack
-#   Then "My Pack" should be removed
-#   And "My Pack 2" should be active
-
-# Scenario: Export cue pack to encoded data
-#     Given I have a cue pack called "Mid Fundamentals" with the following cues:
-#       | text          | triggerType | interval |
-#       | Check minimap | interval    | 60       |
-#       | Check wards   | interval    | 45       |
-#     When I export the cue pack to encoded data
-#     Then I should have a base64 encoded string that contains the cue pack

@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Package, Plus, Target, Crown, Trash2, Download, Share } from 'lucide-react'
+import { Package, Plus, Target, Crown, Trash2, Download, Share, Pencil } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -18,12 +18,16 @@ export function PacksPage(): JSX.Element {
   const navigate = useNavigate()
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const [isImporting, setIsImporting] = useState<boolean>(false)
+  const [isRenaming, setIsRenaming] = useState<boolean>(false)
   const [packName, setPackName] = useState<string>('')
   const [importCode, setImportCode] = useState<string>('')
   const [packToDelete, setPackToDelete] = useState<string | null>(null)
+  const [packToRename, setPackToRename] = useState<ICuePackDto | null>(null)
+  const [newPackName, setNewPackName] = useState<string>('')
   const [exportingPacks, setExportingPacks] = useState<Set<string>>(new Set())
   const { isOpen, onOpen, onClose } = useModal()
   const { isOpen: isImportOpen, onOpen: onImportOpen, onClose: onImportClose } = useModal()
+  const { isOpen: isRenameOpen, onOpen: onRenameOpen, onClose: onRenameClose } = useModal()
   const { cuePacks, activePack } = useLoaderData<LoaderData>()
   const { revalidate } = useRevalidator()
   const toast = useToast()
@@ -137,6 +141,38 @@ export function PacksPage(): JSX.Element {
     onImportClose()
   }
 
+  const openRenameModal = (pack: ICuePackDto): void => {
+    setPackToRename(pack)
+    setNewPackName(pack.name)
+    onRenameOpen()
+  }
+
+  const closeRenameModal = (): void => {
+    setPackToRename(null)
+    setNewPackName('')
+    onRenameClose()
+  }
+
+  const handleRenamePack = async (): Promise<void> => {
+    if (!packToRename || !newPackName.trim()) {
+      toast.error('Pack name is required')
+      return
+    }
+
+    try {
+      setIsRenaming(true)
+      await window.api.app.renameCuePack(packToRename.id, newPackName.trim())
+      closeRenameModal()
+      revalidate()
+      toast.success('Pack renamed successfully')
+    } catch (error) {
+      console.error('Failed to rename pack:', error)
+      toast.error('Failed to rename pack')
+    } finally {
+      setIsRenaming(false)
+    }
+  }
+
   return (
     <PageWrapper>
       <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
@@ -193,6 +229,15 @@ export function PacksPage(): JSX.Element {
                       aria-label="Export pack"
                     >
                       <Share className="w-4 h-4 text-text-tertiary hover:text-info" />
+                    </button>
+
+                    {/* Rename button */}
+                    <button
+                      onClick={() => openRenameModal(pack)}
+                      className="absolute top-2 right-16 p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors"
+                      aria-label="Rename pack"
+                    >
+                      <Pencil className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
                     </button>
 
                     <div className="p-6">
@@ -328,6 +373,52 @@ export function PacksPage(): JSX.Element {
               className="flex-1"
             >
               {isImporting ? 'Importing...' : 'Import Pack'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Rename Pack Modal */}
+      <Modal isOpen={isRenameOpen} onClose={closeRenameModal} title="Rename Pack">
+        <div className="space-y-6">
+          <div>
+            <label
+              htmlFor="new-pack-name"
+              className="block text-sm font-medium text-text-primary mb-2"
+            >
+              New Pack Name
+            </label>
+            <input
+              id="new-pack-name"
+              type="text"
+              value={newPackName}
+              onChange={(e) => setNewPackName(e.target.value)}
+              placeholder="Enter new pack name..."
+              className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info/40 transition-all duration-200"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleRenamePack()
+                }
+              }}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-border-primary/20">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={closeRenameModal}
+              disabled={isRenaming}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRenamePack}
+              disabled={!newPackName.trim() || isRenaming}
+              className="flex-1"
+            >
+              {isRenaming ? 'Renaming...' : 'Rename Pack'}
             </Button>
           </div>
         </div>

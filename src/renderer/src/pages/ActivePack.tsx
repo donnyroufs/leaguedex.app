@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Bell, Plus, Clock, Zap, Target, Timer, X, Play } from 'lucide-react'
+import { Bell, Plus, Clock, Zap, Target, Timer, X, Play, Pencil } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -8,7 +8,7 @@ import { useModal, useToast } from '../hooks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { ConfirmDialog } from '@renderer/components/ConfirmDialog'
-import { CreateCueDto, ICueDto, ICuePackDto } from '@hexagon/index'
+import { CreateCueDto, EditCueDto, ICueDto, ICuePackDto } from '@hexagon/index'
 
 type LoaderData = {
   cues: ICueDto[]
@@ -18,7 +18,9 @@ type LoaderData = {
 export function ActivePackPage(): JSX.Element {
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const [cueToDelete, setCueToDelete] = useState<string | null>(null)
+  const [cueToEdit, setCueToEdit] = useState<ICueDto | null>(null)
   const { isOpen, onOpen, onClose } = useModal()
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useModal()
   const { cues, activePack } = useLoaderData<LoaderData>()
   const { revalidate } = useRevalidator()
   const toast = useToast()
@@ -148,6 +150,47 @@ export function ActivePackPage(): JSX.Element {
     }
   }
 
+  const openEditModal = (cue: ICueDto): void => {
+    setCueToEdit(cue)
+    onEditOpen()
+  }
+
+  const closeEditModal = (): void => {
+    setCueToEdit(null)
+    onEditClose()
+  }
+
+  const handleEditCue = async (data: CreateCueDto): Promise<void> => {
+    if (!cueToEdit || !activePack) {
+      return
+    }
+
+    try {
+      setIsCreating(true)
+      const editData: EditCueDto = {
+        packId: activePack.id,
+        text: data.text,
+        triggerType: data.triggerType,
+        interval: data.interval,
+        triggerAt: data.triggerAt,
+        event: data.event,
+        objective: data.objective,
+        beforeObjective: data.beforeObjective,
+        value: data.value,
+        endTime: data.endTime
+      }
+      await window.api.app.editCue(cueToEdit.id, editData)
+      closeEditModal()
+      revalidate()
+      toast.success('Cue updated successfully')
+    } catch (error) {
+      console.error('Failed to update cue:', error)
+      toast.error('Failed to update cue')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
   return (
     <PageWrapper>
       <div className="flex items-center justify-between h-20 p-8 border-b border-border-primary">
@@ -202,13 +245,20 @@ export function ActivePackPage(): JSX.Element {
                           {getTriggerTypeLabel(cue.triggerType)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => window.api.app.playCue(cue.id)}
                           className="p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors z-10"
                           aria-label="Play cue"
                         >
                           <Play className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(cue)}
+                          className="p-1.5 rounded-md hover:bg-bg-primary/50 transition-colors z-10"
+                          aria-label="Edit cue"
+                        >
+                          <Pencil className="w-4 h-4 text-text-tertiary hover:text-text-secondary" />
                         </button>
                         <button
                           onClick={() => openDeleteConfirmation(cue.id)}
@@ -263,6 +313,18 @@ export function ActivePackPage(): JSX.Element {
             onCancel={onClose}
             activePackId={activePack.id}
             isLoading={isCreating}
+          />
+        )}
+      </Modal>
+
+      <Modal isOpen={isEditOpen} onClose={closeEditModal} title="Edit Cue">
+        {activePack && cueToEdit && (
+          <CreateCueForm
+            onSubmit={handleEditCue}
+            onCancel={closeEditModal}
+            activePackId={activePack.id}
+            isLoading={isCreating}
+            initialValues={cueToEdit}
           />
         )}
       </Modal>

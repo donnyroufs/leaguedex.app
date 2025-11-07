@@ -11,9 +11,13 @@ export class CuePack {
     return this._isActive
   }
 
+  public get name(): string {
+    return this._name
+  }
+
   private constructor(
     public readonly id: string,
-    public readonly name: string,
+    private _name: string,
     private _isActive: boolean,
     private _cues: Cue[] = []
   ) {}
@@ -32,6 +36,10 @@ export class CuePack {
 
   public activate(): void {
     this._isActive = true
+  }
+
+  public rename(newName: string): void {
+    this._name = newName
   }
 
   public static create(name: string): CuePack {

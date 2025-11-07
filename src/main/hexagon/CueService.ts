@@ -10,12 +10,14 @@ import { GetCuesUseCase } from './GetCuesUseCase'
 import { ICuePackRepository } from './ports/ICuePackRepository'
 import { IUserSettingsRepository } from './ports/IUserSettingsRepository'
 import { CueProcessor } from './CueProcessor'
+import { EditCueDto, EditCueInPackUseCase } from './EditCueInPackUseCase'
 
 export class CueService {
   public constructor(
     private readonly _addCueToPackUseCase: AddCueToPackUseCase,
     private readonly _getCuesUseCase: GetCuesUseCase,
     private readonly _removeCueUseCase: RemoveCueUseCase,
+    private readonly _editCueInPackUseCase: EditCueInPackUseCase,
     private readonly _eventBus: IEventBus,
     private readonly _audioPlayer: IAudioPlayer,
     private readonly _logger: ILogger,
@@ -77,6 +79,10 @@ export class CueService {
 
   public async removeCue(id: string): Promise<void> {
     return this._removeCueUseCase.execute(id)
+  }
+
+  public async editCue(id: string, data: EditCueDto): Promise<void> {
+    return this._editCueInPackUseCase.execute({ ...data, id })
   }
 
   protected async onGameTick(evt: GameTickEvent): Promise<void> {

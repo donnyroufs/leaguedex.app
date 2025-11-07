@@ -1,6 +1,6 @@
 import { BrowserWindow, type IpcMain } from 'electron'
 import { IAppController } from '../../hexagon'
-import { IUserSettingsDto, CreateCueDto, CreateCuePackDto } from '@contracts'
+import { IUserSettingsDto, CreateCueDto, CreateCuePackDto, EditCueDto } from '@contracts'
 
 export class ElectronAdapter {
   private _configured: boolean = false
@@ -62,6 +62,14 @@ export class ElectronAdapter {
 
     ipcMain.handle('remove-cue', async (_, id: string) => {
       return this._appController.removeCue(id)
+    })
+
+    ipcMain.handle('edit-cue', async (_, id: string, data: EditCueDto) => {
+      return this._appController.editCue(id, data)
+    })
+
+    ipcMain.handle('rename-cue-pack', async (_, id: string, name: string) => {
+      return this._appController.renameCuePack(id, name)
     })
 
     ipcMain.handle('regenerate-audio', async (event) => {

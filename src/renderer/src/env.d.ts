@@ -2,6 +2,7 @@
 
 import type {
   CreateCueDto,
+  EditCueDto,
   ICueDto,
   GameDataDto,
   ICuePackDto,
@@ -20,11 +21,13 @@ declare global {
         addCue: (data: CreateCueDto) => Promise<string>
         getCues: () => Promise<ICueDto[]>
         removeCue: (id: string) => Promise<void>
+        editCue: (id: string, data: EditCueDto) => Promise<void>
         createCuePack: (data: CreateCuePackDto) => Promise<string>
         activateCuePack: (id: string) => Promise<void>
         getCuePacks: () => Promise<ICuePackDto[]>
         getActiveCuePack: () => Promise<ICuePackDto | null>
         removeCuePack: (id: string) => Promise<void>
+        renameCuePack: (id: string, name: string) => Promise<void>
         importPack: (code: string) => Promise<void>
         exportPack: (id: string) => Promise<string>
         updateUserSettings: (data: IUserSettingsDto) => Promise<void>

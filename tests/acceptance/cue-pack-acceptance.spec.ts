@@ -331,5 +331,101 @@ describeFeature(
         })
       }
     )
+
+    type RenameCuePackContext = {
+      packId: string
+      oldName: string
+      newName: string
+    }
+
+    Scenario(
+      `Rename a cue pack`,
+      ({ Given, When, Then, And, context }: Typed<RenameCuePackContext>) => {
+        Given(`I have a cue pack called {string}`, async (_, name: string) => {
+          const packId = await app.createCuePack({ name })
+          context.packId = packId
+          context.oldName = name
+        })
+
+        When(`I rename the cue pack to {string}`, async (_, newName: string) => {
+          context.newName = newName
+          await app.renameCuePack(context.packId, newName)
+        })
+
+        Then(`I should have a cue pack called {string}`, async (_, name: string) => {
+          const packs = await app.getCuePacks()
+          const pack = packs.find((p) => p.id === context.packId)
+          expect(pack).toBeDefined()
+          expect(pack!.name).toBe(name)
+        })
+
+        And(`I should not have a cue pack called {string}`, async (_, name: string) => {
+          const packs = await app.getCuePacks()
+          const pack = packs.find((p) => p.name === name)
+          expect(pack).toBeUndefined()
+        })
+      }
+    )
+
+    type EditCueContext = {
+      packId: string
+      cueId: string
+      originalTtsCallCount: number
+    }
+
+    Scenario(
+      `Edit a cue in a pack`,
+      ({ Given, When, Then, And, context }: Typed<EditCueContext>) => {
+        Given(`I have a cue pack called {string}`, async (_, name: string) => {
+          const packId = await app.createCuePack({ name })
+          context.packId = packId
+        })
+
+        And(
+          `I have a cue with the name {string} for the interval {string} seconds in the pack`,
+          async (_, name: string, interval: string) => {
+            const cueId = await app.addCue({
+              packId: context.packId,
+              text: name,
+              triggerType: 'interval',
+              interval: parseInt(interval)
+            })
+            context.cueId = cueId
+            context.originalTtsCallCount = tts.totalCalls
+          }
+        )
+
+        When(
+          `I edit the cue to have the name {string} and interval {string} seconds`,
+          async (_, name: string, interval: string) => {
+            await app.editCue(context.cueId, {
+              packId: context.packId,
+              text: name,
+              triggerType: 'interval',
+              interval: parseInt(interval)
+            })
+          }
+        )
+
+        Then(`the cue should have the name {string}`, async (_, name: string) => {
+          const packs = await app.getCuePacks()
+          const pack = packs.find((p) => p.id === context.packId)
+          const cue = pack!.cues.find((c) => c.id === context.cueId)
+          expect(cue).toBeDefined()
+          expect(cue!.text).toBe(name)
+        })
+
+        And(`the cue should be triggered every {string} seconds`, async (_, interval: string) => {
+          const packs = await app.getCuePacks()
+          const pack = packs.find((p) => p.id === context.packId)
+          const cue = pack!.cues.find((c) => c.id === context.cueId)
+          expect(cue!.interval).toBe(parseInt(interval))
+        })
+
+        And(`audio should be regenerated`, () => {
+          expect(tts.totalCalls).toBeGreaterThan(context.originalTtsCallCount)
+        })
+      }
+    )
   }
 )
