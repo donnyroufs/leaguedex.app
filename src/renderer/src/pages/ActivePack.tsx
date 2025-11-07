@@ -306,7 +306,7 @@ export function ActivePackPage(): JSX.Element {
         )}
       </div>
 
-      <Modal isOpen={isOpen} onClose={onClose} title="Create New Cue">
+      <Modal isOpen={isOpen} onClose={onClose} title="Create New Cue" fullscreen>
         {activePack && (
           <CreateCueForm
             onSubmit={handleCreateCue}
@@ -317,7 +317,7 @@ export function ActivePackPage(): JSX.Element {
         )}
       </Modal>
 
-      <Modal isOpen={isEditOpen} onClose={closeEditModal} title="Edit Cue">
+      <Modal isOpen={isEditOpen} onClose={closeEditModal} title="Edit Cue" fullscreen>
         {activePack && cueToEdit && (
           <CreateCueForm
             onSubmit={handleEditCue}
