@@ -1,6 +1,5 @@
 import { JSX, useState } from 'react'
 import { Button } from './Button'
-import { Timer, Clock, Zap, Target } from 'lucide-react'
 import { CreateCueDto, ICueDto } from '@contracts'
 import { TimeInput } from './TimeInput'
 
@@ -82,35 +81,6 @@ export function CreateCueForm({
     return Number(value)
   }
 
-  const getTriggerTypeIcon = (type: string): JSX.Element => {
-    switch (type) {
-      case 'interval':
-        return <Timer className="w-5 h-5" />
-      case 'oneTime':
-        return <Clock className="w-5 h-5" />
-      case 'event':
-        return <Zap className="w-5 h-5" />
-      case 'objective':
-        return <Target className="w-5 h-5" />
-      default:
-        return <Timer className="w-5 h-5" />
-    }
-  }
-
-  const getTriggerTypeColor = (type: string): string => {
-    switch (type) {
-      case 'interval':
-        return 'text-info'
-      case 'oneTime':
-        return 'text-success'
-      case 'event':
-        return 'text-warning'
-      case 'objective':
-        return 'text-premium'
-      default:
-        return 'text-info'
-    }
-  }
 
   const validateForm = (): boolean => {
     const newErrors: {
@@ -265,39 +235,16 @@ export function CreateCueForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Cue Text Section - Full Width */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-xl font-semibold text-text-primary">Cue Details</h3>
-          <p className="text-sm text-text-tertiary mt-1">What should this cue say?</p>
-        </div>
-
-        <div>
-          <input
-            id="cue-text"
-            type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="e.g., Check minimap, Ward pixel brush, Stack tear..."
-            className={`w-full px-4 py-3.5 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-info/20 focus:border-info/40 transition-all duration-200 ${
-              errors.text ? 'border-status-danger' : 'border-border-primary'
-            }`}
-          />
-          {errors.text && <p className="mt-2.5 text-sm text-status-danger">{errors.text}</p>}
-        </div>
-      </div>
-
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Left Column - Trigger Type Selection */}
-        <div className="lg:col-span-1 space-y-4">
-          <div>
-            <h3 className="text-xl font-semibold text-text-primary">Trigger Type</h3>
-            <p className="text-sm text-text-tertiary mt-1">When should this cue activate?</p>
+    <form onSubmit={handleSubmit} className="h-full flex flex-col">
+      <div className="flex-1 flex gap-4 overflow-hidden">
+        {/* Left Sidebar - Trigger Type Selection */}
+        <div className="w-72 flex-shrink-0 border-r border-border-primary/50 bg-bg-primary/30 p-5 overflow-y-auto">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-text-primary mb-1.5">Trigger Type</h2>
+            <p className="text-sm text-text-tertiary/80">Choose when this cue should activate</p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {[
               {
                 value: 'interval',
@@ -307,19 +254,19 @@ export function CreateCueForm({
               },
               {
                 value: 'oneTime',
-                label: 'At specific time',
+                label: 'At Specific Time',
                 icon: 'oneTime',
                 description: 'Triggers once at a set time'
               },
               {
                 value: 'event',
-                label: 'On specific event',
+                label: 'On Event',
                 icon: 'event',
-                description: 'Activates when an event occurs'
+                description: 'Activates on game event'
               },
               {
                 value: 'objective',
-                label: 'Before objective',
+                label: 'Before Objective',
                 icon: 'objective',
                 description: 'Warns before objectives spawn'
               }
@@ -330,25 +277,22 @@ export function CreateCueForm({
                 onClick={() =>
                   setTriggerType(option.value as 'interval' | 'oneTime' | 'event' | 'objective')
                 }
-                className={`w-full p-4 rounded-lg border transition-all duration-200 text-left ${
+                className={`w-full p-3.5 rounded-xl border-2 transition-all duration-200 text-left group ${
                   triggerType === option.value
-                    ? 'border-info/40 bg-info/5 ring-2 ring-info/20'
-                    : 'border-border-primary bg-bg-primary hover:border-border-accent hover:bg-bg-tertiary'
+                    ? 'border-info/50 bg-info/10 shadow-sm shadow-info/5'
+                    : 'border-border-primary/50 bg-bg-secondary/50 hover:border-info/40 hover:bg-bg-tertiary/50 hover:shadow-sm'
                 }`}
               >
-                <div className="flex items-start space-x-3">
+                <div className="flex-1 min-w-0">
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                      triggerType === option.value ? 'bg-info/10' : 'bg-bg-secondary'
+                    className={`text-sm font-semibold mb-1 transition-colors ${
+                      triggerType === option.value ? 'text-info' : 'text-text-primary group-hover:text-text-secondary'
                     }`}
                   >
-                    <div className={getTriggerTypeColor(option.icon)}>
-                      {getTriggerTypeIcon(option.icon)}
-                    </div>
+                    {option.label}
                   </div>
-                  <div className="flex-1 text-left">
-                    <div className="text-sm font-semibold text-text-primary">{option.label}</div>
-                    <div className="text-xs text-text-tertiary mt-1.5">{option.description}</div>
+                  <div className="text-sm text-text-tertiary/70 leading-relaxed">
+                    {option.description}
                   </div>
                 </div>
               </button>
@@ -356,196 +300,232 @@ export function CreateCueForm({
           </div>
         </div>
 
-        {/* Right Column - Dynamic Form Fields */}
-        <div className="lg:col-span-2 space-y-5">
-          {triggerType === 'interval' && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-text-primary">Interval Settings</h3>
-                <p className="text-sm text-text-tertiary">How often should this cue repeat?</p>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          <div className="p-5 space-y-5">
+            {/* Cue Text Section */}
+            <div className="bg-bg-secondary/80 rounded-xl p-5 border border-border-primary/50 shadow-sm">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-text-primary mb-1.5">Cue Text</h2>
+                <p className="text-sm text-text-tertiary/80">
+                  What message should this cue display when it triggers?
+                </p>
               </div>
-
-              <TimeInput
-                id="cue-interval"
-                label="Interval"
-                value={interval}
-                onChange={setInterval}
-                error={errors.interval}
-                placeholder={useMMSSInterval ? '1:30' : '90'}
-                useMMSS={useMMSSInterval}
-                onToggleMMSS={() => setUseMMSSInterval(!useMMSSInterval)}
-              />
-            </div>
-          )}
-
-          {triggerType === 'oneTime' && (
-            <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-text-primary">Timing Settings</h3>
-                <p className="text-sm text-text-tertiary">When exactly should this cue trigger?</p>
-              </div>
-
-              <TimeInput
-                id="cue-trigger-time"
-                label="Trigger Time"
-                value={triggerAt}
-                onChange={setTriggerAt}
-                error={errors.triggerAt}
-                placeholder={useMMSSTriggerAt ? '2:30' : '150'}
-                useMMSS={useMMSSTriggerAt}
-                onToggleMMSS={() => setUseMMSSTriggerAt(!useMMSSTriggerAt)}
-              />
-            </div>
-          )}
-
-          {triggerType === 'event' && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-text-primary">Event Settings</h3>
-                <p className="text-sm text-text-tertiary">What event should trigger this cue?</p>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label
-                    htmlFor="cue-event"
-                    className="block text-sm font-medium text-text-primary mb-2"
-                  >
-                    Event
-                  </label>
-                  <select
-                    id="cue-event"
-                    value={event}
-                    onChange={(e) => setEvent(e.target.value)}
-                    className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-warning/20 focus:border-warning/40 transition-all duration-200"
-                  >
-                    <option value="">Select an event</option>
-                    <option value="respawn">Player respawn</option>
-                    <option value="canon-wave-spawned">Canon wave spawned</option>
-                    <option value="mana-changed">Mana changed</option>
-                    <option value="support-item-upgraded">Support item upgraded</option>
-                  </select>
-                  {errors.event && (
-                    <p className="mt-2 text-sm text-status-danger">{errors.event}</p>
-                  )}
-                </div>
-
-                {event === 'mana-changed' && (
-                  <div>
-                    <label
-                      htmlFor="cue-event-value"
-                      className="block text-sm font-medium text-text-primary mb-2"
-                    >
-                      Mana Threshold
-                    </label>
-                    <input
-                      id="cue-event-value"
-                      type="number"
-                      min="0"
-                      value={eventValue}
-                      onChange={(e) => setEventValue(e.target.value)}
-                      placeholder="e.g., 100"
-                      className={`w-full px-4 py-3 bg-bg-primary border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-warning/20 focus:border-warning/40 transition-all duration-200 ${
-                        errors.eventValue ? 'border-status-danger' : 'border-border-primary'
-                      }`}
-                    />
-                    <p className="mt-1.5 text-xs text-text-tertiary">
-                      The cue will trigger when mana is at or below this value
-                    </p>
-                    {errors.eventValue && (
-                      <p className="mt-2 text-sm text-status-danger">{errors.eventValue}</p>
-                    )}
-                  </div>
+                <input
+                  id="cue-text"
+                  type="text"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="e.g., Check minimap, Ward pixel brush, Stack tear..."
+                  className={`w-full px-4 py-3 text-base bg-bg-primary border rounded-xl text-text-primary placeholder-text-tertiary/60 focus:outline-none focus:ring-2 focus:ring-info/30 focus:border-info/50 transition-all duration-200 ${
+                    errors.text ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20' : 'border-border-primary/60'
+                  }`}
+                />
+                {errors.text && (
+                  <p className="mt-2 text-sm text-status-danger font-medium">{errors.text}</p>
                 )}
               </div>
             </div>
-          )}
 
-          {triggerType === 'objective' && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-text-primary">Objective Settings</h3>
-                <p className="text-sm text-text-tertiary">
-                  Which objective and when should this cue trigger?
+            {/* Dynamic Trigger Settings */}
+            <div className="bg-bg-secondary/80 rounded-xl p-5 border border-border-primary/50 shadow-sm">
+              {triggerType === 'interval' && (
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Interval Settings</h2>
+                    <p className="text-sm text-text-tertiary/80">
+                      How often should this cue repeat?
+                    </p>
+                  </div>
+                  <TimeInput
+                    id="cue-interval"
+                    label="Interval"
+                    value={interval}
+                    onChange={setInterval}
+                    error={errors.interval}
+                    placeholder={useMMSSInterval ? '1:30' : '90'}
+                    useMMSS={useMMSSInterval}
+                    onToggleMMSS={() => setUseMMSSInterval(!useMMSSInterval)}
+                  />
+                </div>
+              )}
+
+              {triggerType === 'oneTime' && (
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Timing Settings</h2>
+                    <p className="text-sm text-text-tertiary/80">
+                      At what game time should this cue trigger?
+                    </p>
+                  </div>
+                  <TimeInput
+                    id="cue-trigger-time"
+                    label="Trigger Time"
+                    value={triggerAt}
+                    onChange={setTriggerAt}
+                    error={errors.triggerAt}
+                    placeholder={useMMSSTriggerAt ? '2:30' : '150'}
+                    useMMSS={useMMSSTriggerAt}
+                    onToggleMMSS={() => setUseMMSSTriggerAt(!useMMSSTriggerAt)}
+                  />
+                </div>
+              )}
+
+              {triggerType === 'event' && (
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Event Settings</h2>
+                    <p className="text-sm text-text-tertiary/80">
+                      Select which game event should trigger this cue.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label
+                        htmlFor="cue-event"
+                        className="block text-base font-medium text-text-primary mb-2"
+                      >
+                        Event Type
+                      </label>
+                      <select
+                        id="cue-event"
+                        value={event}
+                        onChange={(e) => setEvent(e.target.value)}
+                        className="w-full px-4 py-3 text-base bg-bg-primary border border-border-primary/60 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200"
+                      >
+                        <option value="">Select an event</option>
+                        <option value="respawn">Player respawn</option>
+                        <option value="canon-wave-spawned">Canon wave spawned</option>
+                        <option value="mana-changed">Mana changed</option>
+                        <option value="support-item-upgraded">Support item upgraded</option>
+                      </select>
+                      {errors.event && (
+                        <p className="mt-2 text-sm text-status-danger font-medium">{errors.event}</p>
+                      )}
+                    </div>
+
+                    {event === 'mana-changed' && (
+                      <div>
+                        <label
+                          htmlFor="cue-event-value"
+                          className="block text-base font-medium text-text-primary mb-2"
+                        >
+                          Mana Threshold
+                        </label>
+                        <input
+                          id="cue-event-value"
+                          type="number"
+                          min="0"
+                          value={eventValue}
+                          onChange={(e) => setEventValue(e.target.value)}
+                          placeholder="e.g., 100"
+                          className={`w-full px-4 py-3 text-base bg-bg-primary border rounded-xl text-text-primary placeholder-text-tertiary/60 focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200 ${
+                            errors.eventValue ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20' : 'border-border-primary/60'
+                          }`}
+                        />
+                        <p className="mt-2 text-sm text-text-tertiary/70">
+                          The cue will trigger when your mana is at or below this value
+                        </p>
+                        {errors.eventValue && (
+                          <p className="mt-2 text-sm text-status-danger font-medium">
+                            {errors.eventValue}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {triggerType === 'objective' && (
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">Objective Settings</h2>
+                    <p className="text-sm text-text-tertiary/80">
+                      Choose which objective to track and when to trigger.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label
+                        htmlFor="cue-objective"
+                        className="block text-base font-medium text-text-primary mb-2"
+                      >
+                        Objective
+                      </label>
+                      <select
+                        id="cue-objective"
+                        value={objective}
+                        onChange={(e) =>
+                          setObjective(
+                            e.target.value as 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+                          )
+                        }
+                        className="w-full px-4 py-3 text-base bg-bg-primary border border-border-primary/60 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-premium/30 focus:border-premium/50 transition-all duration-200"
+                      >
+                        <option value="dragon">Dragon</option>
+                        <option value="baron">Baron</option>
+                        <option value="grubs">Grubs</option>
+                        <option value="herald">Herald</option>
+                        <option value="atakhan">Atakhan</option>
+                      </select>
+                    </div>
+
+                    <TimeInput
+                      id="cue-before-objective"
+                      label="Time Before Spawn"
+                      value={beforeObjective}
+                      onChange={setBeforeObjective}
+                      error={errors.beforeObjective}
+                      placeholder={useMMSSBeforeObjective ? '0:30' : '30'}
+                      useMMSS={useMMSSBeforeObjective}
+                      onToggleMMSS={() => setUseMMSSBeforeObjective(!useMMSSBeforeObjective)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Optional End Time */}
+            <div className="bg-bg-secondary/80 rounded-xl p-5 border border-border-primary/50 shadow-sm">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-text-primary mb-1.5">End Time (Optional)</h2>
+                <p className="text-sm text-text-tertiary/80">
+                  When should this cue stop triggering? Leave empty to continue indefinitely.
                 </p>
               </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label
-                    htmlFor="cue-objective"
-                    className="block text-sm font-medium text-text-primary mb-2"
-                  >
-                    Objective
-                  </label>
-                  <select
-                    id="cue-objective"
-                    value={objective}
-                    onChange={(e) =>
-                      setObjective(
-                        e.target.value as 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-                      )
-                    }
-                    className="w-full px-4 py-3 bg-bg-primary border border-border-primary rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-premium/20 focus:border-premium/40 transition-all duration-200"
-                  >
-                    <option value="dragon">Dragon</option>
-                    <option value="baron">Baron</option>
-                    <option value="grubs">Grubs</option>
-                    <option value="herald">Herald</option>
-                    <option value="atakhan">Atakhan</option>
-                  </select>
-                </div>
-
-                <TimeInput
-                  id="cue-before-objective"
-                  label="Time Before Spawn"
-                  value={beforeObjective}
-                  onChange={setBeforeObjective}
-                  error={errors.beforeObjective}
-                  placeholder={useMMSSBeforeObjective ? '0:30' : '30'}
-                  useMMSS={useMMSSBeforeObjective}
-                  onToggleMMSS={() => setUseMMSSBeforeObjective(!useMMSSBeforeObjective)}
-                />
-              </div>
+              <TimeInput
+                id="cue-end-time"
+                label="End Time"
+                value={endTime}
+                onChange={setEndTime}
+                error={errors.endTime}
+                placeholder={useMMSSEndTime ? '20:00' : '1200'}
+                useMMSS={useMMSSEndTime}
+                onToggleMMSS={() => setUseMMSSEndTime(!useMMSSEndTime)}
+              />
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-xl font-semibold text-text-primary">End Time (Optional)</h3>
-          <p className="text-sm text-text-tertiary mt-1">
-            When should this cue stop triggering? Leave empty if it should continue indefinitely.
-          </p>
+      {/* Sticky Action Buttons */}
+      <div className="flex-shrink-0 border-t border-border-primary/50 bg-bg-secondary/90 backdrop-blur-sm p-5">
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!isFormValid() || isLoading} className="flex-1">
+            {isLoading ? 'Creating...' : initialValues ? 'Update Cue' : 'Create Cue'}
+          </Button>
         </div>
-
-        <TimeInput
-          id="cue-end-time"
-          label="End Time"
-          value={endTime}
-          onChange={setEndTime}
-          error={errors.endTime}
-          placeholder={useMMSSEndTime ? '20:00' : '1200'}
-          useMMSS={useMMSSEndTime}
-          onToggleMMSS={() => setUseMMSSEndTime(!useMMSSEndTime)}
-        />
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex gap-3 pt-4 border-t border-border-primary/20">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isLoading}
-          className="flex-1"
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={!isFormValid() || isLoading} className="flex-1">
-          {isLoading ? 'Creating...' : 'Create Cue'}
-        </Button>
       </div>
     </form>
   )
