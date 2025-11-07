@@ -1,5 +1,6 @@
 import { GameDataDto } from '@contracts'
 import { CreateCueDto } from '../AddCueToPackUseCase'
+import { EditCueDto } from '../EditCueInPackUseCase'
 import { ICueDto } from '../ICueDto'
 import { ICuePackDto } from '@hexagon/GetCuePacksUseCase'
 import { CreateCuePackDto } from '@hexagon/CreateCuePackUseCase'
@@ -20,9 +21,11 @@ export interface IAppController {
   getActiveCuePack(): Promise<ICuePackDto | null>
   getCuePacks(): Promise<ICuePackDto[]>
   removeCuePack(id: string): Promise<void>
+  renameCuePack(id: string, name: string): Promise<void>
   addCue(data: CreateCueDto): Promise<string>
   getCues(): Promise<ICueDto[]>
   removeCue(id: string): Promise<void>
+  editCue(id: string, data: EditCueDto): Promise<void>
   regenerateAudio(): Promise<void>
 
   onGameTick(callback: (gameData: GameDataDto) => void): void

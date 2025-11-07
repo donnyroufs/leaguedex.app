@@ -82,6 +82,7 @@ export class CompositionRoot {
       this._logger
     )
     const exportPackUseCase = new Hexagon.ExportPackUseCase(this._cuePackRepository)
+    const renameCuePackUseCase = new Hexagon.RenameCuePackUseCase(this._cuePackRepository)
 
     const cuePackService = new Hexagon.CuePackService(
       createCuePackUseCase,
@@ -91,12 +92,17 @@ export class CompositionRoot {
       this._logger,
       removeCuePackUseCase,
       importPackUseCase,
-      exportPackUseCase
+      exportPackUseCase,
+      renameCuePackUseCase
     )
 
     const addCueToPackUseCase = new Hexagon.AddCueToPackUseCase(this._tts, this._cuePackRepository)
     const getCuesUseCase = new Hexagon.GetCuesUseCase(this._cuePackRepository)
     const removeCueUseCase = new Hexagon.RemoveCueUseCase(this._cuePackRepository)
+    const editCueInPackUseCase = new Hexagon.EditCueInPackUseCase(
+      this._tts,
+      this._cuePackRepository
+    )
 
     const userSettingsRepository = await Outbound.UserSettingsRepositoryFactory.create(
       isProd,
@@ -114,6 +120,7 @@ export class CompositionRoot {
       addCueToPackUseCase,
       getCuesUseCase,
       removeCueUseCase,
+      editCueInPackUseCase,
       eventBus,
       audioPlayer,
       this._logger,

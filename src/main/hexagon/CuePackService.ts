@@ -6,6 +6,7 @@ import { GetCuePacksUseCase, ICuePackDto } from './GetCuePacksUseCase'
 import { ImportPackUseCase } from './ImportPackUseCase'
 import { ILogger } from './ports/ILogger'
 import { RemoveCuePackUseCase } from './RemoveCuePackUseCase'
+import { RenameCuePackUseCase } from './RenameCuePackUseCase'
 
 export class CuePackService {
   public constructor(
@@ -16,7 +17,8 @@ export class CuePackService {
     private readonly _logger: ILogger,
     private readonly _removeCuePackUseCase: RemoveCuePackUseCase,
     private readonly _importPackUseCase: ImportPackUseCase,
-    private readonly _exportPackUseCase: ExportPackUseCase
+    private readonly _exportPackUseCase: ExportPackUseCase,
+    private readonly _renameCuePackUseCase: RenameCuePackUseCase
   ) {}
 
   public async start(): Promise<void> {
@@ -52,6 +54,10 @@ export class CuePackService {
 
   public async exportPack(id: string): Promise<string> {
     return this._exportPackUseCase.execute({ id })
+  }
+
+  public async renameCuePack(id: string, name: string): Promise<void> {
+    return this._renameCuePackUseCase.execute({ id, name })
   }
 
   private async onCuePackCreated(id: string): Promise<void> {

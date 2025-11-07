@@ -1,7 +1,7 @@
 import { JSX, useState } from 'react'
 import { Button } from './Button'
 import { Timer, Clock, Zap, Target } from 'lucide-react'
-import { CreateCueDto } from '@contracts'
+import { CreateCueDto, ICueDto } from '@contracts'
 import { TimeInput } from './TimeInput'
 
 type CreateCueFormProps = {
@@ -9,27 +9,43 @@ type CreateCueFormProps = {
   onCancel: () => void
   activePackId: string
   isLoading?: boolean
+  initialValues?: ICueDto
 }
 
 export function CreateCueForm({
   onSubmit,
   onCancel,
   activePackId,
-  isLoading = false
+  isLoading = false,
+  initialValues
 }: CreateCueFormProps): JSX.Element {
-  const [text, setText] = useState('')
+  const secondsToMMSS = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const [text, setText] = useState(initialValues?.text || '')
   const [triggerType, setTriggerType] = useState<'interval' | 'oneTime' | 'event' | 'objective'>(
-    'interval'
+    initialValues?.triggerType || 'interval'
   )
-  const [interval, setInterval] = useState<string>('')
-  const [triggerAt, setTriggerAt] = useState<string>('')
-  const [event, setEvent] = useState<string>('')
-  const [eventValue, setEventValue] = useState<string>('')
+  const [interval, setInterval] = useState<string>(
+    initialValues?.interval ? secondsToMMSS(initialValues.interval) : ''
+  )
+  const [triggerAt, setTriggerAt] = useState<string>(
+    initialValues?.triggerAt ? secondsToMMSS(initialValues.triggerAt) : ''
+  )
+  const [event, setEvent] = useState<string>(initialValues?.event || '')
+  const [eventValue, setEventValue] = useState<string>(initialValues?.value?.toString() || '')
   const [objective, setObjective] = useState<'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'>(
-    'dragon'
+    initialValues?.objective || 'dragon'
   )
-  const [beforeObjective, setBeforeObjective] = useState<string>('')
-  const [endTime, setEndTime] = useState<string>('')
+  const [beforeObjective, setBeforeObjective] = useState<string>(
+    initialValues?.beforeObjective ? secondsToMMSS(initialValues.beforeObjective) : ''
+  )
+  const [endTime, setEndTime] = useState<string>(
+    initialValues?.endTime ? secondsToMMSS(initialValues.endTime) : ''
+  )
 
   // Add toggle states for MM:ss mode
   const [useMMSSInterval, setUseMMSSInterval] = useState(true)

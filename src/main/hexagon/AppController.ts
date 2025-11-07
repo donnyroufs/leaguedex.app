@@ -12,6 +12,7 @@ import {
 import { CreateCueDto, GameDataDto, ICueDto } from '@contracts'
 import { ICuePackDto } from './GetCuePacksUseCase'
 import { CreateCuePackDto } from './CreateCuePackUseCase'
+import { EditCueDto } from './EditCueInPackUseCase'
 
 export class AppController implements IAppController {
   public constructor(
@@ -103,6 +104,16 @@ export class AppController implements IAppController {
   public async removeCue(id: string): Promise<void> {
     this._logger.info('removeCue', { id })
     return this._cueService.removeCue(id)
+  }
+
+  public async editCue(id: string, data: EditCueDto): Promise<void> {
+    this._logger.info('editCue', { id, data })
+    return this._cueService.editCue(id, data)
+  }
+
+  public async renameCuePack(id: string, name: string): Promise<void> {
+    this._logger.info('renameCuePack', { id, name })
+    return this._cuePackService.renameCuePack(id, name)
   }
 
   public async regenerateAudio(): Promise<void> {
