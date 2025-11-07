@@ -8,5 +8,6 @@ export type ActivePlayer = {
    */
   currentMana: number | null
   totalMana: number | null
+  currentGold: number
   items: readonly number[]
 }

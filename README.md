@@ -1,40 +1,17 @@
-# <img src="build/icon.png" alt="Leaguedex Logo" width="128" height="128" style="margin-right: 16px;">
+# <img src="build/icon.png" alt="Leaguedex Logo" width="32" height="32" style="vertical-align: middle;"> Leaguedex
 
 **[Watch in action](https://www.youtube.com/watch?v=SL_V0_jrz7c)**
 
-
 ## What is Leaguedex?
 
-Leaguedex is a tool that helps League of Legends players improve through personalized in-game cues. Create custom CuePacks tailored to your playstyle - whether you're practicing jungle tracking, wave management, or objective control. Get real-time audio reminders during your games to reinforce good habits and decision making.
+Leaguedex is a Text-to-Speech (TTS) engine that provides personalized coaching for League of Legends players through human-created cues. Create custom CuePacks tailored to your playstyle - whether you're practicing jungle tracking, wave management, or objective control. Get real-time audio reminders during your games to reinforce good habits and decision making.
 
-Share your CuePacks with friends and the community, or keep them private as your secret weapon. Import CuePacks from others to learn their strategies and adapt them to your own gameplay.
+**Our core features are, and will always remain, free.**
 
-In the future I aim to add at least one more feature which would consist of tracking your games so that you can do POST reviews through some advanced tooling. With these reveiws you can keep track of played matchups and get summaries/insights before you get into a new game all based of your own reviewing with the option to use our knowledge base to get even better insights.
+## Contribution
 
-### Example CuePacks
+We welcome contributions from the community! Our development approach emphasizes test-driven development as much as possible, though the frontend is primarily AI-generated.
 
-#### Donny (Author of Leaguedex)
-
-```
-eyJuYW1lIjoiRG9ubnkncyBNaWQgTGFuZSBQYWNrIiwiY3VlcyI6W3sidGV4dCI6IlNjdXR0bGUgQ3JhYiIsInRyaWdnZXJUeXBlIjoib25lVGltZSIsInRyaWdnZXJBdCI6MjEwfSx7InRleHQiOiJXYXRjaCBvdXQgZm9yIGdhbmshIiwidHJpZ2dlclR5cGUiOiJvbmVUaW1lIiwidHJpZ2dlckF0IjoyMjV9LHsidGV4dCI6IldhdGNoIG91dCBmb3IgZ2FuayEiLCJ0cmlnZ2VyVHlwZSI6Im9uZVRpbWUiLCJ0cmlnZ2VyQXQiOjE2MH0seyJ0ZXh0IjoiVHJhY2sgbXkganVuZ2xlciIsInRyaWdnZXJUeXBlIjoiaW50ZXJ2YWwiLCJpbnRlcnZhbCI6NjB9LHsidGV4dCI6IldhcmQgdG93YXJkcyBteSBqdW5nbGVyISIsInRyaWdnZXJUeXBlIjoib25lVGltZSIsInRyaWdnZXJBdCI6MTM1fSx7InRleHQiOiJXaGF0IG5ldXRyYWxzIGFyZSB1cD8gQW5kIHdoZXJlIGlzIG15IHRlYW0gYXQ/IiwidHJpZ2dlclR5cGUiOiJldmVudCIsImV2ZW50IjoicmVzcGF3biJ9LHsidGV4dCI6IlByZXBhcmUgZm9yIGRyYWdvbiEiLCJ0cmlnZ2VyVHlwZSI6Im9iamVjdGl2ZSIsIm9iamVjdGl2ZSI6ImRyYWdvbiIsImJlZm9yZU9iamVjdGl2ZSI6OTB9LHsidGV4dCI6IlByZXBhcmUgZm9yIGJhcm9uISIsInRyaWdnZXJUeXBlIjoib2JqZWN0aXZlIiwib2JqZWN0aXZlIjoiYmFyb24iLCJiZWZvcmVPYmplY3RpdmUiOjEyMH0seyJ0ZXh0IjoiUHJlcGFyZSBmb3IgZ3J1YnMhIiwidHJpZ2dlclR5cGUiOiJvYmplY3RpdmUiLCJvYmplY3RpdmUiOiJncnVicyIsImJlZm9yZU9iamVjdGl2ZSI6OTB9LHsidGV4dCI6IlByZXBhcmUgZm9yIGF0YWtoYW4hIiwidHJpZ2dlclR5cGUiOiJvYmplY3RpdmUiLCJvYmplY3RpdmUiOiJhdGFraGFuIiwiYmVmb3JlT2JqZWN0aXZlIjoxMjB9LHsidGV4dCI6IlByZXBhcmUgZm9yIGhlcmFsZCEiLCJ0cmlnZ2VyVHlwZSI6Im9iamVjdGl2ZSIsIm9iamVjdGl2ZSI6ImhlcmFsZCIsImJlZm9yZU9iamVjdGl2ZSI6OTB9XX0=
-```
-
-#### Casual Mid Lane
-
-```
-eyJuYW1lIjoiQ2FzdWFsIE1pZCBMYW5lIiwiY3VlcyI6W3sidGV4dCI6IldhdGNoIG91dCBmb3IgZ2FuayEiLCJ0cmlnZ2VyVHlwZSI6Im9uZVRpbWUiLCJ0cmlnZ2VyQXQiOjE2MH0seyJ0ZXh0IjoiV2F0Y2ggb3V0IGZvciBnYW5rISIsInRyaWdnZXJUeXBlIjoib25lVGltZSIsInRyaWdnZXJBdCI6MjI1fSx7InRleHQiOiJQbGFjZSB3YXJkIiwidHJpZ2dlclR5cGUiOiJvbmVUaW1lIiwidHJpZ2dlckF0IjoxMzV9LHsidGV4dCI6IldoZXJlIGlzIG15IGp1bmdsZXI/IiwidHJpZ2dlclR5cGUiOiJpbnRlcnZhbCIsImludGVydmFsIjo5MH0seyJ0ZXh0IjoiQ2Fub24gd2F2ZSBzcGF3bmVkIiwidHJpZ2dlclR5cGUiOiJldmVudCIsImV2ZW50IjoiY2Fub24td2F2ZS1zcGF3bmVkIn1dfQ==
-```
-
-
-#### Neutral Objectives
-
-```
-eyJuYW1lIjoiTmV1dHJhbCBPYmplY3RpdmVzIiwiY3VlcyI6W3sidGV4dCI6IlByZXBhcmUgZm9yIGRyYWdvbiEiLCJ0cmlnZ2VyVHlwZSI6Im9iamVjdGl2ZSIsIm9iamVjdGl2ZSI6ImRyYWdvbiIsImJlZm9yZU9iamVjdGl2ZSI6OTB9LHsidGV4dCI6IlByZXBhcmUgZm9yIGJhcm9uISIsInRyaWdnZXJUeXBlIjoib2JqZWN0aXZlIiwib2JqZWN0aXZlIjoiYmFyb24iLCJiZWZvcmVPYmplY3RpdmUiOjEyMH0seyJ0ZXh0IjoiUHJlcGFyZSBmb3IgZ3J1YnMhIiwidHJpZ2dlclR5cGUiOiJvYmplY3RpdmUiLCJvYmplY3RpdmUiOiJncnVicyIsImJlZm9yZU9iamVjdGl2ZSI6OTB9LHsidGV4dCI6IlByZXBhcmUgZm9yIGF0YWtoYW4hIiwidHJpZ2dlclR5cGUiOiJvYmplY3RpdmUiLCJvYmplY3RpdmUiOiJhdGFraGFuIiwiYmVmb3JlT2JqZWN0aXZlIjoxMjB9LHsidGV4dCI6IlByZXBhcmUgZm9yIGhlcmFsZCEiLCJ0cmlnZ2VyVHlwZSI6Im9iamVjdGl2ZSIsIm9iamVjdGl2ZSI6ImhlcmFsZCIsImJlZm9yZU9iamVjdGl2ZSI6OTB9XX0=
-```
-
-## For Developers
-
-I will add issues every now and then to this repository but I'm not actively looking for contribution, if you are really motivated to help out then you can reach me on discord. You can find the invite link [here](https://join.leaguedex.app)
-
+If you're motivated to help out, you can reach us on Discord. Find the invite link [here](https://join.leaguedex.app).
 
 ![Overview](/docs/overview.png)

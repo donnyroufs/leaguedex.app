@@ -21,6 +21,7 @@ describe('Game Data Provider', () => {
         respawnsIn: null,
         currentMana: 0,
         totalMana: 0,
+        currentGold: 0,
         items: []
       }
     })

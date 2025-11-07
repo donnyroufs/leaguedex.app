@@ -124,4 +124,12 @@ Feature: Cues
     Then I should hear the audio "check_minimap" again
     When another "60" seconds pass
     Then I should not hear the audio "check_minimap"
+
+  Scenario: Cue on gold threshold
+    Given I have a cue configured:
+      | text           | triggerType | event          | value |
+      | Time to recall | event       | gold-threshold |  3000 |
+    And we are in a League of Legends match
+    When the player reaches "3000" gold
+    Then I should hear the audio "time_to_recall"
     # Scenario: Cue on canon wave spawned event after 15:05

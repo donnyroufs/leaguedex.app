@@ -6,9 +6,10 @@ type ModalProps = {
   onClose: () => void
   title: string
   children: React.ReactNode
+  fullscreen?: boolean
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps): JSX.Element | null {
+export function Modal({ isOpen, onClose, title, children, fullscreen = false }: ModalProps): JSX.Element | null {
   const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -38,15 +39,21 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps): JSX.Ele
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <div className={`fixed inset-0 z-50 ${fullscreen ? '' : 'flex items-center justify-center'}`}>
+      {!fullscreen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
       <div
         ref={modalRef}
-        className="relative w-full max-w-6xl mx-4 bg-bg-secondary border border-border-primary rounded-xl shadow-2xl max-h-[90vh] flex flex-col"
+        className={`bg-bg-secondary border border-border-primary shadow-2xl flex flex-col ${
+          fullscreen
+            ? 'absolute w-full top-[2rem] h-[calc(100vh-2rem)] rounded-none'
+            : 'relative w-full max-w-6xl mx-4 rounded-xl max-h-[90vh]'
+        }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

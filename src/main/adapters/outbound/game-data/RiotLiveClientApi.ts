@@ -56,6 +56,7 @@ export class RiotLiveClientApi implements IGameDataProvider {
           activePlayer.championStats.resourceType === 'MANA'
             ? activePlayer.championStats.resourceMax
             : null,
+        currentGold: activePlayer.currentGold,
         items: player.items.map((item) => item.itemID)
       }
     })

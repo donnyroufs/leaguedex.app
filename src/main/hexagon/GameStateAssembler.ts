@@ -19,6 +19,7 @@ export class GameStateAssembler {
         respawnsIn: data.activePlayer.respawnsIn,
         currentMana: data.activePlayer.currentMana,
         totalMana: data.activePlayer.totalMana,
+        currentGold: data.activePlayer.currentGold,
         items: data.activePlayer.items
       },
       objectives
