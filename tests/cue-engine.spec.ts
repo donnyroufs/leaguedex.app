@@ -160,7 +160,6 @@ describe('CueEngine', () => {
     const assembler = new GameStateAssembler()
     const cue = new CueBuilder().asGoldThreshold().withValue(3000).build()
 
-    // First trigger at 300 seconds
     const gameData = new TestGameDataBuilder()
       .withGameTime(300)
       .hasStarted()
@@ -171,7 +170,6 @@ describe('CueEngine', () => {
     const due = CueEngine.getDueCues(state, [cue])
     expect(due).toHaveLength(1)
 
-    // Should not trigger at 330 seconds (within 60s cooldown)
     const gameData2 = new TestGameDataBuilder()
       .withGameTime(330)
       .hasStarted()
@@ -182,7 +180,6 @@ describe('CueEngine', () => {
     const due2 = CueEngine.getDueCues(state2, [cue])
     expect(due2).toHaveLength(0)
 
-    // Should trigger again at 360 seconds (60s cooldown passed)
     const gameData3 = new TestGameDataBuilder()
       .withGameTime(360)
       .hasStarted()
