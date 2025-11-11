@@ -10,6 +10,7 @@ import { Settings } from './pages/Settings'
 import { PacksPage } from './pages/Packs'
 import { ActivePackPage } from './pages/ActivePack'
 import { Titlebar } from './components/Titlebar'
+import { trackDailyLaunch } from './utils/launchTracking'
 
 const router = createHashRouter([
   {
@@ -87,3 +88,5 @@ createRoot(document.getElementById('root')!).render(
     />
   </StrictMode>
 )
+
+trackDailyLaunch()
