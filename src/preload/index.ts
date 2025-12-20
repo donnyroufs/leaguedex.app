@@ -5,7 +5,8 @@ import {
   CreateCuePackDto,
   EditCueDto,
   GameDataDto,
-  IUserSettingsDto
+  IUserSettingsDto,
+  CueTimelineDto
 } from '@contracts'
 
 const api = {
@@ -59,6 +60,16 @@ const api = {
 
       return () => {
         ipcRenderer.removeAllListeners('regenerate-audio-complete')
+      }
+    },
+    getCueTimeline: () => ipcRenderer.invoke('get-cue-timeline'),
+    onCueTimelineUpdated: (callback: (timeline: CueTimelineDto) => void) => {
+      ipcRenderer.on('cue-timeline-updated', (_, data) => {
+        callback(data)
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('cue-timeline-updated')
       }
     }
   },

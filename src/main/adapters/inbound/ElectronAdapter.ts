@@ -81,9 +81,18 @@ export class ElectronAdapter {
       return this._appController.regenerateAudio()
     })
 
-    this._appController.onGameTick((evt) => {
+    ipcMain.handle('get-cue-timeline', async () => {
+      return this._appController.getCueTimeline()
+    })
+
+    this._appController.onGameTick(async (evt) => {
       BrowserWindow.getAllWindows().forEach((window) => {
         window.webContents.send('game-data', evt)
+      })
+
+      const timeline = await this._appController.getCueTimeline()
+      BrowserWindow.getAllWindows().forEach((window) => {
+        window.webContents.send('cue-timeline-updated', timeline)
       })
     })
 

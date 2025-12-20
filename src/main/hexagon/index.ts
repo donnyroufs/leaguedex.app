@@ -31,6 +31,7 @@ export * from './RemoveCueUseCase'
 export * from './EditCueInPackUseCase'
 export * from './CueService'
 export * from './CueProcessor'
+export * from './CueTimelineTracker'
 
 export * from './CreateCuePackUseCase'
 export * from './GetCuePacksUseCase'

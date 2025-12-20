@@ -7,7 +7,8 @@ import type {
   GameDataDto,
   ICuePackDto,
   CreateCuePackDto,
-  IUserSettingsDto
+  IUserSettingsDto,
+  CueTimelineDto
 } from '@contracts'
 
 declare global {
@@ -43,6 +44,8 @@ declare global {
           }) => void
         ) => () => void
         onRegenerateComplete: (callback: () => void) => () => void
+        getCueTimeline: () => Promise<CueTimelineDto>
+        onCueTimelineUpdated: (callback: (timeline: CueTimelineDto) => void) => () => void
       }
 
       getVersion: () => Promise<string>

@@ -11,6 +11,9 @@ import { ICuePackRepository } from './ports/ICuePackRepository'
 import { IUserSettingsRepository } from './ports/IUserSettingsRepository'
 import { CueProcessor } from './CueProcessor'
 import { EditCueDto, EditCueInPackUseCase } from './EditCueInPackUseCase'
+import { ObjectiveState } from './GameState'
+import { CueTimelineDto } from '@contracts'
+import { Cue } from './Cue'
 
 export class CueService {
   public constructor(
@@ -41,14 +44,59 @@ export class CueService {
     this._cueProcessor.clear()
   }
 
+  public async getCueTimeline(
+    gameTime: number,
+    objectives?: ObjectiveState
+  ): Promise<CueTimelineDto> {
+    const pack = await this._cueRepository.active()
+
+    if (pack.isErr() || pack.unwrap() === null) {
+      return {
+        past: [],
+        current: null,
+        upcoming: []
+      }
+    }
+
+    const cues = pack.unwrap()!.cues
+    const timeline = this._cueProcessor.getTimelineTracker().getTimeline(gameTime, cues, objectives)
+
+    return {
+      past: timeline.past.map((entry) => ({
+        cue: this._mapCueToDto(entry.cue),
+        triggeredAt: entry.triggeredAt,
+        playedAt: entry.playedAt
+      })),
+      current: timeline.current
+        ? {
+            cue: this._mapCueToDto(timeline.current.cue),
+            triggeredAt: timeline.current.triggeredAt,
+            playedAt: timeline.current.playedAt
+          }
+        : null,
+      upcoming: timeline.upcoming.map((cue) => this._mapCueToDto(cue))
+    }
+  }
+
+  private _mapCueToDto(cue: Cue): ICueDto {
+    return {
+      id: cue.id,
+      text: cue.text,
+      triggerType: cue.triggerType,
+      interval: cue.interval,
+      triggerAt: cue.triggerAt,
+      event: cue.event,
+      value: cue.value,
+      objective: cue.objective,
+      beforeObjective: cue.beforeObjective,
+      endTime: cue.endTime
+    }
+  }
+
   public async addCue(data: CreateCueDto): Promise<string> {
     return this._addCueToPackUseCase.execute(data)
   }
 
-  /**
-   * Used for testing the generated cue audio. This is so that you can
-   * get an idea of what it sounds like.
-   */
   public async playCue(cueId: string): Promise<void> {
     const pack = await this._cueRepository.active()
 
@@ -88,9 +136,6 @@ export class CueService {
   protected async onGameTick(evt: GameTickEvent): Promise<void> {
     const { gameTime } = evt.payload.state
 
-    // TODO: we probably should cache the active pack and invalidate it when:
-    // - Updated the pack (added,removed
-    // - We activate/deactivate a pack
     const pack = await this._cueRepository.active()
 
     if (pack.isErr() || pack.unwrap() === null) {
@@ -107,6 +152,8 @@ export class CueService {
       dueCues: dueCues.map((x) => x.id)
     })
 
-    dueCues.forEach((cue) => this._cueProcessor.enqueue(cue))
+    dueCues.forEach((cue) => {
+      this._cueProcessor.enqueue(cue, gameTime)
+    })
   }
 }

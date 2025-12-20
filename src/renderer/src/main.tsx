@@ -9,6 +9,7 @@ import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
 import { PacksPage } from './pages/Packs'
 import { ActivePackPage } from './pages/ActivePack'
+import { CueViewerPage } from './pages/CueViewer'
 import { Titlebar } from './components/Titlebar'
 
 const router = createHashRouter([
@@ -42,6 +43,13 @@ const router = createHashRouter([
             window.api.app.getActiveCuePack()
           ])
           return { cuePacks, activePack }
+        }
+      },
+      {
+        path: '/cue-viewer',
+        element: <CueViewerPage />,
+        loader: async () => {
+          return window.api.app.getCueTimeline()
         }
       },
       {

@@ -28,9 +28,9 @@ describe('CueProcessor', () => {
     const cue2 = new CueBuilder().withText('second').build()
     const cue3 = new CueBuilder().withText('third').build()
 
-    processor.enqueue(cue1)
-    processor.enqueue(cue2)
-    processor.enqueue(cue3)
+    processor.enqueue(cue1, 0)
+    processor.enqueue(cue2, 0)
+    processor.enqueue(cue3, 0)
 
     await waitForProcessing()
 
@@ -44,7 +44,7 @@ describe('CueProcessor', () => {
     const cue = new CueBuilder().build()
     const start = Date.now()
 
-    processor.enqueue(cue)
+    processor.enqueue(cue, 0)
 
     const duration = Date.now() - start
     expect(duration).toBeLessThan(10)
@@ -59,9 +59,9 @@ describe('CueProcessor', () => {
 
     audioFake.failNext()
 
-    failingProcessor.enqueue(cue1)
-    failingProcessor.enqueue(cue2)
-    failingProcessor.enqueue(cue3)
+    failingProcessor.enqueue(cue1, 0)
+    failingProcessor.enqueue(cue2, 0)
+    failingProcessor.enqueue(cue3, 0)
 
     audioFake.resolveAll()
     await waitForProcessing()
@@ -76,9 +76,9 @@ describe('CueProcessor', () => {
 
     const clearProcessor = new CueProcessor(audioFake, logger, userSettingsRepo, audioDir)
 
-    clearProcessor.enqueue(cue1)
-    clearProcessor.enqueue(cue2)
-    clearProcessor.enqueue(cue3)
+    clearProcessor.enqueue(cue1, 0)
+    clearProcessor.enqueue(cue2, 0)
+    clearProcessor.enqueue(cue3, 0)
 
     await wait(10)
     clearProcessor.clear()
@@ -96,9 +96,9 @@ describe('CueProcessor', () => {
 
     const clearProcessor = new CueProcessor(audioFake, logger, userSettingsRepo, audioDir)
 
-    clearProcessor.enqueue(cue1)
-    clearProcessor.enqueue(cue2)
-    clearProcessor.enqueue(cue3)
+    clearProcessor.enqueue(cue1, 0)
+    clearProcessor.enqueue(cue2, 0)
+    clearProcessor.enqueue(cue3, 0)
 
     await wait(10)
     clearProcessor.clear()
