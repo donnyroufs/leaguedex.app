@@ -4,7 +4,8 @@ import { Result } from '../../../shared-kernel'
 
 export class FakeUserSettingsRepository implements IUserSettingsRepository {
   private _settings: UserSettings = {
-    volume: 1
+    volume: 1,
+    speech: { type: 'local', status: 'installed' }
   }
 
   public async load(): Promise<Result<UserSettings, Error>> {

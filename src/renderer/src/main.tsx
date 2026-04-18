@@ -2,14 +2,24 @@ import './assets/main.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createHashRouter, RouterProvider } from 'react-router'
+import { createHashRouter, redirect, RouterProvider } from 'react-router'
 import { Toaster } from 'react-hot-toast'
 
 import { Layout } from './Layout'
 import { Settings } from './pages/Settings'
 import { PacksPage } from './pages/Packs'
 import { ActivePackPage } from './pages/ActivePack'
+import { Onboarding } from './pages/Onboarding'
 import { Titlebar } from './components/Titlebar'
+import type { SpeechEngineView } from '@contracts'
+
+async function requireSpeechEngine(): Promise<NonNullable<SpeechEngineView>> {
+  const view = await window.api.app.getSpeechEngine()
+  if (view === null) {
+    throw redirect('/onboarding')
+  }
+  return view
+}
 
 const router = createHashRouter([
   {
@@ -27,16 +37,28 @@ const router = createHashRouter([
     ),
     children: [
       {
+        path: '/onboarding',
+        element: <Onboarding />,
+        loader: async () => {
+          return window.api.app.getSpeechEngine()
+        }
+      },
+      {
         path: '/settings',
         element: <Settings />,
         loader: async () => {
-          return window.api.app.getUserSettings()
+          const [speechEngine, settings] = await Promise.all([
+            requireSpeechEngine(),
+            window.api.app.getUserSettings()
+          ])
+          return { settings, speechEngine }
         }
       },
       {
         path: '/packs',
         element: <PacksPage />,
         loader: async () => {
+          await requireSpeechEngine()
           const [cuePacks, activePack] = await Promise.all([
             window.api.app.getCuePacks(),
             window.api.app.getActiveCuePack()
@@ -48,6 +70,7 @@ const router = createHashRouter([
         path: '/',
         element: <ActivePackPage />,
         loader: async () => {
+          await requireSpeechEngine()
           const [cues, activePack] = await Promise.all([
             window.api.app.getCues(),
             window.api.app.getActiveCuePack()

@@ -7,12 +7,19 @@ import {
   CuePackService,
   IUserSettingsDto,
   IUserSettingsRepository,
-  RegenerateAudioUseCase
+  RegenerateAudioUseCase,
+  SpeechEngineService
 } from '.'
 import { CreateCueDto, GameDataDto, ICueDto } from '@contracts'
 import { ICuePackDto } from './GetCuePacksUseCase'
 import { CreateCuePackDto } from './CreateCuePackUseCase'
 import { EditCueDto } from './EditCueInPackUseCase'
+import {
+  OpenAITtsModel,
+  OpenAITtsVoice,
+  SpeechEngineInput,
+  SpeechEngineView
+} from './IUserSettingsDto'
 
 export class AppController implements IAppController {
   public constructor(
@@ -22,17 +29,45 @@ export class AppController implements IAppController {
     private readonly _eventBus: IEventBus,
     private readonly _cuePackService: CuePackService,
     private readonly _userSettingsRepository: IUserSettingsRepository,
-    private readonly _regenerateAudioUseCase: RegenerateAudioUseCase
+    private readonly _regenerateAudioUseCase: RegenerateAudioUseCase,
+    private readonly _speechEngineService: SpeechEngineService
   ) {}
 
   public async updateUserSettings(data: IUserSettingsDto): Promise<void> {
-    const res = await this._userSettingsRepository.save(data)
+    const existing = (await this._userSettingsRepository.load()).unwrap()
+    const res = await this._userSettingsRepository.save({
+      ...data,
+      speech: existing.speech
+    })
     return res.unwrap()
   }
 
   public async getUserSettings(): Promise<IUserSettingsDto> {
     const res = await this._userSettingsRepository.load()
     return res.unwrap()
+  }
+
+  public getSpeechEngineView(): Promise<SpeechEngineView> {
+    return this._speechEngineService.getView()
+  }
+
+  public updateSpeechEngine(input: SpeechEngineInput): Promise<void> {
+    this._logger.info('updateSpeechEngine', { type: input.type })
+    return this._speechEngineService.update(input)
+  }
+
+  public installLocalSpeechModel(): Promise<void> {
+    this._logger.info('installLocalSpeechModel')
+    return this._speechEngineService.installLocal()
+  }
+
+  public testOpenAIKey(
+    apiKey: string,
+    model: OpenAITtsModel,
+    voice: OpenAITtsVoice
+  ): Promise<void> {
+    this._logger.info('testOpenAIKey', { model, voice })
+    return this._speechEngineService.testOpenAI(apiKey, model, voice)
   }
 
   public async start(): Promise<void> {

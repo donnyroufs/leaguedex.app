@@ -15,4 +15,8 @@ export * from './game-data'
 export * from './audio-generators'
 
 export * from './IpcAudioRegenerationProgressReporter'
+export * from './IpcModelDownloadProgressReporter'
+export * from './SherpaModelInstaller'
+export * from './ApiKeyVault'
+export * from './ElectronSpeechEngineAdapter'
 export * from './FileSystem'

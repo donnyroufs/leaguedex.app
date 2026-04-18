@@ -9,7 +9,13 @@ type ModalProps = {
   fullscreen?: boolean
 }
 
-export function Modal({ isOpen, onClose, title, children, fullscreen = false }: ModalProps): JSX.Element | null {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  fullscreen = false
+}: ModalProps): JSX.Element | null {
   const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

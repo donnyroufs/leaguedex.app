@@ -55,9 +55,7 @@ export function TimeInput({
           } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           title={`Click to switch to ${useMMSS ? 'seconds' : 'MM:ss'} format`}
         >
-          <Clock12
-            className={`w-3.5 h-3.5 ${useMMSS ? 'text-info' : 'text-text-tertiary'}`}
-          />
+          <Clock12 className={`w-3.5 h-3.5 ${useMMSS ? 'text-info' : 'text-text-tertiary'}`} />
           <span className="font-semibold">{useMMSS ? 'MM:SS' : 'Sec'}</span>
         </button>
       </div>

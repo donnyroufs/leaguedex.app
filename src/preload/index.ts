@@ -5,7 +5,10 @@ import {
   CreateCuePackDto,
   EditCueDto,
   GameDataDto,
-  IUserSettingsDto
+  IUserSettingsDto,
+  OpenAITtsModel,
+  OpenAITtsVoice,
+  SpeechEngineInput
 } from '@contracts'
 
 const api = {
@@ -59,6 +62,45 @@ const api = {
 
       return () => {
         ipcRenderer.removeAllListeners('regenerate-audio-complete')
+      }
+    },
+    getSpeechEngine: () => ipcRenderer.invoke('get-speech-engine'),
+    updateSpeechEngine: (input: SpeechEngineInput) =>
+      ipcRenderer.invoke('update-speech-engine', input),
+    installLocalSpeechModel: () => ipcRenderer.invoke('install-local-speech-model'),
+    testOpenAIKey: (apiKey: string, model: OpenAITtsModel, voice: OpenAITtsVoice) =>
+      ipcRenderer.invoke('test-openai-key', apiKey, model, voice),
+    onModelDownloadProgress: (
+      callback: (data: {
+        phase: 'downloading' | 'extracting'
+        receivedBytes: number
+        totalBytes: number
+      }) => void
+    ) => {
+      ipcRenderer.on('model-download-progress', (_, data) => {
+        callback(data)
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('model-download-progress')
+      }
+    },
+    onModelDownloadComplete: (callback: () => void) => {
+      ipcRenderer.on('model-download-complete', () => {
+        callback()
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('model-download-complete')
+      }
+    },
+    onModelDownloadError: (callback: (data: { message: string }) => void) => {
+      ipcRenderer.on('model-download-error', (_, data) => {
+        callback(data)
+      })
+
+      return () => {
+        ipcRenderer.removeAllListeners('model-download-error')
       }
     }
   },

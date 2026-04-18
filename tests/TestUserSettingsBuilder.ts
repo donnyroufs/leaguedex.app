@@ -10,7 +10,8 @@ export class TestUserSettingsBuilder {
 
   public build(): UserSettings {
     return {
-      volume: this._volume
+      volume: this._volume,
+      speech: { type: 'local', status: 'installed' }
     }
   }
 }

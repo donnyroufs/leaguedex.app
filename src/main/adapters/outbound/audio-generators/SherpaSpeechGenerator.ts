@@ -6,6 +6,9 @@ import { ILogger, ITextToSpeechGenerator } from '../../../hexagon'
 import { Result } from '../../../shared-kernel'
 import { AudioFileName } from '@hexagon/AudioFileName'
 
+const SHERPA_SUBDIR = 'sherpa'
+const VOICE_SUBDIR = join('voices', 'kokoro-en-v0_19')
+
 export class SherpaSpeechGenerator implements ITextToSpeechGenerator {
   private constructor(
     private readonly _logger: ILogger,
@@ -71,10 +74,38 @@ export class SherpaSpeechGenerator implements ITextToSpeechGenerator {
     }
   }
 
+  public static sherpaPaths(installRoot: string): {
+    sherpaPath: string
+    modelPath: string
+    tokensPath: string
+    dataDir: string
+    voicesPath: string
+  } {
+    const voiceDir = join(installRoot, SHERPA_SUBDIR, VOICE_SUBDIR)
+    return {
+      sherpaPath: join(installRoot, SHERPA_SUBDIR, 'bin', 'sherpa-onnx-offline-tts.exe'),
+      modelPath: join(voiceDir, 'model.onnx'),
+      tokensPath: join(voiceDir, 'tokens.txt'),
+      dataDir: join(voiceDir, 'espeak-ng-data'),
+      voicesPath: join(voiceDir, 'voices.bin')
+    }
+  }
+
+  public static isInstalled(installRoot: string): boolean {
+    const paths = SherpaSpeechGenerator.sherpaPaths(installRoot)
+    return (
+      existsSync(paths.sherpaPath) &&
+      existsSync(paths.modelPath) &&
+      existsSync(paths.tokensPath) &&
+      existsSync(paths.dataDir) &&
+      existsSync(paths.voicesPath)
+    )
+  }
+
   public static async create(
     logger: ILogger,
     audioDir: string,
-    resourcesPath: string
+    installRoot: string
   ): Promise<SherpaSpeechGenerator> {
     try {
       if (!existsSync(audioDir)) {
@@ -85,20 +116,15 @@ export class SherpaSpeechGenerator implements ITextToSpeechGenerator {
       throw new Error(`Failed to create audio directory: ${audioDir}`)
     }
 
-    const sherpaPath = join(resourcesPath, 'sherpa', 'bin', 'sherpa-onnx-offline-tts.exe')
-    const voiceDir = join(resourcesPath, 'sherpa', 'voices', 'kokoro-en-v0_19')
-    const modelPath = join(voiceDir, 'model.onnx')
-    const tokensPath = join(voiceDir, 'tokens.txt')
-    const dataDir = join(voiceDir, 'espeak-ng-data')
-    const voicesPath = join(voiceDir, 'voices.bin')
+    const paths = SherpaSpeechGenerator.sherpaPaths(installRoot)
     const speakerId = 5 // Adam voice (am_adam)
 
     const requiredPaths = [
-      { path: sherpaPath, name: 'Sherpa executable' },
-      { path: modelPath, name: 'Kokoro model' },
-      { path: tokensPath, name: 'Tokens file' },
-      { path: dataDir, name: 'Espeak data directory' },
-      { path: voicesPath, name: 'Voices file' }
+      { path: paths.sherpaPath, name: 'Sherpa executable' },
+      { path: paths.modelPath, name: 'Kokoro model' },
+      { path: paths.tokensPath, name: 'Tokens file' },
+      { path: paths.dataDir, name: 'Espeak data directory' },
+      { path: paths.voicesPath, name: 'Voices file' }
     ]
 
     for (const { path, name } of requiredPaths) {
@@ -109,19 +135,19 @@ export class SherpaSpeechGenerator implements ITextToSpeechGenerator {
     }
 
     logger.info('Sherpa-ONNX TTS initialized successfully with Kokoro', {
-      sherpaPath,
-      voiceDir,
+      sherpaPath: paths.sherpaPath,
+      installRoot,
       speakerId
     })
 
     return new SherpaSpeechGenerator(
       logger,
       audioDir,
-      sherpaPath,
-      modelPath,
-      tokensPath,
-      dataDir,
-      voicesPath,
+      paths.sherpaPath,
+      paths.modelPath,
+      paths.tokensPath,
+      paths.dataDir,
+      paths.voicesPath,
       speakerId
     )
   }
