@@ -17,18 +17,19 @@ export function CueViewerPage(): JSX.Element {
     return () => unsubscribe()
   }, [])
 
-  const getCueIcon = (triggerType: ICueDto['triggerType']): JSX.Element => {
+  const getCueIcon = (triggerType: ICueDto['triggerType'], size: 'sm' | 'md' = 'sm'): JSX.Element => {
+    const cls = size === 'md' ? 'w-5 h-5' : 'w-4 h-4'
     switch (triggerType) {
       case 'interval':
-        return <Timer className="w-4 h-4 text-info" />
+        return <Timer className={`${cls} text-info`} />
       case 'oneTime':
-        return <Clock className="w-4 h-4 text-success" />
+        return <Clock className={`${cls} text-success`} />
       case 'event':
-        return <Zap className="w-4 h-4 text-warning" />
+        return <Zap className={`${cls} text-warning`} />
       case 'objective':
-        return <Target className="w-4 h-4 text-premium" />
+        return <Target className={`${cls} text-premium`} />
       default:
-        return <Bell className="w-4 h-4 text-neutral" />
+        return <Bell className={`${cls} text-neutral`} />
     }
   }
 
@@ -98,105 +99,113 @@ export function CueViewerPage(): JSX.Element {
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0 p-8">
-        <div className="w-full max-w-5xl mx-auto space-y-8">
+        <div className="w-full max-w-5xl mx-auto space-y-10">
           <section>
-            <h2 className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-4">
-              Past Cues
-            </h2>
-            {timeline.past.length === 0 ? (
-              <div className="text-sm text-text-tertiary italic">No cues played yet</div>
-            ) : (
-              <div className="grid gap-3 md:grid-cols-3">
-                {timeline.past.map((entry, idx) => (
-                  <div
-                    key={`${entry.cue.id}-${entry.triggeredAt}-${idx}`}
-                    className="border border-border-primary/50 rounded-lg bg-bg-secondary/50 p-4 opacity-60 hover:opacity-80 transition-opacity"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex-shrink-0 w-8 h-8 bg-bg-primary rounded-lg flex items-center justify-center border border-border-primary/20">
-                        {getCueIcon(entry.cue.triggerType)}
-                      </div>
-                      <span className="text-xs text-text-tertiary">
-                        {formatGameTime(entry.triggeredAt)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-text-secondary font-medium line-clamp-2">
-                      {entry.cue.text}
-                    </p>
-                    <p className="text-xs text-text-tertiary mt-1">
-                      {formatTriggerDisplay(entry.cue)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section>
-            <h2 className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-4">
-              Now Playing
-            </h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-info shadow-[0_0_8px_rgba(0,212,255,0.8)] animate-[statusPulse_2s_infinite]" />
+              <h2 className="text-xs font-semibold text-info uppercase tracking-[0.2em]">
+                Now Playing
+              </h2>
+            </div>
             {timeline.current === null ? (
-              <div className="text-sm text-text-tertiary italic">No cue playing</div>
+              <div className="border border-dashed border-border-primary rounded-lg bg-bg-secondary/30 px-6 py-8 text-center text-sm text-text-tertiary italic">
+                Waiting for next cue…
+              </div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-3">
-                <div className="border-2 border-info rounded-lg bg-gradient-to-br from-info/10 to-info/5 p-4 animate-pulse-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex-shrink-0 w-8 h-8 bg-bg-primary rounded-lg flex items-center justify-center border-2 border-info/30">
-                      {getCueIcon(timeline.current.cue.triggerType)}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-info uppercase tracking-wider">
-                        Playing
+              <div className="relative border-2 border-info rounded-xl bg-gradient-to-br from-info/15 via-info/5 to-transparent p-6 animate-pulse-border overflow-hidden">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-info/10 blur-3xl rounded-full pointer-events-none" />
+                <div className="relative flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-bg-primary rounded-xl flex items-center justify-center border-2 border-info/40 shadow-lg">
+                    {getCueIcon(timeline.current.cue.triggerType, 'md')}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] font-bold text-info uppercase tracking-wider px-2 py-0.5 rounded bg-info/10 border border-info/30">
+                        Live
                       </span>
-                      <span className="text-xs text-text-tertiary">
+                      <span className="text-xs text-text-tertiary font-mono">
                         {formatGameTime(timeline.current.triggeredAt)}
                       </span>
+                      <span className="text-xs text-text-tertiary">·</span>
+                      <span className="text-xs text-text-tertiary">
+                        {formatTriggerDisplay(timeline.current.cue)}
+                      </span>
                     </div>
+                    <p className="text-lg text-text-primary font-semibold leading-snug">
+                      {timeline.current.cue.text}
+                    </p>
                   </div>
-                  <p className="text-sm text-text-primary font-semibold mb-1 line-clamp-2">
-                    {timeline.current.cue.text}
-                  </p>
-                  <p className="text-xs text-text-tertiary">
-                    {formatTriggerDisplay(timeline.current.cue)}
-                  </p>
                 </div>
               </div>
             )}
           </section>
 
           <section>
-            <h2 className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-4">
-              Upcoming
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold text-text-tertiary uppercase tracking-[0.2em]">
+                Upcoming
+              </h2>
+              {timeline.upcoming.length > 0 && (
+                <span className="text-xs text-text-tertiary font-mono">
+                  {timeline.upcoming.length} queued
+                </span>
+              )}
+            </div>
             {timeline.upcoming.length === 0 ? (
               <div className="text-sm text-text-tertiary italic">No upcoming cues</div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid gap-3 md:grid-cols-2">
                 {timeline.upcoming.map((cue, idx) => (
                   <div
                     key={`${cue.id}-upcoming-${idx}`}
-                    className="border-2 border-border-primary rounded-lg bg-bg-secondary p-4 hover:border-info/30 transition-colors"
+                    className="group border border-border-primary rounded-lg bg-bg-secondary/60 p-4 hover:border-info/40 hover:bg-bg-secondary transition-all"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex-shrink-0 w-8 h-8 bg-bg-primary rounded-lg flex items-center justify-center border border-border-primary/20">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-9 h-9 bg-bg-primary rounded-lg flex items-center justify-center border border-border-primary group-hover:border-info/30 transition-colors">
                         {getCueIcon(cue.triggerType)}
                       </div>
-                      <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-                        Next
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-primary font-medium line-clamp-2 mb-1">
+                          {cue.text}
+                        </p>
+                        <p className="text-xs text-text-tertiary">{formatTriggerDisplay(cue)}</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-text-primary font-medium line-clamp-2 mb-1">
-                      {cue.text}
-                    </p>
-                    <p className="text-xs text-text-tertiary">
-                      {formatTriggerDisplay(cue)}
-                    </p>
                   </div>
                 ))}
               </div>
             )}
           </section>
+
+          {timeline.past.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold text-text-tertiary uppercase tracking-[0.2em]">
+                  History
+                </h2>
+                <span className="text-xs text-text-tertiary font-mono">
+                  {timeline.past.length} played
+                </span>
+              </div>
+              <div className="border border-border-primary/60 rounded-lg bg-bg-secondary/30 divide-y divide-border-primary/40">
+                {timeline.past.map((entry, idx) => (
+                  <div
+                    key={`${entry.cue.id}-${entry.triggeredAt}-${idx}`}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-bg-secondary/60 transition-colors"
+                  >
+                    <div className="flex-shrink-0">{getCueIcon(entry.cue.triggerType)}</div>
+                    <span className="text-xs text-text-tertiary font-mono flex-shrink-0 w-12">
+                      {formatGameTime(entry.triggeredAt)}
+                    </span>
+                    <p className="text-sm text-text-secondary truncate flex-1">{entry.cue.text}</p>
+                    <span className="text-xs text-text-tertiary flex-shrink-0 hidden sm:inline">
+                      {formatTriggerDisplay(entry.cue)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </PageWrapper>
