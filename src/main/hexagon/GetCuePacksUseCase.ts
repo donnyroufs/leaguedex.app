@@ -27,13 +27,8 @@ export class GetCuePacksUseCase
       cues: cuePack.cues.map((cue) => ({
         id: cue.id,
         text: cue.text,
-        triggerType: cue.triggerType,
-        interval: cue.interval,
-        triggerAt: cue.triggerAt,
-        event: cue.event,
-        value: cue.value,
-        objective: cue.objective,
-        beforeObjective: cue.beforeObjective
+        trigger: cue.trigger,
+        endTime: cue.endTime
       }))
     }))
   }

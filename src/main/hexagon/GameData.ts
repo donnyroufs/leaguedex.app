@@ -1,4 +1,5 @@
 import { GameEvent } from './game-events'
+import { Team } from './Team'
 
 export type GameData = {
   readonly hasStarted: boolean
@@ -19,4 +20,5 @@ type RawActivePlayer = {
   totalMana: number | null
   currentGold: number
   items: readonly number[]
+  team: Team
 }

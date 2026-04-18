@@ -25,12 +25,8 @@ export class GetActiveCuePackUseCase
       cues: pack.cues.map((cue) => ({
         id: cue.id,
         text: cue.text,
-        triggerType: cue.triggerType,
-        interval: cue.interval,
-        triggerAt: cue.triggerAt,
-        event: cue.event,
-        objective: cue.objective,
-        beforeObjective: cue.beforeObjective
+        trigger: cue.trigger,
+        endTime: cue.endTime
       }))
     }
   }

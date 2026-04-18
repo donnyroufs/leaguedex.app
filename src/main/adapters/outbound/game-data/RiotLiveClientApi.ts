@@ -57,7 +57,8 @@ export class RiotLiveClientApi implements IGameDataProvider {
             ? activePlayer.championStats.resourceMax
             : null,
         currentGold: activePlayer.currentGold,
-        items: player.items.map((item) => item.itemID)
+        items: player.items.map((item) => item.itemID),
+        team: player.team.toLowerCase() === 'chaos' ? 'red' : 'blue'
       }
     })
   }

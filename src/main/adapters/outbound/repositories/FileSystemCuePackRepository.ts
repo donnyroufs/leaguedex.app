@@ -1,26 +1,53 @@
 import { Result } from '../../../shared-kernel'
-import {
-  CuePack,
-  ICuePackRepository,
-  Cue,
-  AudioFileName,
-  CueObjective,
-  CueTriggerType
-} from '../../../hexagon'
+import { CuePack, ICuePackRepository, Cue, AudioFileName, CueTrigger } from '../../../hexagon'
 import path from 'path'
 import fs from 'fs/promises'
+
+const CURRENT_STORAGE_VERSION = 1
+
+type FSCue = {
+  id: string
+  text: string
+  audioUrl: {
+    fileName: string
+    extension: 'mp3' | 'wav'
+    path?: string
+  }
+  trigger: CueTrigger
+  endTime?: number
+}
+
+type FSCuePack = {
+  id: string
+  name: string
+  isActive: boolean
+  cues: FSCue[]
+}
+
+type FSFile = {
+  version: number
+  packs: FSCuePack[]
+}
 
 export class FileSystemCuePackRepository implements ICuePackRepository {
   private readonly _path: string
 
-  private constructor(_basePath: string) {
-    this._path = _basePath
+  private constructor(_path: string) {
+    this._path = _path
   }
 
   private async readCuePacks(): Promise<FSCuePack[]> {
     try {
       const data = await fs.readFile(this._path, 'utf-8')
-      return JSON.parse(data)
+      const parsed = JSON.parse(data)
+      if (!parsed || typeof parsed !== 'object' || !('version' in parsed)) {
+        return []
+      }
+      const file = parsed as FSFile
+      if (file.version !== CURRENT_STORAGE_VERSION) {
+        return []
+      }
+      return file.packs
     } catch {
       return []
     }
@@ -111,7 +138,8 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
   }
 
   private async writeCuePacks(cuePacks: FSCuePack[]): Promise<void> {
-    await fs.writeFile(this._path, JSON.stringify(cuePacks, null, 2))
+    const file: FSFile = { version: CURRENT_STORAGE_VERSION, packs: cuePacks }
+    await fs.writeFile(this._path, JSON.stringify(file, null, 2))
   }
 
   private serializeCuePack(cuePack: CuePack): FSCuePack {
@@ -128,13 +156,7 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
       id: cue.id,
       text: cue.text,
       audioUrl: cue.audioUrl.toJSON(),
-      triggerType: cue.triggerType,
-      interval: cue.interval,
-      triggerAt: cue.triggerAt,
-      event: cue.event,
-      objective: cue.objective,
-      beforeObjective: cue.beforeObjective,
-      value: cue.value !== undefined ? Number(cue.value) : undefined,
+      trigger: cue.trigger,
       endTime: cue.endTime !== undefined ? Number(cue.endTime) : undefined
     }
   }
@@ -160,14 +182,31 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
       id: fsCue.id,
       text: fsCue.text,
       audioUrl: AudioFileName.fromJSON(fsCue.audioUrl),
-      triggerType: fsCue.triggerType,
-      interval: fsCue.interval,
-      triggerAt: fsCue.triggerAt,
-      event: fsCue.event,
-      objective: fsCue.objective,
-      beforeObjective: fsCue.beforeObjective,
-      value: fsCue.value !== undefined ? Number(fsCue.value) : undefined,
+      trigger: fsCue.trigger,
       endTime: fsCue.endTime !== undefined ? Number(fsCue.endTime) : undefined
+    }
+  }
+
+  /**
+   * If `cue-packs.json` exists but predates the current storage format, rename it to
+   * `cue-packs-legacy.json` so the user can still inspect it, and start with an empty file.
+   */
+  private static async handleLegacyFile(filePath: string): Promise<void> {
+    try {
+      const data = await fs.readFile(filePath, 'utf-8')
+      const parsed = JSON.parse(data)
+      const isCurrentFormat =
+        parsed &&
+        typeof parsed === 'object' &&
+        'version' in parsed &&
+        parsed.version === CURRENT_STORAGE_VERSION
+
+      if (isCurrentFormat) return
+
+      const legacyPath = path.join(path.dirname(filePath), 'cue-packs-legacy.json')
+      await fs.rename(filePath, legacyPath)
+    } catch {
+      // file didn't exist or wasn't readable; ignore
     }
   }
 
@@ -176,37 +215,15 @@ export class FileSystemCuePackRepository implements ICuePackRepository {
 
     await fs.mkdir(path.dirname(filePath), { recursive: true })
 
+    await this.handleLegacyFile(filePath)
+
     try {
       await fs.access(filePath)
     } catch {
-      await fs.writeFile(filePath, '[]')
+      const empty: FSFile = { version: CURRENT_STORAGE_VERSION, packs: [] }
+      await fs.writeFile(filePath, JSON.stringify(empty, null, 2))
     }
 
     return new FileSystemCuePackRepository(filePath)
   }
-}
-
-type FSCue = {
-  id: string
-  text: string
-  audioUrl: {
-    fileName: string
-    extension: 'mp3' | 'wav'
-    path?: string // Optional for backwards compatibility
-  }
-  triggerType: CueTriggerType
-  interval?: number
-  triggerAt?: number
-  event?: string
-  objective?: CueObjective
-  beforeObjective?: number
-  value?: number
-  endTime?: number
-}
-
-type FSCuePack = {
-  id: string
-  name: string
-  isActive: boolean
-  cues: FSCue[]
 }

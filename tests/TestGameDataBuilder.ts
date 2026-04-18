@@ -8,6 +8,10 @@ export class TestGameDataBuilder {
   private _currentMana: number = 0
   private _totalMana: number = 1000
   private _currentGold: number = 0
+  private _items: readonly number[] = []
+  private _team: Team = 'blue'
+  private _isAlive: boolean = true
+  private _respawnsIn: number | null = null
 
   public hasStarted(): TestGameDataBuilder {
     this._hasStarted = true
@@ -41,6 +45,26 @@ export class TestGameDataBuilder {
     return this
   }
 
+  public withItems(items: readonly number[]): TestGameDataBuilder {
+    this._items = items
+    return this
+  }
+
+  public withTeam(team: Team): TestGameDataBuilder {
+    this._team = team
+    return this
+  }
+
+  public withIsAlive(isAlive: boolean): TestGameDataBuilder {
+    this._isAlive = isAlive
+    return this
+  }
+
+  public withRespawnsIn(seconds: number | null): TestGameDataBuilder {
+    this._respawnsIn = seconds
+    return this
+  }
+
   /**
    * Starts the game at a specific moment
    */
@@ -57,12 +81,13 @@ export class TestGameDataBuilder {
       events: this._events,
       activePlayer: {
         summonerName: 'Test',
-        isAlive: true,
-        respawnsIn: null,
+        isAlive: this._isAlive,
+        respawnsIn: this._respawnsIn,
         currentMana: this._currentMana,
         totalMana: this._totalMana,
         currentGold: this._currentGold,
-        items: []
+        items: this._items,
+        team: this._team
       }
     }
   }

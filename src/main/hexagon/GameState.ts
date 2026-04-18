@@ -21,14 +21,26 @@ type ObjectiveData = {
    */
   isAlive: boolean
   /**
-   * When the objective will spawn next.
+   * Absolute game time when the objective will spawn next.
    */
   nextSpawn: number | null
+  /**
+   * Seconds until the next spawn. Derived: nextSpawn - gameTime. Null when the objective is alive.
+   */
+  secondsUntilSpawn: number | null
 }
 
 export type ObjectiveState = {
   dragon: ObjectiveData & {
     teamStats: Record<Team, number>
+    /**
+     * Derived: how many dragons the active player's team has killed.
+     */
+    myTeamKills: number
+    /**
+     * Derived: how many dragons the enemy team has killed.
+     */
+    enemyTeamKills: number
   }
   baron: ObjectiveData
   grubs: ObjectiveData
