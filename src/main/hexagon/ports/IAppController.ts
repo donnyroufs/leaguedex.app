@@ -1,4 +1,4 @@
-import { GameDataDto } from '@contracts'
+import { GameDataDto, CueTimelineDto } from '@contracts'
 import { CreateCueDto } from '../AddCueToPackUseCase'
 import { EditCueDto } from '../EditCueInPackUseCase'
 import { ICueDto } from '../ICueDto'
@@ -27,6 +27,7 @@ export interface IAppController {
   removeCue(id: string): Promise<void>
   editCue(id: string, data: EditCueDto): Promise<void>
   regenerateAudio(): Promise<void>
+  getCueTimeline(): Promise<CueTimelineDto>
 
   onGameTick(callback: (gameData: GameDataDto) => void): void
   onGameStarted(callback: (gameData: GameDataDto) => void): void

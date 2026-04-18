@@ -2,11 +2,13 @@ import { Cue } from './Cue'
 import { IAudioPlayer } from './ports/IAudioPlayer'
 import { ILogger } from './ports/ILogger'
 import { IUserSettingsRepository } from './ports/IUserSettingsRepository'
+import { CueTimelineTracker } from './CueTimelineTracker'
 
 export class CueProcessor {
   private _queue: Cue[] = []
   private _isProcessing = false
   private _shouldStop = false
+  private _timelineTracker = new CueTimelineTracker()
 
   public constructor(
     private readonly _audioPlayer: IAudioPlayer,
@@ -15,9 +17,14 @@ export class CueProcessor {
     private readonly _audioDir: string
   ) {}
 
-  public enqueue(cue: Cue): void {
+  public enqueue(cue: Cue, gameTime: number): void {
+    this._timelineTracker.addDueCue(cue, gameTime)
     this._queue.push(cue)
     this.processQueue()
+  }
+
+  public getTimelineTracker(): CueTimelineTracker {
+    return this._timelineTracker
   }
 
   private async processQueue(): Promise<void> {
@@ -27,6 +34,8 @@ export class CueProcessor {
 
     while (this._queue.length > 0 && !this._shouldStop) {
       const cue = this._queue.shift()!
+
+      this._timelineTracker.onCueStarted(cue)
 
       const settings = await this._userSettingsRepository.load()
 
@@ -43,6 +52,8 @@ export class CueProcessor {
       if (result.isErr()) {
         this._logger.error('Audio playback failed', { cueId: cue.id, error: result.getError() })
       }
+
+      this._timelineTracker.onCueFinished(cue)
     }
 
     this._isProcessing = false
@@ -52,5 +63,6 @@ export class CueProcessor {
   public clear(): void {
     this._shouldStop = true
     this._queue = []
+    this._timelineTracker.reset()
   }
 }

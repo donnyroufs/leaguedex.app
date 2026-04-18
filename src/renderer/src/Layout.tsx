@@ -1,10 +1,10 @@
 import { JSX, useEffect, useState } from 'react'
-import { Outlet } from 'react-router'
+import { Outlet, useNavigate, useLocation } from 'react-router'
 
 import { Statusbar } from './components/Statusbar'
 import { Titlebar } from './components/Titlebar'
 import { SidebarNavItem } from './components/SidebarNavItem'
-import { Settings as SettingsIcon, Bell, Download, RefreshCw, Package } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Download, RefreshCw, Package, Eye } from 'lucide-react'
 import { GameDataDto } from '@contracts'
 
 type UpdateStatus = {
@@ -24,6 +24,9 @@ export function Layout(): JSX.Element {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [isCheckingUpdates, setIsCheckingUpdates] = useState<boolean>(false)
   const [gameData, setGameData] = useState<GameDataDto | null>(null)
+  const [prevGameStarted, setPrevGameStarted] = useState<boolean>(false)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     window.api?.getVersion?.().then((version) => setVersion(version))
@@ -32,10 +35,15 @@ export function Layout(): JSX.Element {
   useEffect(() => {
     const unsubscribe = window.api.app.onGameData((data) => {
       setGameData(data)
+
+      if (data.started && !prevGameStarted && location.pathname !== '/cue-viewer') {
+        navigate('/cue-viewer')
+      }
+      setPrevGameStarted(data.started)
     })
 
     return () => unsubscribe()
-  }, [])
+  }, [navigate, location, prevGameStarted])
 
   useEffect(() => {
     const unsubscribe = window.api.updater.onUpdateStatus((data) => {
@@ -122,7 +130,10 @@ export function Layout(): JSX.Element {
     <div className="w-full h-full flex flex-col bg-bg-primary" style={{ height: '100vh' }}>
       <header className="flex-shrink-0">
         <Titlebar title="Leaguedex" version={version} />
-        <Statusbar gameTime={gameData?.time ?? null} />
+        <Statusbar
+          gameTime={gameData?.time ?? null}
+          onClickInGame={() => navigate('/cue-viewer')}
+        />
       </header>
 
       <div className="flex-1 flex bg-gradient-to-br from-bg-primary to-bg-secondary min-h-0">
@@ -134,6 +145,9 @@ export function Layout(): JSX.Element {
             <ul className="flex flex-col mt-1 space-y-1">
               <li>
                 <SidebarNavItem to="/" label="Active Pack" icon={Bell} />
+              </li>
+              <li>
+                <SidebarNavItem to="/cue-viewer" label="In-Game" icon={Eye} />
               </li>
               <li>
                 <SidebarNavItem to="/packs" label="Packs" icon={Package} />

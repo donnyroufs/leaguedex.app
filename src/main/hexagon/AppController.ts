@@ -7,14 +7,17 @@ import {
   CuePackService,
   IUserSettingsDto,
   IUserSettingsRepository,
-  RegenerateAudioUseCase
+  RegenerateAudioUseCase,
+  GameState
 } from '.'
-import { CreateCueDto, GameDataDto, ICueDto } from '@contracts'
+import { CreateCueDto, GameDataDto, ICueDto, CueTimelineDto } from '@contracts'
 import { ICuePackDto } from './GetCuePacksUseCase'
 import { CreateCuePackDto } from './CreateCuePackUseCase'
 import { EditCueDto } from './EditCueInPackUseCase'
 
 export class AppController implements IAppController {
+  private _currentGameState: GameState | null = null
+
   public constructor(
     private readonly _gameMonitor: GameMonitor,
     private readonly _logger: ILogger,
@@ -40,6 +43,14 @@ export class AppController implements IAppController {
     await this._cueService.start()
     await this._cuePackService.start()
 
+    this._eventBus.subscribe('game-tick', (evt) => {
+      this._currentGameState = evt.payload.state
+    })
+
+    this._eventBus.subscribe('game-stopped', () => {
+      this._currentGameState = null
+    })
+
     this._logger.info('app started')
   }
 
@@ -47,6 +58,7 @@ export class AppController implements IAppController {
     await this._gameMonitor.dispose()
     await this._cueService.stop()
     await this._cuePackService.stop()
+    this._currentGameState = null
     this._logger.info('app stopped')
   }
 
@@ -149,5 +161,16 @@ export class AppController implements IAppController {
         time: null
       })
     })
+  }
+
+  public async getCueTimeline(): Promise<CueTimelineDto> {
+    this._logger.info('getCueTimeline')
+
+    const gameTime = this._currentGameState?.gameTime ?? 0
+    const objectives = this._currentGameState?.objectives
+
+    const timeline = await this._cueService.getCueTimeline(gameTime, objectives)
+
+    return timeline
   }
 }
