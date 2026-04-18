@@ -103,10 +103,7 @@ describe.each(instances)('$name Contract Tests', (x) => {
 
   test('saves and loads a cue pack with support-item-upgraded builtIn trigger', async () => {
     const sut = await x.create()
-    const cue = new CueBuilder()
-      .withText('Support item upgraded')
-      .asSupportItemUpgraded()
-      .build()
+    const cue = new CueBuilder().withText('Support item upgraded').asSupportItemUpgraded().build()
     const cuePack = new TestCuePackBuilder().withCues([cue]).build()
 
     await sut.save(cuePack)

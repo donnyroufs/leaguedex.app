@@ -57,7 +57,10 @@ export class GameStateAssembler {
       ...objectives,
       dragon: {
         ...objectives.dragon,
-        secondsUntilSpawn: secondsUntilSpawn(objectives.dragon.isAlive, objectives.dragon.nextSpawn),
+        secondsUntilSpawn: secondsUntilSpawn(
+          objectives.dragon.isAlive,
+          objectives.dragon.nextSpawn
+        ),
         myTeamKills: objectives.dragon.teamStats[team],
         enemyTeamKills: objectives.dragon.teamStats[enemyTeam]
       },

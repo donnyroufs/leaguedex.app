@@ -1,11 +1,12 @@
 import { PredicateEvaluator } from '@hexagon/triggers/PredicateEvaluator'
 import { Predicate } from '@hexagon/triggers/Predicate'
+import { GameState } from '@hexagon/GameState'
 import { GameStateAssembler } from '@hexagon/GameStateAssembler'
 import { describe, test, expect } from 'vitest'
 import { TestGameDataBuilder } from './TestGameDataBuilder'
 
 describe('PredicateEvaluator', () => {
-  const state = (build: (b: TestGameDataBuilder) => TestGameDataBuilder) =>
+  const state = (build: (b: TestGameDataBuilder) => TestGameDataBuilder): GameState =>
     new GameStateAssembler().assemble(build(new TestGameDataBuilder().withGameTime(100)).build())
 
   describe('cmp on numeric fields', () => {

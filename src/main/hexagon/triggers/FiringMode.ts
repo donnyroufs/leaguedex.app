@@ -12,7 +12,12 @@ export class FiringStateStore {
   private readonly _lastFired = new Map<string, number>()
   private readonly _firedThisGame = new Set<string>()
 
-  public shouldFire(cueId: string, isMatching: boolean, mode: FiringMode, gameTime: number): boolean {
+  public shouldFire(
+    cueId: string,
+    isMatching: boolean,
+    mode: FiringMode,
+    gameTime: number
+  ): boolean {
     const wasMatching = this._previousMatch.get(cueId) ?? false
     this._previousMatch.set(cueId, isMatching)
 
