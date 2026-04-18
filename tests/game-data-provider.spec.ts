@@ -22,7 +22,8 @@ describe('Game Data Provider', () => {
         currentMana: 0,
         totalMana: 0,
         currentGold: 0,
-        items: []
+        items: [],
+        team: 'blue'
       }
     })
   })

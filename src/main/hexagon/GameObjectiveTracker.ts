@@ -98,26 +98,33 @@ export class GameObjectiveTracker {
       dragon: {
         isAlive: false,
         nextSpawn: 300,
+        secondsUntilSpawn: null,
         teamStats: {
           red: 0,
           blue: 0
-        }
+        },
+        myTeamKills: 0,
+        enemyTeamKills: 0
       },
       baron: {
         isAlive: false,
-        nextSpawn: 1500
+        nextSpawn: 1500,
+        secondsUntilSpawn: null
       },
       grubs: {
         isAlive: false,
-        nextSpawn: 480
+        nextSpawn: 480,
+        secondsUntilSpawn: null
       },
       herald: {
         isAlive: false,
-        nextSpawn: 900
+        nextSpawn: 900,
+        secondsUntilSpawn: null
       },
       atakhan: {
         isAlive: false,
-        nextSpawn: 1200
+        nextSpawn: 1200,
+        secondsUntilSpawn: null
       }
     }
   }

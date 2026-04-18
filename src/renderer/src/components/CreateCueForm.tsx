@@ -2,6 +2,18 @@ import { JSX, useState } from 'react'
 import { Button } from './Button'
 import { CreateCueDto, ICueDto } from '@contracts'
 import { TimeInput } from './TimeInput'
+import { BuiltInTriggerId, CueObjective, CueTrigger } from '@hexagon/Cue'
+import { PredicateBuilder } from './PredicateBuilder'
+import {
+  buildFiringModeFromState,
+  buildPredicateFromState,
+  CustomConditionState,
+  defaultCustomConditionState,
+  stateFromPredicate,
+  validateConditionRows
+} from './predicateFormState'
+
+type TriggerMode = 'interval' | 'oneTime' | 'objective' | 'builtIn' | 'predicate'
 
 type CreateCueFormProps = {
   onSubmit: (data: CreateCueDto) => Promise<void>
@@ -11,6 +23,71 @@ type CreateCueFormProps = {
   initialValues?: ICueDto
 }
 
+const secondsToMMSS = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+const mmssToSeconds = (mmss: string): number | null => {
+  const parts = mmss.split(':')
+  if (parts.length !== 2) return null
+  const mins = parseInt(parts[0], 10)
+  const secs = parseInt(parts[1], 10)
+  if (isNaN(mins) || isNaN(secs)) return null
+  return mins * 60 + secs
+}
+
+const parseToSeconds = (value: string, isMMSS: boolean): number | null => {
+  if (!value.trim()) return null
+  if (isMMSS) return mmssToSeconds(value)
+  return Number(value)
+}
+
+function modeFromInitialValues(initial: ICueDto | undefined): TriggerMode {
+  if (!initial) return 'interval'
+  return initial.trigger.kind
+}
+
+function initialCustomConditionFromCue(initial: ICueDto | undefined): CustomConditionState {
+  if (!initial || initial.trigger.kind !== 'predicate') return defaultCustomConditionState
+  const state = stateFromPredicate(initial.trigger.predicate, initial.trigger.firing)
+  return state ?? defaultCustomConditionState
+}
+
+const presets: Array<{ id: string; label: string; state: CustomConditionState }> = [
+  {
+    id: 'low-mana',
+    label: 'Low mana',
+    state: {
+      conditions: [{ field: 'activePlayer.currentMana', operator: '<=', value: '100' }],
+      combinator: 'and',
+      firingMode: 'edgeWithCooldown',
+      cooldownSeconds: '60'
+    }
+  },
+  {
+    id: 'gold-threshold',
+    label: 'Gold threshold',
+    state: {
+      conditions: [{ field: 'activePlayer.currentGold', operator: '>=', value: '3000' }],
+      combinator: 'and',
+      firingMode: 'edgeWithCooldown',
+      cooldownSeconds: '60'
+    }
+  },
+  {
+    id: 'on-respawn',
+    label: 'On respawn',
+    state: {
+      conditions: [{ field: 'activePlayer.respawnsIn', operator: '==', value: '1' }],
+      combinator: 'and',
+      firingMode: 'edge',
+      cooldownSeconds: '60'
+    }
+  }
+]
+
 export function CreateCueForm({
   onSubmit,
   onCancel,
@@ -18,35 +95,34 @@ export function CreateCueForm({
   isLoading = false,
   initialValues
 }: CreateCueFormProps): JSX.Element {
-  const secondsToMMSS = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-
   const [text, setText] = useState(initialValues?.text || '')
-  const [triggerType, setTriggerType] = useState<'interval' | 'oneTime' | 'event' | 'objective'>(
-    initialValues?.triggerType || 'interval'
-  )
+  const [mode, setMode] = useState<TriggerMode>(modeFromInitialValues(initialValues))
+
+  const initialTrigger = initialValues?.trigger
+
   const [interval, setInterval] = useState<string>(
-    initialValues?.interval ? secondsToMMSS(initialValues.interval) : ''
+    initialTrigger?.kind === 'interval' ? secondsToMMSS(initialTrigger.seconds) : ''
   )
   const [triggerAt, setTriggerAt] = useState<string>(
-    initialValues?.triggerAt ? secondsToMMSS(initialValues.triggerAt) : ''
+    initialTrigger?.kind === 'oneTime' ? secondsToMMSS(initialTrigger.at) : ''
   )
-  const [event, setEvent] = useState<string>(initialValues?.event || '')
-  const [eventValue, setEventValue] = useState<string>(initialValues?.value?.toString() || '')
-  const [objective, setObjective] = useState<'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'>(
-    initialValues?.objective || 'dragon'
+  const [objective, setObjective] = useState<CueObjective>(
+    initialTrigger?.kind === 'objective' ? initialTrigger.objective : 'dragon'
   )
   const [beforeObjective, setBeforeObjective] = useState<string>(
-    initialValues?.beforeObjective ? secondsToMMSS(initialValues.beforeObjective) : ''
+    initialTrigger?.kind === 'objective' ? secondsToMMSS(initialTrigger.secondsBefore) : ''
   )
+  const [builtInId, setBuiltInId] = useState<BuiltInTriggerId>(
+    initialTrigger?.kind === 'builtIn' ? initialTrigger.id : 'canon-wave-spawned'
+  )
+  const [customState, setCustomState] = useState<CustomConditionState>(
+    initialCustomConditionFromCue(initialValues)
+  )
+
   const [endTime, setEndTime] = useState<string>(
     initialValues?.endTime ? secondsToMMSS(initialValues.endTime) : ''
   )
 
-  // Add toggle states for MM:ss mode
   const [useMMSSInterval, setUseMMSSInterval] = useState(true)
   const [useMMSSTriggerAt, setUseMMSSTriggerAt] = useState(true)
   const [useMMSSBeforeObjective, setUseMMSSBeforeObjective] = useState(true)
@@ -56,206 +132,147 @@ export function CreateCueForm({
     text?: string
     interval?: string
     triggerAt?: string
-    event?: string
-    eventValue?: string
-    objective?: string
     beforeObjective?: string
     endTime?: string
+    predicateValues?: Record<number, string>
+    cooldownSeconds?: string
   }>({})
 
-  const mmssToSeconds = (mmss: string): number | null => {
-    const parts = mmss.split(':')
-    if (parts.length !== 2) return null
-    const mins = parseInt(parts[0], 10)
-    const secs = parseInt(parts[1], 10)
-    if (isNaN(mins) || isNaN(secs)) return null
-    return mins * 60 + secs
-  }
+  const handleSubmit = async (formEvent: React.FormEvent): Promise<void> => {
+    formEvent.preventDefault()
 
-  // Helper to parse input value based on mode
-  const parseToSeconds = (value: string, isMMSS: boolean): number | null => {
-    if (!value.trim()) return null
-    if (isMMSS) {
-      return mmssToSeconds(value)
-    }
-    return Number(value)
-  }
+    const newErrors: typeof errors = {}
 
-  const validateForm = (): boolean => {
-    const newErrors: {
-      text?: string
-      interval?: string
-      triggerAt?: string
-      event?: string
-      eventValue?: string
-      objective?: string
-      beforeObjective?: string
-      endTime?: string
-    } = {}
+    if (!text.trim()) newErrors.text = 'Text is required'
 
-    if (!text.trim()) {
-      newErrors.text = 'Text is required'
-    }
+    let trigger: CueTrigger | null = null
 
-    if (triggerType === 'interval') {
-      if (!interval.trim()) {
-        newErrors.interval = 'Interval is required'
-      } else {
-        const intervalNum = parseToSeconds(interval, useMMSSInterval)
-        if (intervalNum === null || isNaN(intervalNum) || intervalNum < 1) {
-          newErrors.interval = useMMSSInterval
-            ? 'Interval must be in MM:ss format and positive'
-            : 'Interval must be a positive number'
-        }
-      }
-    }
-
-    if (triggerType === 'oneTime') {
-      if (!triggerAt.trim()) {
-        newErrors.triggerAt = 'Trigger time is required'
-      } else {
-        const triggerAtNum = parseToSeconds(triggerAt, useMMSSTriggerAt)
-        if (triggerAtNum === null || isNaN(triggerAtNum) || triggerAtNum < 0) {
-          newErrors.triggerAt = useMMSSTriggerAt
-            ? 'Trigger time must be in MM:ss format'
-            : 'Trigger time must be a non-negative number'
-        }
-      }
-    }
-
-    if (triggerType === 'event') {
-      if (!event.trim()) {
-        newErrors.event = 'Event is required'
-      }
-      if (event === 'mana-changed') {
-        if (!eventValue.trim()) {
-          newErrors.eventValue = 'Mana threshold is required'
+    switch (mode) {
+      case 'interval': {
+        const seconds = parseToSeconds(interval, useMMSSInterval)
+        if (seconds === null || isNaN(seconds) || seconds < 1) {
+          newErrors.interval = 'Interval must be positive'
         } else {
-          const eventValueNum = Number(eventValue)
-          if (isNaN(eventValueNum) || eventValueNum < 0) {
-            newErrors.eventValue = 'Mana threshold must be a non-negative number'
-          }
+          trigger = { kind: 'interval', seconds }
         }
+        break
       }
-      if (event === 'gold-threshold') {
-        if (!eventValue.trim()) {
-          newErrors.eventValue = 'Gold threshold is required'
+      case 'oneTime': {
+        const at = parseToSeconds(triggerAt, useMMSSTriggerAt)
+        if (at === null || isNaN(at) || at < 0) {
+          newErrors.triggerAt = 'Trigger time must be non-negative'
         } else {
-          const eventValueNum = Number(eventValue)
-          if (isNaN(eventValueNum) || eventValueNum < 0) {
-            newErrors.eventValue = 'Gold threshold must be a non-negative number'
-          }
+          trigger = { kind: 'oneTime', at }
         }
+        break
       }
-    }
-
-    if (triggerType === 'objective') {
-      if (!beforeObjective.trim()) {
-        newErrors.beforeObjective = 'Time before objective is required'
-      } else {
-        const beforeObjectiveNum = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
-        if (beforeObjectiveNum === null || isNaN(beforeObjectiveNum) || beforeObjectiveNum < 0) {
-          newErrors.beforeObjective = useMMSSBeforeObjective
-            ? 'Time before objective must be in MM:ss format'
-            : 'Time before objective must be a non-negative number'
+      case 'objective': {
+        const secondsBefore = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
+        if (secondsBefore === null || isNaN(secondsBefore) || secondsBefore < 0) {
+          newErrors.beforeObjective = 'Time before objective must be non-negative'
+        } else {
+          trigger = { kind: 'objective', objective, secondsBefore }
         }
+        break
+      }
+      case 'builtIn':
+        trigger = { kind: 'builtIn', id: builtInId }
+        break
+      case 'predicate': {
+        const rowErrors = validateConditionRows(customState)
+        if (Object.keys(rowErrors).length > 0) {
+          newErrors.predicateValues = rowErrors
+          break
+        }
+        const predicate = buildPredicateFromState(customState)
+        const firing = buildFiringModeFromState(customState)
+        if (!predicate) {
+          newErrors.predicateValues = { 0: 'Invalid condition' }
+          break
+        }
+        if (!firing) {
+          newErrors.cooldownSeconds = 'Cooldown must be a positive number'
+          break
+        }
+        trigger = { kind: 'predicate', predicate, firing }
+        break
       }
     }
 
     if (endTime.trim()) {
       const endTimeNum = parseToSeconds(endTime, useMMSSEndTime)
       if (endTimeNum === null || isNaN(endTimeNum) || endTimeNum < 1) {
-        newErrors.endTime = useMMSSEndTime
-          ? 'End time must be in MM:ss format and positive'
-          : 'End time must be a positive number'
+        newErrors.endTime = 'End time must be positive'
       }
     }
 
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (formEvent: React.FormEvent): Promise<void> => {
-    formEvent.preventDefault()
-
-    if (!validateForm()) {
-      return
-    }
+    if (Object.keys(newErrors).length > 0 || !trigger) return
 
     const formData: CreateCueDto = {
       text: text.trim(),
-      triggerType,
+      trigger,
       packId: activePackId
-    }
-
-    if (triggerType === 'interval') {
-      const intervalNum = parseToSeconds(interval, useMMSSInterval)
-      if (intervalNum !== null) {
-        formData.interval = intervalNum
-      }
-    } else if (triggerType === 'oneTime') {
-      const triggerAtNum = parseToSeconds(triggerAt, useMMSSTriggerAt)
-      if (triggerAtNum !== null) {
-        formData.triggerAt = triggerAtNum
-      }
-    } else if (triggerType === 'event') {
-      formData.event = event.trim()
-      if (event === 'mana-changed' && eventValue.trim()) {
-        const eventValueNum = Number(eventValue)
-        if (!isNaN(eventValueNum)) {
-          formData.value = eventValueNum
-        }
-      }
-      if (event === 'gold-threshold' && eventValue.trim()) {
-        const eventValueNum = Number(eventValue)
-        if (!isNaN(eventValueNum)) {
-          formData.value = eventValueNum
-        }
-      }
-    } else if (triggerType === 'objective') {
-      formData.objective = objective
-      const beforeObjectiveNum = parseToSeconds(beforeObjective, useMMSSBeforeObjective)
-      if (beforeObjectiveNum !== null) {
-        formData.beforeObjective = beforeObjectiveNum
-      }
     }
 
     if (endTime.trim()) {
       const endTimeNum = parseToSeconds(endTime, useMMSSEndTime)
-      if (endTimeNum !== null && endTimeNum > 0) {
-        formData.endTime = endTimeNum
-      }
+      if (endTimeNum !== null && endTimeNum > 0) formData.endTime = endTimeNum
     }
 
     await onSubmit(formData)
   }
 
   const isFormValid = (): boolean => {
-    if (triggerType === 'interval') {
-      return Boolean(text.trim() && interval.trim())
+    if (!text.trim()) return false
+    switch (mode) {
+      case 'interval':
+        return Boolean(interval.trim())
+      case 'oneTime':
+        return Boolean(triggerAt.trim())
+      case 'objective':
+        return Boolean(beforeObjective.trim())
+      case 'builtIn':
+        return true
+      case 'predicate':
+        return customState.conditions.every((row) => {
+          if (row.operator === 'contains') return row.value.trim() !== ''
+          return row.value !== '' && row.value.trim() !== ''
+        })
     }
-    if (triggerType === 'oneTime') {
-      return Boolean(text.trim() && triggerAt.trim())
-    }
-    if (triggerType === 'event') {
-      if (event === 'mana-changed') {
-        return Boolean(text.trim() && event.trim() && eventValue.trim())
-      }
-      if (event === 'gold-threshold') {
-        return Boolean(text.trim() && event.trim() && eventValue.trim())
-      }
-      return Boolean(text.trim() && event.trim())
-    }
-    if (triggerType === 'objective') {
-      return Boolean(text.trim() && beforeObjective.trim())
-    }
-    return false
   }
+
+  const modeOptions: Array<{ value: TriggerMode; label: string; description: string }> = [
+    {
+      value: 'interval',
+      label: 'Every Interval',
+      description: 'Repeats at regular intervals'
+    },
+    {
+      value: 'oneTime',
+      label: 'At Specific Time',
+      description: 'Triggers once at a set time'
+    },
+    {
+      value: 'objective',
+      label: 'Before Objective',
+      description: 'Warns before objectives spawn'
+    },
+    {
+      value: 'builtIn',
+      label: 'Built-in Event',
+      description: 'Canon wave, support item upgrade'
+    },
+    {
+      value: 'predicate',
+      label: 'Custom Condition',
+      description: 'Build your own based on game state'
+    }
+  ]
 
   return (
     <form onSubmit={handleSubmit} className="h-full flex flex-col">
       <div className="flex-1 flex gap-4 overflow-hidden">
-        {/* Left Sidebar - Trigger Type Selection */}
         <div className="w-72 flex-shrink-0 border-r border-border-primary/50 bg-bg-primary/30 p-5 overflow-y-auto">
           <div className="mb-5">
             <h2 className="text-lg font-semibold text-text-primary mb-1.5">Trigger Type</h2>
@@ -263,40 +280,13 @@ export function CreateCueForm({
           </div>
 
           <div className="space-y-2.5">
-            {[
-              {
-                value: 'interval',
-                label: 'Every Interval',
-                icon: 'interval',
-                description: 'Repeats at regular intervals'
-              },
-              {
-                value: 'oneTime',
-                label: 'At Specific Time',
-                icon: 'oneTime',
-                description: 'Triggers once at a set time'
-              },
-              {
-                value: 'event',
-                label: 'On Event',
-                icon: 'event',
-                description: 'Activates on game event'
-              },
-              {
-                value: 'objective',
-                label: 'Before Objective',
-                icon: 'objective',
-                description: 'Warns before objectives spawn'
-              }
-            ].map((option) => (
+            {modeOptions.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                onClick={() =>
-                  setTriggerType(option.value as 'interval' | 'oneTime' | 'event' | 'objective')
-                }
+                onClick={() => setMode(option.value)}
                 className={`w-full p-3.5 rounded-xl border-2 transition-all duration-200 text-left group ${
-                  triggerType === option.value
+                  mode === option.value
                     ? 'border-info/50 bg-info/10 shadow-sm shadow-info/5'
                     : 'border-border-primary/50 bg-bg-secondary/50 hover:border-info/40 hover:bg-bg-tertiary/50 hover:shadow-sm'
                 }`}
@@ -304,7 +294,7 @@ export function CreateCueForm({
                 <div className="flex-1 min-w-0">
                   <div
                     className={`text-sm font-semibold mb-1 transition-colors ${
-                      triggerType === option.value
+                      mode === option.value
                         ? 'text-info'
                         : 'text-text-primary group-hover:text-text-secondary'
                     }`}
@@ -320,10 +310,8 @@ export function CreateCueForm({
           </div>
         </div>
 
-        {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-y-auto">
           <div className="p-5 space-y-5">
-            {/* Cue Text Section */}
             <div className="bg-bg-secondary/80 rounded-xl p-5 border border-border-primary/50 shadow-sm">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold text-text-primary mb-1.5">Cue Text</h2>
@@ -350,9 +338,8 @@ export function CreateCueForm({
               </div>
             </div>
 
-            {/* Dynamic Trigger Settings */}
             <div className="bg-bg-secondary/80 rounded-xl p-5 border border-border-primary/50 shadow-sm">
-              {triggerType === 'interval' && (
+              {mode === 'interval' && (
                 <div>
                   <div className="mb-4">
                     <h2 className="text-lg font-semibold text-text-primary mb-1.5">
@@ -375,7 +362,7 @@ export function CreateCueForm({
                 </div>
               )}
 
-              {triggerType === 'oneTime' && (
+              {mode === 'oneTime' && (
                 <div>
                   <div className="mb-4">
                     <h2 className="text-lg font-semibold text-text-primary mb-1.5">
@@ -398,112 +385,7 @@ export function CreateCueForm({
                 </div>
               )}
 
-              {triggerType === 'event' && (
-                <div>
-                  <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">
-                      Event Settings
-                    </h2>
-                    <p className="text-sm text-text-tertiary/80">
-                      Select which game event should trigger this cue.
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="cue-event"
-                        className="block text-base font-medium text-text-primary mb-2"
-                      >
-                        Event Type
-                      </label>
-                      <select
-                        id="cue-event"
-                        value={event}
-                        onChange={(e) => setEvent(e.target.value)}
-                        className="w-full px-4 py-3 text-base bg-bg-primary border border-border-primary/60 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200"
-                      >
-                        <option value="">Select an event</option>
-                        <option value="respawn">Player respawn</option>
-                        <option value="canon-wave-spawned">Canon wave spawned</option>
-                        <option value="mana-changed">Mana changed</option>
-                        <option value="gold-threshold">Gold threshold</option>
-                        <option value="support-item-upgraded">Support item upgraded</option>
-                      </select>
-                      {errors.event && (
-                        <p className="mt-2 text-sm text-status-danger font-medium">
-                          {errors.event}
-                        </p>
-                      )}
-                    </div>
-
-                    {event === 'mana-changed' && (
-                      <div>
-                        <label
-                          htmlFor="cue-event-value"
-                          className="block text-base font-medium text-text-primary mb-2"
-                        >
-                          Mana Threshold
-                        </label>
-                        <input
-                          id="cue-event-value"
-                          type="number"
-                          min="0"
-                          value={eventValue}
-                          onChange={(e) => setEventValue(e.target.value)}
-                          placeholder="e.g., 100"
-                          className={`w-full px-4 py-3 text-base bg-bg-primary border rounded-xl text-text-primary placeholder-text-tertiary/60 focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200 ${
-                            errors.eventValue
-                              ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20'
-                              : 'border-border-primary/60'
-                          }`}
-                        />
-                        <p className="mt-2 text-sm text-text-tertiary/70">
-                          The cue will trigger when your mana is at or below this value
-                        </p>
-                        {errors.eventValue && (
-                          <p className="mt-2 text-sm text-status-danger font-medium">
-                            {errors.eventValue}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {event === 'gold-threshold' && (
-                      <div>
-                        <label
-                          htmlFor="cue-event-value"
-                          className="block text-base font-medium text-text-primary mb-2"
-                        >
-                          Gold Threshold
-                        </label>
-                        <input
-                          id="cue-event-value"
-                          type="number"
-                          min="0"
-                          value={eventValue}
-                          onChange={(e) => setEventValue(e.target.value)}
-                          placeholder="e.g., 3000"
-                          className={`w-full px-4 py-3 text-base bg-bg-primary border rounded-xl text-text-primary placeholder-text-tertiary/60 focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200 ${
-                            errors.eventValue
-                              ? 'border-status-danger/60 focus:border-status-danger focus:ring-status-danger/20'
-                              : 'border-border-primary/60'
-                          }`}
-                        />
-                        <p className="mt-2 text-sm text-text-tertiary/70">
-                          The cue will trigger when your gold is at or above this value
-                        </p>
-                        {errors.eventValue && (
-                          <p className="mt-2 text-sm text-status-danger font-medium">
-                            {errors.eventValue}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {triggerType === 'objective' && (
+              {mode === 'objective' && (
                 <div>
                   <div className="mb-4">
                     <h2 className="text-lg font-semibold text-text-primary mb-1.5">
@@ -524,11 +406,7 @@ export function CreateCueForm({
                       <select
                         id="cue-objective"
                         value={objective}
-                        onChange={(e) =>
-                          setObjective(
-                            e.target.value as 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-                          )
-                        }
+                        onChange={(e) => setObjective(e.target.value as CueObjective)}
                         className="w-full px-4 py-3 text-base bg-bg-primary border border-border-primary/60 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-premium/30 focus:border-premium/50 transition-all duration-200"
                       >
                         <option value="dragon">Dragon</option>
@@ -552,9 +430,71 @@ export function CreateCueForm({
                   </div>
                 </div>
               )}
+
+              {mode === 'builtIn' && (
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">
+                      Built-in Event
+                    </h2>
+                    <p className="text-sm text-text-tertiary/80">
+                      Pre-defined events maintained in the app. Use Custom Condition for anything
+                      else.
+                    </p>
+                  </div>
+                  <select
+                    id="cue-built-in"
+                    value={builtInId}
+                    onChange={(e) => setBuiltInId(e.target.value as BuiltInTriggerId)}
+                    className="w-full px-4 py-3 text-base bg-bg-primary border border-border-primary/60 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-warning/30 focus:border-warning/50 transition-all duration-200"
+                  >
+                    <option value="canon-wave-spawned">Canon wave spawned</option>
+                    <option value="support-item-upgraded">Support item upgraded</option>
+                  </select>
+                </div>
+              )}
+
+              {mode === 'predicate' && (
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-text-primary mb-1.5">
+                      Custom Condition
+                    </h2>
+                    <p className="text-sm text-text-tertiary/80">
+                      Fire when a game-state field matches your chosen condition.
+                    </p>
+                  </div>
+
+                  <div className="mb-5">
+                    <div className="text-sm font-medium text-text-secondary mb-2">
+                      Quick presets
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setCustomState(preset.state)}
+                          className="px-3 py-1.5 text-sm font-medium rounded-lg border border-border-primary/60 bg-bg-primary/50 text-text-secondary hover:border-info/40 hover:text-info transition-colors"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <PredicateBuilder
+                    state={customState}
+                    onChange={setCustomState}
+                    errors={{
+                      values: errors.predicateValues,
+                      cooldownSeconds: errors.cooldownSeconds
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Optional End Time */}
             <div className="bg-bg-secondary/80 rounded-xl p-5 border border-border-primary/50 shadow-sm">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold text-text-primary mb-1.5">
@@ -579,7 +519,6 @@ export function CreateCueForm({
         </div>
       </div>
 
-      {/* Sticky Action Buttons */}
       <div className="flex-shrink-0 border-t border-border-primary/50 bg-bg-secondary/90 backdrop-blur-sm p-5">
         <div className="flex gap-3">
           <Button

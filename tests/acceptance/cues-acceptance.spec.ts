@@ -2,7 +2,8 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber'
 import fs from 'fs/promises'
 import { expect } from 'vitest'
 
-import { CreateCueDto, IAppController } from '@hexagon/index'
+import { IAppController } from '@hexagon/index'
+import { CueTrigger } from '@hexagon/Cue'
 import { createTestApp } from 'src/main/CompositionRoot'
 import { EventBus, FakeCuePackRepository, NullLogger } from 'src/main/adapters/outbound'
 import { FakeTimer } from 'tests/FakeTimer'
@@ -11,16 +12,74 @@ import { FakeRiotClientDataSource } from 'tests/FakeRiotClientDataSource'
 
 const feature = await loadFeature('tests/features/cues.feature')
 
-type CueData = {
+/**
+ * Shape produced by the Gherkin data tables in `cues.feature`. Strings on the way in
+ * (Gherkin tables are all strings); this shim normalises them into the runtime
+ * trigger format the app now uses.
+ */
+type FeatureCueData = {
   text: string
   triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
-  value?: number
-  interval?: number
-  triggerAt?: number
+  interval?: number | string
+  triggerAt?: number | string
   event?: string
+  value?: number | string
   objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-  beforeObjective?: number
-  endTime?: number
+  beforeObjective?: number | string
+  endTime?: number | string
+}
+
+function buildTrigger(data: FeatureCueData): CueTrigger {
+  if (data.triggerType === 'interval' && data.interval != null) {
+    return { kind: 'interval', seconds: Number(data.interval) }
+  }
+  if (data.triggerType === 'oneTime' && data.triggerAt != null) {
+    return { kind: 'oneTime', at: Number(data.triggerAt) }
+  }
+  if (data.triggerType === 'objective' && data.objective != null && data.beforeObjective != null) {
+    return {
+      kind: 'objective',
+      objective: data.objective,
+      secondsBefore: Number(data.beforeObjective)
+    }
+  }
+  if (data.triggerType === 'event') {
+    switch (data.event) {
+      case 'respawn':
+        return {
+          kind: 'predicate',
+          predicate: { op: 'cmp', field: 'activePlayer.respawnsIn', operator: '==', value: 1 },
+          firing: { mode: 'edge' }
+        }
+      case 'mana-changed':
+        return {
+          kind: 'predicate',
+          predicate: {
+            op: 'cmp',
+            field: 'activePlayer.currentMana',
+            operator: '<=',
+            value: Number(data.value)
+          },
+          firing: { mode: 'edgeWithCooldown', cooldownSeconds: 60 }
+        }
+      case 'gold-threshold':
+        return {
+          kind: 'predicate',
+          predicate: {
+            op: 'cmp',
+            field: 'activePlayer.currentGold',
+            operator: '>=',
+            value: Number(data.value)
+          },
+          firing: { mode: 'edgeWithCooldown', cooldownSeconds: 60 }
+        }
+      case 'canon-wave-spawned':
+        return { kind: 'builtIn', id: 'canon-wave-spawned' }
+      case 'support-item-upgraded':
+        return { kind: 'builtIn', id: 'support-item-upgraded' }
+    }
+  }
+  throw new Error(`Unrecognized feature cue data: ${JSON.stringify(data)}`)
 }
 
 describeFeature(
@@ -41,32 +100,14 @@ describeFeature(
     let dataSource: FakeRiotClientDataSource
     let cuePackRepository: FakeCuePackRepository
 
-    async function createCue(data: CreateCueDto): Promise<string> {
+    async function createCue(data: FeatureCueData): Promise<string> {
       const packId = await app.createCuePack({ name: 'My Pack' })
-
-      const cueData: CueData = {
+      return app.addCue({
+        packId,
         text: data.text,
-        triggerType: data.triggerType,
-        endTime: data.endTime !== undefined ? Number(data.endTime) : undefined
-      }
-
-      if (data.triggerType === 'interval' && data.interval) {
-        cueData.interval = Number(data.interval)
-      } else if (data.triggerType === 'oneTime' && data.triggerAt) {
-        cueData.triggerAt = Number(data.triggerAt)
-      } else if (data.triggerType === 'event' && data.event) {
-        cueData.event = data.event
-        cueData.value = data.value !== undefined ? Number(data.value) : undefined
-      } else if (
-        data.triggerType === 'objective' &&
-        data.objective != null &&
-        data.beforeObjective != null
-      ) {
-        cueData.objective = data.objective
-        cueData.beforeObjective = Number(data.beforeObjective)
-      }
-
-      return app.addCue({ ...cueData, packId })
+        trigger: buildTrigger(data),
+        endTime: data.endTime != null ? Number(data.endTime) : undefined
+      })
     }
 
     BeforeAllScenarios(async () => {
@@ -107,7 +148,7 @@ describeFeature(
     })
 
     Scenario(`No cue when no game is running`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
 
         const cues = await app.getCues()
@@ -129,7 +170,7 @@ describeFeature(
     })
 
     Scenario(`Repeating interval cue`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
 
         const cues = await app.getCues()
@@ -161,7 +202,7 @@ describeFeature(
     })
 
     Scenario(`One-time cue at specific time`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
 
         const cues = await app.getCues()
@@ -192,7 +233,7 @@ describeFeature(
     })
 
     Scenario(`Cue on respawn event`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
 
         const cues = await app.getCues()
@@ -232,11 +273,11 @@ describeFeature(
     })
 
     ScenarioOutline(`Cue before spawning objective`, ({ Given, When, Then, And }, variables) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
-        const transformedData = {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
+        const transformedData: FeatureCueData = {
           ...data,
           text: replace(data.text, variables),
-          objective: variables.objective,
+          objective: variables.objective as FeatureCueData['objective'],
           beforeObjective: Number(data.beforeObjective)
         }
         const createdCueId = await createCue(transformedData)
@@ -278,11 +319,11 @@ describeFeature(
     ScenarioOutline(
       `Cue before spawning one-time objective`,
       ({ Given, When, Then, And }, variables) => {
-        Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
-          const transformedData = {
+        Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
+          const transformedData: FeatureCueData = {
             ...data,
             text: replace(data.text, variables),
-            objective: variables.objective,
+            objective: variables.objective as FeatureCueData['objective'],
             beforeObjective: Number(data.beforeObjective)
           }
           const createdCueId = await createCue(transformedData)
@@ -307,11 +348,10 @@ describeFeature(
       }
     )
 
-    // Probably add variable for both teams to be sure they both work
     Scenario(
       `Elder dragon spawns after team reaches 4 dragon kills`,
       ({ Given, When, Then, And }) => {
-        Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+        Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
           const createdCueId = await createCue(data)
 
           const cues = await app.getCues()
@@ -355,7 +395,7 @@ describeFeature(
     )
 
     Scenario(`Cue on canon wave spawned event`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
 
         const cues = await app.getCues()
@@ -368,9 +408,6 @@ describeFeature(
       })
 
       When(`{string} seconds pass in game time`, async (_, seconds: string) => {
-        // TODO: do we need to do this for other tests too?
-        // Our spy is not smart enough to know on what game-tick it got called
-        // so we need to go back 1 tick and expect that there was no call
         await dataSource.tickMultipleTimes(timer, Number(seconds) - 1)
         expect(audioPlayer.totalCalls).toBe(0)
         await dataSource.nextTick(timer)
@@ -400,7 +437,7 @@ describeFeature(
     })
 
     Scenario(`Cue on low mana`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
         const cues = await app.getCues()
 
@@ -433,7 +470,7 @@ describeFeature(
     })
 
     Scenario(`Cue on support item upgraded event`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
         const cues = await app.getCues()
 
@@ -477,7 +514,7 @@ describeFeature(
     Scenario(`Cue does not trigger when time exceeds end time`, ({ Given, When, Then, And }) => {
       let createdCueId: string
 
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         createdCueId = await createCue(data)
         const cues = await app.getCues()
         expect(cues).toHaveLength(1)
@@ -516,7 +553,7 @@ describeFeature(
     })
 
     Scenario(`Cue on gold threshold`, ({ Given, When, Then, And }) => {
-      Given(`I have a cue configured:`, async (_, [data]: CreateCueDto[]) => {
+      Given(`I have a cue configured:`, async (_, [data]: FeatureCueData[]) => {
         const createdCueId = await createCue(data)
         const cues = await app.getCues()
 

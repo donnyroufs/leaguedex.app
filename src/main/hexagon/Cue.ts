@@ -1,33 +1,22 @@
 import { AudioFileName } from './AudioFileName'
+import { FiringMode } from './triggers/FiringMode'
+import { Predicate } from './triggers/Predicate'
 
-/**
- * The trigger type of a cue.
- * - `interval`: cue that triggers every `interval` seconds.
- * - `oneTime`: cue that triggers at a specific time.
- * - `event`: cue that triggers when a specific event occurs.
- */
-export type CueTriggerType = 'interval' | 'oneTime' | 'event' | 'objective'
 export type CueObjective = 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+
+export type BuiltInTriggerId = 'canon-wave-spawned' | 'support-item-upgraded'
+
+export type CueTrigger =
+  | { kind: 'interval'; seconds: number }
+  | { kind: 'oneTime'; at: number }
+  | { kind: 'objective'; objective: CueObjective; secondsBefore: number }
+  | { kind: 'predicate'; predicate: Predicate; firing: FiringMode }
+  | { kind: 'builtIn'; id: BuiltInTriggerId }
 
 export type Cue = {
   id: string
   text: string
   audioUrl: AudioFileName
-  triggerType: CueTriggerType
-  interval?: number
-  triggerAt?: number
-  event?: string
-  /**
-   * The value of an event trigger. In this case, the current mana value.
-   */
-  value?: number
-  objective?: CueObjective
-  beforeObjective?: number
-
-  // TODO: validate endTime. A user can now pass an endTime that is before the trigger time.
-  // This is not breaking, but it should be validated.
-  /**
-   * The time when the cue should stop triggering. If the cue is triggered after this time, it will not trigger again.
-   */
+  trigger: CueTrigger
   endTime?: number
 }

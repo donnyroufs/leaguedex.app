@@ -2,7 +2,8 @@ import fs from 'fs/promises'
 import { expect } from 'vitest'
 
 import { loadFeature, describeFeature, StepTest } from '@amiceli/vitest-cucumber'
-import { CreateCueDto, IAppController, ICueDto, ICuePackDto } from '@hexagon/index'
+import { IAppController, ICueDto, ICuePackDto } from '@hexagon/index'
+import { CueTrigger } from '@hexagon/Cue'
 import { EventBus, NullLogger, FakeCuePackRepository } from 'src/main/adapters/outbound'
 import { createTestApp } from 'src/main/CompositionRoot'
 import { AudioSpy } from 'tests/AudioSpy'
@@ -15,6 +16,42 @@ type Typed<TContext> = Omit<StepTest, 'context'> & {
 }
 
 const feature = await loadFeature('tests/features/cue-pack.feature')
+
+/**
+ * Shape produced by the Gherkin data tables in `cue-pack.feature`.
+ */
+type FeatureCueData = {
+  text: string
+  triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
+  interval?: number | string
+  triggerAt?: number | string
+  event?: string
+  value?: number | string
+  objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
+  beforeObjective?: number | string
+}
+
+function buildTrigger(data: FeatureCueData): CueTrigger {
+  if (data.triggerType === 'interval' && data.interval != null) {
+    return { kind: 'interval', seconds: Number(data.interval) }
+  }
+  if (data.triggerType === 'oneTime' && data.triggerAt != null) {
+    return { kind: 'oneTime', at: Number(data.triggerAt) }
+  }
+  if (data.triggerType === 'objective' && data.objective != null && data.beforeObjective != null) {
+    return {
+      kind: 'objective',
+      objective: data.objective,
+      secondsBefore: Number(data.beforeObjective)
+    }
+  }
+  if (data.triggerType === 'event' && data.event) {
+    if (data.event === 'canon-wave-spawned') return { kind: 'builtIn', id: 'canon-wave-spawned' }
+    if (data.event === 'support-item-upgraded')
+      return { kind: 'builtIn', id: 'support-item-upgraded' }
+  }
+  throw new Error(`Unrecognized feature cue data: ${JSON.stringify(data)}`)
+}
 
 describeFeature(
   feature,
@@ -34,36 +71,12 @@ describeFeature(
     let cuePackRepository: FakeCuePackRepository
     let tts: TextToSpeechSpy
 
-    async function createCue(data: CreateCueDto, packId: string): Promise<string> {
-      const cueData: {
-        text: string
-        triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
-        interval?: number
-        triggerAt?: number
-        event?: string
-        objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-        beforeObjective?: number
-      } = {
+    async function createCue(data: FeatureCueData, packId: string): Promise<string> {
+      return app.addCue({
+        packId,
         text: data.text,
-        triggerType: data.triggerType
-      }
-
-      if (data.triggerType === 'interval' && data.interval) {
-        cueData.interval = Number(data.interval)
-      } else if (data.triggerType === 'oneTime' && data.triggerAt) {
-        cueData.triggerAt = Number(data.triggerAt)
-      } else if (data.triggerType === 'event' && data.event) {
-        cueData.event = data.event
-      } else if (
-        data.triggerType === 'objective' &&
-        data.objective != null &&
-        data.beforeObjective != null
-      ) {
-        cueData.objective = data.objective
-        cueData.beforeObjective = Number(data.beforeObjective)
-      }
-
-      return app.addCue({ ...cueData, packId })
+        trigger: buildTrigger(data)
+      })
     }
 
     BeforeAllScenarios(async () => {
@@ -158,8 +171,7 @@ describeFeature(
             await app.addCue({
               packId: context.packId,
               text: name,
-              triggerType: 'interval',
-              interval: parseInt(interval)
+              trigger: { kind: 'interval', seconds: parseInt(interval) }
             })
           }
         )
@@ -177,7 +189,11 @@ describeFeature(
         )
 
         And(`the cue should be triggered every {string} seconds`, (_, interval: string) => {
-          expect(context.pack.cues[0]!.interval).toBe(parseInt(interval))
+          const trigger = context.pack.cues[0]!.trigger
+          expect(trigger.kind).toBe('interval')
+          if (trigger.kind === 'interval') {
+            expect(trigger.seconds).toBe(parseInt(interval))
+          }
         })
       }
     )
@@ -262,7 +278,7 @@ describeFeature(
         Given(
           `I have an encoded base64 string that contains a cue pack named {string} with the following cues:`,
           async (_, name: string) => {
-            const code = `eyJuYW1lIjoiQSBzaGFyZWQgY3VlIHBhY2siLCJjdWVzIjpbeyJ0ZXh0IjoiQ2hlY2sgbWluaW1hcCIsInRyaWdnZXJUeXBlIjoiaW50ZXJ2YWwiLCJpbnRlcnZhbCI6NjB9XX0=`
+            const code = `eyJ2ZXJzaW9uIjoxLCJuYW1lIjoiQSBzaGFyZWQgY3VlIHBhY2siLCJjdWVzIjpbeyJ0ZXh0IjoiQ2hlY2sgbWluaW1hcCIsInRyaWdnZXIiOnsia2luZCI6ImludGVydmFsIiwic2Vjb25kcyI6NjB9fV19`
             context.code = code
             context.newPackName = name
           }
@@ -309,7 +325,7 @@ describeFeature(
       ({ Given, When, Then, context }: Typed<ExportCuePackContext>) => {
         Given(
           `I have a cue pack called {string} with the following cues:`,
-          async (_, name: string, dataTable: CreateCueDto[]) => {
+          async (_, name: string, dataTable: FeatureCueData[]) => {
             const packId = await app.createCuePack({ name })
             context.packId = packId
             for (const cue of dataTable) {
@@ -387,8 +403,7 @@ describeFeature(
             const cueId = await app.addCue({
               packId: context.packId,
               text: name,
-              triggerType: 'interval',
-              interval: parseInt(interval)
+              trigger: { kind: 'interval', seconds: parseInt(interval) }
             })
             context.cueId = cueId
             context.originalTtsCallCount = tts.totalCalls
@@ -401,8 +416,7 @@ describeFeature(
             await app.editCue(context.cueId, {
               packId: context.packId,
               text: name,
-              triggerType: 'interval',
-              interval: parseInt(interval)
+              trigger: { kind: 'interval', seconds: parseInt(interval) }
             })
           }
         )
@@ -419,7 +433,11 @@ describeFeature(
           const packs = await app.getCuePacks()
           const pack = packs.find((p) => p.id === context.packId)
           const cue = pack!.cues.find((c) => c.id === context.cueId)
-          expect(cue!.interval).toBe(parseInt(interval))
+          const trigger = cue!.trigger
+          expect(trigger.kind).toBe('interval')
+          if (trigger.kind === 'interval') {
+            expect(trigger.seconds).toBe(parseInt(interval))
+          }
         })
 
         And(`audio should be regenerated`, () => {

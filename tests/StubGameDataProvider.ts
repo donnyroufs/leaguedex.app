@@ -37,7 +37,8 @@ export class StubGameDataProvider implements IGameDataProvider {
         currentMana: null,
         totalMana: null,
         currentGold: 0,
-        items: []
+        items: [],
+        team: 'blue'
       }
     }
   }

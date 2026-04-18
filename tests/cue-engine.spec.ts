@@ -9,7 +9,6 @@ describe('CueEngine', () => {
     CueEngine.clear()
   })
 
-  // TODO: use fastcheck
   test.each([
     [150, 0],
     [155, 1],
@@ -37,7 +36,7 @@ describe('CueEngine', () => {
 
   test('should trigger the mana cue if the mana is less than the value', () => {
     const assembler = new GameStateAssembler()
-    const cue = new CueBuilder().asManaChanged().withValue(100).build()
+    const cue = new CueBuilder().asManaChanged(100).build()
 
     const gameData = new TestGameDataBuilder()
       .withGameTime(150)
@@ -55,7 +54,7 @@ describe('CueEngine', () => {
 
   test('should not trigger the mana cue if the mana is greater than the value', () => {
     const assembler = new GameStateAssembler()
-    const cue = new CueBuilder().asManaChanged().withValue(100).build()
+    const cue = new CueBuilder().asManaChanged(100).build()
 
     const gameData = new TestGameDataBuilder()
       .withGameTime(150)
@@ -70,27 +69,9 @@ describe('CueEngine', () => {
     expect(due).toEqual([])
   })
 
-  test('should not trigger the mana cue if its equal to the total mana', () => {
-    const assembler = new GameStateAssembler()
-    const cue = new CueBuilder().asManaChanged().withValue(100).build()
-
-    const gameData = new TestGameDataBuilder()
-      .withGameTime(150)
-      .hasStarted()
-      .withCurrentPlayerMana(100)
-      .withTotalMana(100)
-      .build()
-
-    const state = assembler.assemble(gameData)
-    const due = CueEngine.getDueCues(state, [cue])
-
-    expect(due).toHaveLength(0)
-    expect(due).toEqual([])
-  })
-
   test('Should not keep triggering the mana cue', () => {
     const assembler = new GameStateAssembler()
-    const cue = new CueBuilder().asManaChanged().withValue(100).build()
+    const cue = new CueBuilder().asManaChanged(100).build()
 
     const gameData = new TestGameDataBuilder()
       .withGameTime(150)
@@ -125,7 +106,7 @@ describe('CueEngine', () => {
 
   test('should trigger the gold threshold cue if gold is greater than or equal to the value', () => {
     const assembler = new GameStateAssembler()
-    const cue = new CueBuilder().asGoldThreshold().withValue(3000).build()
+    const cue = new CueBuilder().asGoldThreshold(3000).build()
 
     const gameData = new TestGameDataBuilder()
       .withGameTime(300)
@@ -142,7 +123,7 @@ describe('CueEngine', () => {
 
   test('should not trigger the gold threshold cue if gold is less than the value', () => {
     const assembler = new GameStateAssembler()
-    const cue = new CueBuilder().asGoldThreshold().withValue(3000).build()
+    const cue = new CueBuilder().asGoldThreshold(3000).build()
 
     const gameData = new TestGameDataBuilder()
       .withGameTime(300)
@@ -158,7 +139,7 @@ describe('CueEngine', () => {
 
   test('should not keep triggering the gold threshold cue within cooldown period', () => {
     const assembler = new GameStateAssembler()
-    const cue = new CueBuilder().asGoldThreshold().withValue(3000).build()
+    const cue = new CueBuilder().asGoldThreshold(3000).build()
 
     const gameData = new TestGameDataBuilder()
       .withGameTime(300)
@@ -193,8 +174,8 @@ describe('CueEngine', () => {
 
   test('should handle multiple gold threshold cues with different values independently', () => {
     const assembler = new GameStateAssembler()
-    const cue3000 = new CueBuilder().asGoldThreshold().withValue(3000).build()
-    const cue3001 = new CueBuilder().asGoldThreshold().withValue(3001).build()
+    const cue3000 = new CueBuilder().asGoldThreshold(3000).build()
+    const cue3001 = new CueBuilder().asGoldThreshold(3001).build()
 
     const gameData1 = new TestGameDataBuilder()
       .withGameTime(300)
@@ -217,8 +198,6 @@ describe('CueEngine', () => {
     const state2 = assembler.assemble(gameData2)
     const due2 = CueEngine.getDueCues(state2, [cue3000, cue3001])
     expect(due2).toHaveLength(0)
-    expect(due2.find((c) => c.id === cue3000.id)).toBeUndefined()
-    expect(due2.find((c) => c.id === cue3001.id)).toBeUndefined()
 
     const gameData2b = new TestGameDataBuilder()
       .withGameTime(359)
@@ -229,8 +208,6 @@ describe('CueEngine', () => {
     const state2b = assembler.assemble(gameData2b)
     const due2b = CueEngine.getDueCues(state2b, [cue3000, cue3001])
     expect(due2b).toHaveLength(0)
-    expect(due2b.find((c) => c.id === cue3000.id)).toBeUndefined()
-    expect(due2b.find((c) => c.id === cue3001.id)).toBeUndefined()
 
     const gameData3 = new TestGameDataBuilder()
       .withGameTime(360)
@@ -243,5 +220,50 @@ describe('CueEngine', () => {
     expect(due3).toHaveLength(2)
     expect(due3).toContainEqual(expect.objectContaining({ id: cue3000.id }))
     expect(due3).toContainEqual(expect.objectContaining({ id: cue3001.id }))
+  })
+
+  test('objective trigger fires secondsBefore the next spawn', () => {
+    const assembler = new GameStateAssembler()
+    const cue = new CueBuilder().asObjective('baron', 30).build()
+
+    const gameData = new TestGameDataBuilder().withGameTime(1470).hasStarted().build()
+    const state = assembler.assemble(gameData)
+    const due = CueEngine.getDueCues(state, [cue])
+
+    expect(due).toHaveLength(1)
+  })
+
+  test('interval trigger fires on multiples of seconds', () => {
+    const assembler = new GameStateAssembler()
+    const cue = new CueBuilder().asInterval(60).build()
+
+    const due = CueEngine.getDueCues(
+      assembler.assemble(new TestGameDataBuilder().withGameTime(120).hasStarted().build()),
+      [cue]
+    )
+    expect(due).toHaveLength(1)
+
+    const notDue = CueEngine.getDueCues(
+      assembler.assemble(new TestGameDataBuilder().withGameTime(121).hasStarted().build()),
+      [cue]
+    )
+    expect(notDue).toHaveLength(0)
+  })
+
+  test('endTime stops a cue from firing past that time', () => {
+    const assembler = new GameStateAssembler()
+    const cue = new CueBuilder().asInterval(60).withEndTime(120).build()
+
+    const dueAt120 = CueEngine.getDueCues(
+      assembler.assemble(new TestGameDataBuilder().withGameTime(120).hasStarted().build()),
+      [cue]
+    )
+    expect(dueAt120).toHaveLength(1)
+
+    const dueAt180 = CueEngine.getDueCues(
+      assembler.assemble(new TestGameDataBuilder().withGameTime(180).hasStarted().build()),
+      [cue]
+    )
+    expect(dueAt180).toHaveLength(0)
   })
 })

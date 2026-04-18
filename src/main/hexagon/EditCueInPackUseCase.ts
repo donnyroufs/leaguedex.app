@@ -1,32 +1,18 @@
+import z from 'zod'
 import { IUseCase } from '../shared-kernel/IUseCase'
 import { Cue, ICuePackRepository, ITextToSpeechGenerator } from '.'
+import { triggerSchema } from './AddCueToPackUseCase'
 
-export type EditCueDto = {
-  text: string
-  triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
-  interval?: number
-  triggerAt?: number
-  event?: string
-  objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-  beforeObjective?: number
-  packId: string
-  value?: number
-  endTime?: number
-}
+const editCueSchema = z.object({
+  id: z.string().min(1),
+  text: z.string().min(1),
+  trigger: triggerSchema,
+  packId: z.string().min(1),
+  endTime: z.number().int().positive().optional()
+})
 
-type EditCueInput = {
-  id: string
-  text: string
-  triggerType: 'interval' | 'oneTime' | 'event' | 'objective'
-  interval?: number
-  triggerAt?: number
-  event?: string
-  objective?: 'dragon' | 'baron' | 'grubs' | 'herald' | 'atakhan'
-  beforeObjective?: number
-  packId: string
-  value?: number
-  endTime?: number
-}
+export type EditCueDto = Omit<z.infer<typeof editCueSchema>, 'id'>
+type EditCueInput = z.infer<typeof editCueSchema>
 
 export class EditCueInPackUseCase implements IUseCase<EditCueInput, void> {
   public constructor(
@@ -35,39 +21,35 @@ export class EditCueInPackUseCase implements IUseCase<EditCueInput, void> {
   ) {}
 
   public async execute(data: EditCueInput): Promise<void> {
-    const cuePack = await this._cuePackRepository.load(data.packId)
+    const parsedData = editCueSchema.parse(data)
+
+    const cuePack = await this._cuePackRepository.load(parsedData.packId)
     const cuePackResult = cuePack.unwrap()
 
     if (!cuePackResult) {
       throw new Error('Cue pack not found')
     }
 
-    const existingCue = cuePackResult.cues.find((c) => c.id === data.id)
+    const existingCue = cuePackResult.cues.find((c) => c.id === parsedData.id)
     if (!existingCue) {
       throw new Error('Cue not found')
     }
 
     let audioUrl = existingCue.audioUrl
-    if (existingCue.text !== data.text) {
-      const result = await this._audioGenerator.generate(data.text)
+    if (existingCue.text !== parsedData.text) {
+      const result = await this._audioGenerator.generate(parsedData.text)
       audioUrl = result.unwrap()
     }
 
     const updatedCue: Cue = {
-      id: data.id,
-      text: data.text,
-      audioUrl: audioUrl,
-      triggerType: data.triggerType,
-      interval: data.interval,
-      triggerAt: data.triggerAt,
-      event: data.event,
-      objective: data.objective,
-      beforeObjective: data.beforeObjective,
-      value: data.value,
-      endTime: data.endTime
+      id: parsedData.id,
+      text: parsedData.text,
+      audioUrl,
+      trigger: parsedData.trigger,
+      endTime: parsedData.endTime
     }
 
-    cuePackResult.remove(data.id)
+    cuePackResult.remove(parsedData.id)
     cuePackResult.add(updatedCue)
 
     const saveResult = await this._cuePackRepository.save(cuePackResult)

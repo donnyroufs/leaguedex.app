@@ -2,42 +2,39 @@ import z from 'zod'
 import { IUseCase } from '../shared-kernel/IUseCase'
 
 import { Cue, ICuePackRepository, ITextToSpeechGenerator } from '.'
+import { predicateSchema } from './triggers/Predicate'
 
-const createCueSchema = z
-  .object({
-    text: z.string().min(1),
-    triggerType: z.enum(['interval', 'oneTime', 'event', 'objective']),
-    interval: z.number().min(1).optional(),
-    triggerAt: z.number().min(0).optional(),
-    // TODO: validation
-    event: z.string().optional(),
-    objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']).optional(),
-    beforeObjective: z.number().min(0).optional(),
-    packId: z.string().min(1),
-    value: z.number().optional(),
-    endTime: z.number().int().positive().optional()
-  })
-  .superRefine((data, ctx) => {
-    if (data.event === 'mana-changed') {
-      if (data.value === undefined || data.value === null) {
-        ctx.addIssue({
-          code: 'custom',
-          message: "Value is required when event is 'mana-changed'",
-          path: ['value']
-        })
-      }
-    }
+const firingModeSchema = z.discriminatedUnion('mode', [
+  z.object({ mode: z.literal('edge') }),
+  z.object({ mode: z.literal('edgeWithCooldown'), cooldownSeconds: z.number().int().positive() }),
+  z.object({ mode: z.literal('oncePerGame') })
+])
 
-    if (data.event === 'gold-threshold') {
-      if (data.value === undefined || data.value === null) {
-        ctx.addIssue({
-          code: 'custom',
-          message: "Value is required when event is 'gold-threshold'",
-          path: ['value']
-        })
-      }
-    }
+export const triggerSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('interval'), seconds: z.number().int().positive() }),
+  z.object({ kind: z.literal('oneTime'), at: z.number().int().nonnegative() }),
+  z.object({
+    kind: z.literal('objective'),
+    objective: z.enum(['dragon', 'baron', 'grubs', 'herald', 'atakhan']),
+    secondsBefore: z.number().int().nonnegative()
+  }),
+  z.object({
+    kind: z.literal('predicate'),
+    predicate: predicateSchema,
+    firing: firingModeSchema
+  }),
+  z.object({
+    kind: z.literal('builtIn'),
+    id: z.enum(['canon-wave-spawned', 'support-item-upgraded'])
   })
+])
+
+const createCueSchema = z.object({
+  text: z.string().min(1),
+  trigger: triggerSchema,
+  packId: z.string().min(1),
+  endTime: z.number().int().positive().optional()
+})
 
 export type CreateCueDto = z.infer<typeof createCueSchema>
 
@@ -64,13 +61,7 @@ export class AddCueToPackUseCase implements IUseCase<CreateCueDto, string> {
       id,
       text: parsedData.text,
       audioUrl: audioPath,
-      triggerType: parsedData.triggerType,
-      interval: parsedData.interval,
-      triggerAt: parsedData.triggerAt,
-      event: parsedData.event,
-      objective: parsedData.objective,
-      beforeObjective: parsedData.beforeObjective,
-      value: parsedData.value,
+      trigger: parsedData.trigger,
       endTime: parsedData.endTime
     }
 

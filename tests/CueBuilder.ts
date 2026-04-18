@@ -1,12 +1,11 @@
 import { AudioFileName } from '@hexagon/AudioFileName'
-import { Cue, CueTriggerType } from '@hexagon/Cue'
+import { Cue, CueObjective, CueTrigger } from '@hexagon/Cue'
+import { FiringMode } from '@hexagon/triggers/FiringMode'
+import { Predicate } from '@hexagon/triggers/Predicate'
 
 export class CueBuilder {
   private _text: string = 'from-builder'
-  private _triggerType: CueTriggerType = 'interval'
-  private _interval?: number = 1000
-  private _event: string = 'canon-wave-spawned'
-  private _value?: number
+  private _trigger: CueTrigger = { kind: 'interval', seconds: 1000 }
   private _endTime?: number
 
   public withText(text: string): CueBuilder {
@@ -14,36 +13,51 @@ export class CueBuilder {
     return this
   }
 
+  public asInterval(seconds: number): CueBuilder {
+    this._trigger = { kind: 'interval', seconds }
+    return this
+  }
+
+  public asOneTime(at: number): CueBuilder {
+    this._trigger = { kind: 'oneTime', at }
+    return this
+  }
+
+  public asObjective(objective: CueObjective, secondsBefore: number): CueBuilder {
+    this._trigger = { kind: 'objective', objective, secondsBefore }
+    return this
+  }
+
+  public asPredicate(predicate: Predicate, firing: FiringMode = { mode: 'edge' }): CueBuilder {
+    this._trigger = { kind: 'predicate', predicate, firing }
+    return this
+  }
+
   public asCanonWaveSpawned(): CueBuilder {
-    this._triggerType = 'event'
-    this._event = 'canon-wave-spawned'
-    this._interval = undefined
+    this._trigger = { kind: 'builtIn', id: 'canon-wave-spawned' }
     return this
   }
 
-  public asManaChanged(): CueBuilder {
-    this._triggerType = 'event'
-    this._event = 'mana-changed'
-    this._interval = undefined
+  public asSupportItemUpgraded(): CueBuilder {
+    this._trigger = { kind: 'builtIn', id: 'support-item-upgraded' }
     return this
   }
 
-  public asGoldThreshold(): CueBuilder {
-    this._triggerType = 'event'
-    this._event = 'gold-threshold'
-    this._interval = undefined
+  public asManaChanged(value: number): CueBuilder {
+    this._trigger = {
+      kind: 'predicate',
+      predicate: { op: 'cmp', field: 'activePlayer.currentMana', operator: '<=', value },
+      firing: { mode: 'edgeWithCooldown', cooldownSeconds: 60 }
+    }
     return this
   }
 
-  public asEvent(event: string): CueBuilder {
-    this._triggerType = 'event'
-    this._event = event
-    this._interval = undefined
-    return this
-  }
-
-  public withValue(value: number): CueBuilder {
-    this._value = value
+  public asGoldThreshold(value: number): CueBuilder {
+    this._trigger = {
+      kind: 'predicate',
+      predicate: { op: 'cmp', field: 'activePlayer.currentGold', operator: '>=', value },
+      firing: { mode: 'edgeWithCooldown', cooldownSeconds: 60 }
+    }
     return this
   }
 
@@ -55,12 +69,9 @@ export class CueBuilder {
   public build(): Cue {
     return {
       id: crypto.randomUUID(),
-      interval: this._interval,
       text: this._text,
-      triggerType: this._triggerType,
-      event: this._event,
+      trigger: this._trigger,
       audioUrl: AudioFileName.createMP3(this._text),
-      value: this._value != null ? this._value : undefined,
       endTime: this._endTime
     }
   }

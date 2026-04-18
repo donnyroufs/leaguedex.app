@@ -32,7 +32,7 @@ describe.each(instances)('$name Contract Tests', (x) => {
     const sut = await x.create()
     const cuePack1 = new TestCuePackBuilder()
       .withName('My Pack')
-      .withCues([new CueBuilder().withText('My cue').withValue(100).withEndTime(1000).build()])
+      .withCues([new CueBuilder().withText('My cue').asManaChanged(100).withEndTime(1000).build()])
       .build()
 
     await sut.save(cuePack1)
@@ -101,17 +101,15 @@ describe.each(instances)('$name Contract Tests', (x) => {
     expect(cuePacks.unwrap()[0]!.id).toEqual(cuePack2.id)
   })
 
-  test('saves and loads a cue pack with support-item-upgraded event', async () => {
+  test('saves and loads a cue pack with support-item-upgraded builtIn trigger', async () => {
     const sut = await x.create()
-    const cue = new CueBuilder()
-      .withText('Support item upgraded')
-      .asEvent('support-item-upgraded')
-      .build()
+    const cue = new CueBuilder().withText('Support item upgraded').asSupportItemUpgraded().build()
     const cuePack = new TestCuePackBuilder().withCues([cue]).build()
 
     await sut.save(cuePack)
     const loaded = await sut.load(cuePack.id)
 
-    expect(loaded.unwrap()?.cues[0]?.event).toBe('support-item-upgraded')
+    const loadedCue = loaded.unwrap()?.cues[0]
+    expect(loadedCue?.trigger).toEqual({ kind: 'builtIn', id: 'support-item-upgraded' })
   })
 })

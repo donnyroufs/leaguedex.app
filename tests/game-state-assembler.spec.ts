@@ -21,7 +21,8 @@ describe('GameStateAssembler', () => {
         currentMana: null,
         totalMana: null,
         currentGold: 0,
-        items: []
+        items: [],
+        team: 'blue'
       }
     }
 
@@ -52,7 +53,8 @@ describe('GameStateAssembler', () => {
         currentMana: null,
         totalMana: null,
         currentGold: 0,
-        items: []
+        items: [],
+        team: 'blue'
       }
     }
 
@@ -76,7 +78,8 @@ describe('GameStateAssembler', () => {
         currentMana: null,
         totalMana: null,
         currentGold: 0,
-        items: []
+        items: [],
+        team: 'blue'
       }
     }
 

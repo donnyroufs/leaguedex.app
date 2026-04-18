@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react'
-import { Bell, Plus, Clock, Zap, Target, Timer, X, Play, Pencil } from 'lucide-react'
+import { Bell, Plus, Clock, Zap, Target, Timer, X, Play, Pencil, Sliders } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { Button } from '../components/Button'
 import { Modal } from '../components/Modal'
@@ -9,10 +9,117 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { ConfirmDialog } from '@renderer/components/ConfirmDialog'
 import { CreateCueDto, EditCueDto, ICueDto, ICuePackDto } from '@hexagon/index'
+import { CueTrigger } from '@hexagon/Cue'
+import { Predicate } from '@hexagon/triggers/Predicate'
+import { FiringMode } from '@hexagon/triggers/FiringMode'
+import { getFieldDefinition } from '@hexagon/triggers/GameStateSchema'
 
 type LoaderData = {
   cues: ICueDto[]
   activePack: ICuePackDto | null
+}
+
+const formatSeconds = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+const describePredicate = (predicate: Predicate): string => {
+  switch (predicate.op) {
+    case 'cmp': {
+      const field = getFieldDefinition(predicate.field)
+      const label = field?.label ?? predicate.field
+      return `${label} ${predicate.operator} ${predicate.value}`
+    }
+    case 'contains': {
+      const field = getFieldDefinition(predicate.field)
+      const label = field?.label ?? predicate.field
+      return `${label} contains ${predicate.value}`
+    }
+    case 'and':
+      return `(${predicate.children.map(describePredicate).join(' AND ')})`
+    case 'or':
+      return `(${predicate.children.map(describePredicate).join(' OR ')})`
+    case 'not':
+      return `NOT (${describePredicate(predicate.child)})`
+  }
+}
+
+const describeFiring = (firing: FiringMode): string => {
+  switch (firing.mode) {
+    case 'edge':
+      return ''
+    case 'edgeWithCooldown':
+      return ` (${firing.cooldownSeconds}s cooldown)`
+    case 'oncePerGame':
+      return ' (once per game)'
+  }
+}
+
+const describeBuiltIn = (id: 'canon-wave-spawned' | 'support-item-upgraded'): string => {
+  switch (id) {
+    case 'canon-wave-spawned':
+      return 'When a canon wave spawns'
+    case 'support-item-upgraded':
+      return 'When support item upgrades'
+  }
+}
+
+const getCueIcon = (trigger: CueTrigger): JSX.Element => {
+  switch (trigger.kind) {
+    case 'interval':
+      return <Timer className="w-4 h-4 text-info" />
+    case 'oneTime':
+      return <Clock className="w-4 h-4 text-success" />
+    case 'objective':
+      return <Target className="w-4 h-4 text-premium" />
+    case 'builtIn':
+      return <Zap className="w-4 h-4 text-warning" />
+    case 'predicate':
+      return <Sliders className="w-4 h-4 text-info" />
+  }
+}
+
+const getTriggerTypeLabel = (trigger: CueTrigger): string => {
+  switch (trigger.kind) {
+    case 'interval':
+      return 'Interval'
+    case 'oneTime':
+      return 'One Time'
+    case 'objective':
+      return 'Objective'
+    case 'builtIn':
+      return 'Built-in'
+    case 'predicate':
+      return 'Custom'
+  }
+}
+
+const formatTriggerDisplay = (cue: ICueDto): JSX.Element | string => {
+  const trigger = cue.trigger
+  switch (trigger.kind) {
+    case 'interval':
+      return `Every ${trigger.seconds} seconds`
+    case 'oneTime':
+      return `At ${formatSeconds(trigger.at)}`
+    case 'objective': {
+      const objectiveName = trigger.objective.charAt(0).toUpperCase() + trigger.objective.slice(1)
+      return (
+        <>
+          {trigger.secondsBefore} seconds before{' '}
+          <span className="font-semibold text-premium bg-premium/10 px-2 py-0.5 rounded-md">
+            {objectiveName}
+          </span>{' '}
+          spawns
+        </>
+      )
+    }
+    case 'builtIn':
+      return describeBuiltIn(trigger.id)
+    case 'predicate':
+      return `When ${describePredicate(trigger.predicate)}${describeFiring(trigger.firing)}`
+  }
 }
 
 export function ActivePackPage(): JSX.Element {
@@ -25,87 +132,8 @@ export function ActivePackPage(): JSX.Element {
   const { revalidate } = useRevalidator()
   const toast = useToast()
 
-  const getCueIcon = (triggerType: ICueDto['triggerType']): JSX.Element => {
-    switch (triggerType) {
-      case 'interval':
-        return <Timer className="w-4 h-4 text-info" />
-      case 'oneTime':
-        return <Clock className="w-4 h-4 text-success" />
-      case 'event':
-        return <Zap className="w-4 h-4 text-warning" />
-      case 'objective':
-        return <Target className="w-4 h-4 text-premium" />
-      default:
-        return <Bell className="w-4 h-4 text-neutral" />
-    }
-  }
-
   const getCueColor = (): string => {
     return 'border-border-primary'
-  }
-
-  const formatTriggerDisplay = (cue: ICueDto): JSX.Element | string => {
-    if (cue.triggerType === 'interval' && cue.interval) {
-      return `Every ${cue.interval} seconds`
-    }
-
-    if (cue.triggerType === 'oneTime' && cue.triggerAt) {
-      const minutes = Math.floor(cue.triggerAt / 60)
-      const seconds = cue.triggerAt % 60
-      return `At ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-    }
-
-    if (cue.triggerType === 'event' && cue.event) {
-      switch (cue.event) {
-        case 'canon-wave-spawned':
-          return 'When a canon wave spawns'
-        case 'respawn':
-          return 'When you respawn'
-        case 'mana-changed':
-          return cue.value !== undefined
-            ? `When mana is less or equal to ${cue.value}`
-            : 'When mana changes'
-        case 'gold-threshold':
-          return cue.value !== undefined
-            ? `When gold is greater or equal to ${cue.value}`
-            : 'When gold threshold is reached'
-        case 'support-item-upgraded':
-          return 'When support item upgrades'
-        default:
-          console.warn('Missing event', cue.event)
-          return `On ${cue.event}`
-      }
-    }
-
-    if (cue.triggerType === 'objective' && cue.objective && cue.beforeObjective) {
-      const objectiveName = cue.objective.charAt(0).toUpperCase() + cue.objective.slice(1)
-      return (
-        <>
-          {cue.beforeObjective} seconds before{' '}
-          <span className="font-semibold text-premium bg-premium/10 px-2 py-0.5 rounded-md">
-            {objectiveName}
-          </span>{' '}
-          spawns
-        </>
-      )
-    }
-
-    return 'Unknown trigger'
-  }
-
-  const getTriggerTypeLabel = (triggerType: ICueDto['triggerType']): string => {
-    switch (triggerType) {
-      case 'interval':
-        return 'Interval'
-      case 'oneTime':
-        return 'One Time'
-      case 'event':
-        return 'Event'
-      case 'objective':
-        return 'Objective'
-      default:
-        return 'Unknown'
-    }
   }
 
   const handleCreateCue = async (data: CreateCueDto): Promise<void> => {
@@ -122,7 +150,7 @@ export function ActivePackPage(): JSX.Element {
       toast.success('Cue created successfully')
     } catch (error) {
       console.error('Failed to create cue:', error)
-      toast.error('Failed to create cue')
+      toast.error(`Failed to create cue: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setIsCreating(false)
     }
@@ -174,13 +202,7 @@ export function ActivePackPage(): JSX.Element {
       const editData: EditCueDto = {
         packId: activePack.id,
         text: data.text,
-        triggerType: data.triggerType,
-        interval: data.interval,
-        triggerAt: data.triggerAt,
-        event: data.event,
-        objective: data.objective,
-        beforeObjective: data.beforeObjective,
-        value: data.value,
+        trigger: data.trigger,
         endTime: data.endTime
       }
       await window.api.app.editCue(cueToEdit.id, editData)
@@ -189,7 +211,7 @@ export function ActivePackPage(): JSX.Element {
       toast.success('Cue updated successfully')
     } catch (error) {
       console.error('Failed to update cue:', error)
-      toast.error('Failed to update cue')
+      toast.error(`Failed to update cue: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setIsCreating(false)
     }
@@ -243,10 +265,10 @@ export function ActivePackPage(): JSX.Element {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0 w-10 h-10 bg-bg-primary rounded-lg flex items-center justify-center border border-border-primary/20">
-                          {getCueIcon(cue.triggerType)}
+                          {getCueIcon(cue.trigger)}
                         </div>
                         <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider bg-bg-primary px-2.5 py-1 rounded-md">
-                          {getTriggerTypeLabel(cue.triggerType)}
+                          {getTriggerTypeLabel(cue.trigger)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
@@ -279,7 +301,6 @@ export function ActivePackPage(): JSX.Element {
                         {cue.text}
                       </h3>
 
-                      {/* Trigger details */}
                       <div className="pt-3 border-t border-border-primary/10 mt-4 space-y-2.5">
                         <div className="flex items-start space-x-2.5 text-text-secondary">
                           <Timer className="w-4 h-4 text-text-tertiary mt-0.5 flex-shrink-0" />
@@ -291,12 +312,7 @@ export function ActivePackPage(): JSX.Element {
                           <div className="flex items-start space-x-2.5 text-text-secondary">
                             <Clock className="w-4 h-4 text-text-tertiary mt-0.5 flex-shrink-0" />
                             <span className="text-sm font-medium leading-relaxed">
-                              Ends at{' '}
-                              {(() => {
-                                const minutes = Math.floor(cue.endTime / 60)
-                                const seconds = cue.endTime % 60
-                                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-                              })()}
+                              Ends at {formatSeconds(cue.endTime)}
                             </span>
                           </div>
                         )}

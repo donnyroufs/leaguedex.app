@@ -1,21 +1,17 @@
-import { CueObjective, CueTriggerType } from './Cue'
+import { Cue, CueTrigger } from './Cue'
 import { CuePack } from './CuePack'
 import { ITextToSpeechGenerator } from './ports/ITextToSpeechGenerator'
 
-/**
- * Basically in a Create form
- */
+export const CURRENT_PACK_FORMAT_VERSION = 1
+
 type EncodedCue = {
   text: string
-  triggerType: CueTriggerType
-  interval?: number
-  triggerAt?: number
-  event?: string
-  objective?: CueObjective
-  beforeObjective?: number
+  trigger: CueTrigger
+  endTime?: number
 }
 
 type EncodedCuePack = {
+  version: number
   name: string
   cues: EncodedCue[]
 }
@@ -23,15 +19,12 @@ type EncodedCuePack = {
 export class CuePackEncoder {
   public static encode(cuepack: CuePack): string {
     const encodedCuePack: EncodedCuePack = {
+      version: CURRENT_PACK_FORMAT_VERSION,
       name: cuepack.name,
       cues: cuepack.cues.map((cue) => ({
         text: cue.text,
-        triggerType: cue.triggerType,
-        interval: cue.interval,
-        triggerAt: cue.triggerAt,
-        event: cue.event,
-        objective: cue.objective,
-        beforeObjective: cue.beforeObjective
+        trigger: cue.trigger,
+        endTime: cue.endTime
       }))
     }
 
@@ -42,11 +35,19 @@ export class CuePackEncoder {
     code: string,
     audioGenerator: ITextToSpeechGenerator
   ): Promise<CuePack> {
-    const encodedCuePack: EncodedCuePack = JSON.parse(atob(code))
+    const parsed = JSON.parse(atob(code)) as Partial<EncodedCuePack>
+
+    if (parsed.version !== CURRENT_PACK_FORMAT_VERSION) {
+      throw new Error(
+        `Unsupported pack format version: ${parsed.version}. Expected ${CURRENT_PACK_FORMAT_VERSION}.`
+      )
+    }
+
+    const encodedCuePack = parsed as EncodedCuePack
     const cuePack = CuePack.create(encodedCuePack.name)
 
-    const cuePromises = encodedCuePack.cues.map(async (cue) => {
-      const audio = await audioGenerator.generate(cue.text)
+    const cuePromises = encodedCuePack.cues.map(async (encodedCue): Promise<Cue> => {
+      const audio = await audioGenerator.generate(encodedCue.text)
 
       if (audio.isErr()) {
         throw new Error('Failed to generate audio')
@@ -54,14 +55,10 @@ export class CuePackEncoder {
 
       return {
         id: crypto.randomUUID(),
-        text: cue.text,
+        text: encodedCue.text,
         audioUrl: audio.unwrap(),
-        triggerType: cue.triggerType,
-        interval: cue.interval,
-        triggerAt: cue.triggerAt,
-        event: cue.event,
-        objective: cue.objective,
-        beforeObjective: cue.beforeObjective
+        trigger: encodedCue.trigger,
+        endTime: encodedCue.endTime
       }
     })
 
