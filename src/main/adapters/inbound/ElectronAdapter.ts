@@ -1,6 +1,14 @@
 import { BrowserWindow, type IpcMain } from 'electron'
 import { IAppController } from '../../hexagon'
-import { IUserSettingsDto, CreateCueDto, CreateCuePackDto, EditCueDto } from '@contracts'
+import {
+  IUserSettingsDto,
+  CreateCueDto,
+  CreateCuePackDto,
+  EditCueDto,
+  OpenAITtsModel,
+  OpenAITtsVoice,
+  SpeechEngineInput
+} from '@contracts'
 
 export class ElectronAdapter {
   private _configured: boolean = false
@@ -19,6 +27,25 @@ export class ElectronAdapter {
     ipcMain.handle('get-user-settings', async () => {
       return this._appController.getUserSettings()
     })
+
+    ipcMain.handle('get-speech-engine', async () => {
+      return this._appController.getSpeechEngineView()
+    })
+
+    ipcMain.handle('update-speech-engine', async (_, input: SpeechEngineInput) => {
+      return this._appController.updateSpeechEngine(input)
+    })
+
+    ipcMain.handle('install-local-speech-model', async () => {
+      return this._appController.installLocalSpeechModel()
+    })
+
+    ipcMain.handle(
+      'test-openai-key',
+      async (_, apiKey: string, model: OpenAITtsModel, voice: OpenAITtsVoice) => {
+        return this._appController.testOpenAIKey(apiKey, model, voice)
+      }
+    )
 
     ipcMain.handle('play-cue', async (_, id: string) => {
       return this._appController.playCue(id)

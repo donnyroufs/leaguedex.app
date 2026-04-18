@@ -7,7 +7,11 @@ import type {
   GameDataDto,
   ICuePackDto,
   CreateCuePackDto,
-  IUserSettingsDto
+  IUserSettingsDto,
+  SpeechEngineInput,
+  SpeechEngineView,
+  OpenAITtsModel,
+  OpenAITtsVoice
 } from '@contracts'
 
 declare global {
@@ -43,6 +47,23 @@ declare global {
           }) => void
         ) => () => void
         onRegenerateComplete: (callback: () => void) => () => void
+        getSpeechEngine: () => Promise<SpeechEngineView>
+        updateSpeechEngine: (input: SpeechEngineInput) => Promise<void>
+        installLocalSpeechModel: () => Promise<void>
+        testOpenAIKey: (
+          apiKey: string,
+          model: OpenAITtsModel,
+          voice: OpenAITtsVoice
+        ) => Promise<void>
+        onModelDownloadProgress: (
+          callback: (data: {
+            phase: 'downloading' | 'extracting'
+            receivedBytes: number
+            totalBytes: number
+          }) => void
+        ) => () => void
+        onModelDownloadComplete: (callback: () => void) => () => void
+        onModelDownloadError: (callback: (data: { message: string }) => void) => () => void
       }
 
       getVersion: () => Promise<string>

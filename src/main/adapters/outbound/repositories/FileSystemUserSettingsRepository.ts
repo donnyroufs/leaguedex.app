@@ -5,6 +5,8 @@ import { Result } from '../../../shared-kernel'
 import fs from 'fs/promises'
 import path from 'path'
 
+const DEFAULT_SETTINGS: UserSettings = { volume: 1, speech: null }
+
 export class FileSystemUserSettingsRepository implements IUserSettingsRepository {
   private _cache: UserSettings | null = null
 
@@ -15,9 +17,13 @@ export class FileSystemUserSettingsRepository implements IUserSettingsRepository
       return Result.ok(this._cache)
     }
 
-    const settings = await fs.readFile(this._path, 'utf8')
-    this._cache = JSON.parse(settings)
-    return Result.ok(this._cache!)
+    const raw = await fs.readFile(this._path, 'utf8')
+    const parsed = JSON.parse(raw) as Partial<UserSettings>
+    this._cache = {
+      volume: parsed.volume ?? DEFAULT_SETTINGS.volume,
+      speech: parsed.speech ?? null
+    }
+    return Result.ok(this._cache)
   }
 
   public async save(settings: UserSettings): Promise<Result<void, Error>> {
@@ -34,7 +40,7 @@ export class FileSystemUserSettingsRepository implements IUserSettingsRepository
     try {
       await fs.access(filePath)
     } catch {
-      await fs.writeFile(filePath, JSON.stringify({ volume: 1 }))
+      await fs.writeFile(filePath, JSON.stringify(DEFAULT_SETTINGS))
     }
 
     return new FileSystemUserSettingsRepository(filePath)

@@ -5,6 +5,7 @@
  */
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { app } from 'electron'
 
 /* MAC PLAY COMMAND */
 const macPlayCommand = (path: string, volume: number, rate: number): string =>
@@ -21,6 +22,12 @@ const windowPlayCommand = (path: string, volume: number): string =>
   `%SYSTEMROOT%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -c ${addPresentationCore} ${createMediaPlayer} ${loadAudioFile(
     path
   )} $player.Volume = ${volume}; ${playAudio} ${stopAudio}`
+
+/* LINUX PLAY COMMAND (dev-only convenience; prod build still targets Windows) */
+const linuxPlayCommand = (path: string, volume: number): string => {
+  const paVolume = Math.round(Math.min(1, Math.max(0, volume)) * 65536)
+  return `paplay --volume=${paVolume} "${path}" || aplay -q "${path}"`
+}
 
 const execPromise = promisify(exec)
 
@@ -39,10 +46,13 @@ export const soundPlay = {
   play: async (path: string, volume: number = 0.5, rate: number = 1): Promise<void> => {
     const volumeAdjustedByOS = process.platform === 'darwin' ? Math.min(2, volume * 2) : volume
 
+    const isDev = !app.isPackaged
     const playCommand =
       process.platform === 'darwin'
         ? macPlayCommand(path, volumeAdjustedByOS, rate)
-        : windowPlayCommand(path, volumeAdjustedByOS)
+        : process.platform === 'linux' && isDev
+          ? linuxPlayCommand(path, volumeAdjustedByOS)
+          : windowPlayCommand(path, volumeAdjustedByOS)
 
     await execPromise(playCommand, { windowsHide: true })
   }

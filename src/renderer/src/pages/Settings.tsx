@@ -1,11 +1,12 @@
 import { JSX, useState, useEffect } from 'react'
-import { Volume2 } from 'lucide-react'
+import { Volume2, Mic } from 'lucide-react'
 import { PageWrapper } from '../components/PageWrapper'
 import { useLoaderData, useRevalidator } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { useToast } from '@renderer/hooks'
-import { IUserSettingsDto } from '@contracts'
+import { IUserSettingsDto, SpeechEngineView } from '@contracts'
 import { AudioRegenerationModal } from '@renderer/components/AudioRegenerationModal'
+import { SpeechEngineSetup } from '@renderer/components/SpeechEngineSetup'
 
 type SettingsSectionProps = {
   title: string
@@ -34,11 +35,17 @@ export type ToggleSwitchProps = {
   description?: string
 }
 
+type LoaderData = {
+  settings: IUserSettingsDto
+  speechEngine: SpeechEngineView
+}
+
 export function Settings(): JSX.Element {
-  const settings = useLoaderData<IUserSettingsDto>()
+  const { settings, speechEngine } = useLoaderData<LoaderData>()
   const { revalidate } = useRevalidator()
   const [volume, setVolume] = useState<number>(settings.volume)
   const [isRegenerating, setIsRegenerating] = useState<boolean>(false)
+  const [isEditingEngine, setIsEditingEngine] = useState<boolean>(false)
   const toast = useToast()
 
   useEffect(() => {
@@ -53,7 +60,7 @@ export function Settings(): JSX.Element {
   }, [toast])
 
   const handleUpdateVolume = async (): Promise<void> => {
-    await window.api.app.updateUserSettings({ volume })
+    await window.api.app.updateUserSettings({ ...settings, volume })
     await revalidate()
     toast.success('Volume settings saved.')
   }
@@ -78,6 +85,21 @@ export function Settings(): JSX.Element {
         <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
       </div>
       <div className="flex-1 overflow-y-auto min-h-0 p-8 space-y-8">
+        <SettingsSection title="Speech Engine" icon={Mic}>
+          {isEditingEngine ? (
+            <SpeechEngineSetup
+              existing={speechEngine}
+              onSaved={async () => {
+                setIsEditingEngine(false)
+                await revalidate()
+              }}
+              onCancel={() => setIsEditingEngine(false)}
+            />
+          ) : (
+            <SpeechEngineSummary view={speechEngine} onEdit={() => setIsEditingEngine(true)} />
+          )}
+        </SettingsSection>
+
         <SettingsSection title="Cues" icon={Volume2}>
           <div className="space-y-6">
             <div className="space-y-3">
@@ -129,5 +151,54 @@ export function Settings(): JSX.Element {
         </SettingsSection>
       </div>
     </PageWrapper>
+  )
+}
+
+function SpeechEngineSummary({
+  view,
+  onEdit
+}: {
+  view: SpeechEngineView
+  onEdit: () => void
+}): JSX.Element {
+  if (view === null) {
+    return (
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-text-tertiary">No engine configured.</div>
+        <Button onClick={onEdit}>Set up engine</Button>
+      </div>
+    )
+  }
+
+  if (view.type === 'local') {
+    return (
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-sm text-text-primary font-medium">Local (Kokoro v0.19)</div>
+          <div className="text-xs text-text-tertiary mt-1">
+            {view.status === 'installed'
+              ? 'Runs offline on your PC.'
+              : 'Model is not installed yet.'}
+          </div>
+        </div>
+        <Button variant="secondary" onClick={onEdit}>
+          Switch / manage
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-sm text-text-primary font-medium">
+          OpenAI ({view.model}, voice: {view.voice})
+        </div>
+        <div className="text-xs text-text-tertiary mt-1">Key: {view.maskedApiKey}</div>
+      </div>
+      <Button variant="secondary" onClick={onEdit}>
+        Switch / manage
+      </Button>
+    </div>
   )
 }

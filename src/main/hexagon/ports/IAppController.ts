@@ -4,7 +4,13 @@ import { EditCueDto } from '../EditCueInPackUseCase'
 import { ICueDto } from '../ICueDto'
 import { ICuePackDto } from '@hexagon/GetCuePacksUseCase'
 import { CreateCuePackDto } from '@hexagon/CreateCuePackUseCase'
-import { IUserSettingsDto } from '@hexagon/IUserSettingsDto'
+import {
+  IUserSettingsDto,
+  OpenAITtsModel,
+  OpenAITtsVoice,
+  SpeechEngineInput,
+  SpeechEngineView
+} from '@hexagon/IUserSettingsDto'
 
 export interface IAppController {
   start(): Promise<void>
@@ -12,6 +18,11 @@ export interface IAppController {
 
   updateUserSettings(data: IUserSettingsDto): Promise<void>
   getUserSettings(): Promise<IUserSettingsDto>
+
+  getSpeechEngineView(): Promise<SpeechEngineView>
+  updateSpeechEngine(input: SpeechEngineInput): Promise<void>
+  installLocalSpeechModel(): Promise<void>
+  testOpenAIKey(apiKey: string, model: OpenAITtsModel, voice: OpenAITtsVoice): Promise<void>
 
   playCue(id: string): Promise<void>
   activateCuePack(id: string): Promise<void>

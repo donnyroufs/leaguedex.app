@@ -5,6 +5,7 @@ import * as Hexagon from './hexagon'
 import * as Outbound from './adapters/outbound'
 
 import { ElectronAdapter } from './adapters/inbound'
+import { Result } from './shared-kernel'
 
 /**
  * Dependencies we allow to be overridden.
@@ -18,6 +19,7 @@ type AppDependencies = {
   tts: Hexagon.ITextToSpeechGenerator
   cuePackRepository: Hexagon.ICuePackRepository
   userSettingsRepository: Hexagon.IUserSettingsRepository
+  speechEngineAdapter: Hexagon.ISpeechEngineAdapter
 }
 
 export class CompositionRoot {
@@ -55,18 +57,54 @@ export class CompositionRoot {
       this._dependencies.audioPlayer ?? new Outbound.AudioPlayer(this._logger, isProd)
     this._audioDir = path.join(this._dataPath, 'audio')
 
-    const resourcesPath = isProd
-      ? path.join(process.resourcesPath)
-      : path.join(process.cwd(), 'resources')
+    const userSettingsRepository =
+      this._dependencies.userSettingsRepository ??
+      (await Outbound.UserSettingsRepositoryFactory.create(isProd, this._dataPath))
 
-    this._tts =
-      this._dependencies.tts ??
-      (await Outbound.AudioGeneratorFactory.create(
+    const initialSpeechConfig = isProd
+      ? (await userSettingsRepository.load()).unwrap().speech
+      : null
+
+    let speechAdapter: Hexagon.ISpeechEngineAdapter | null =
+      this._dependencies.speechEngineAdapter ?? null
+
+    if (this._dependencies.tts != null) {
+      this._tts = this._dependencies.tts
+    } else {
+      const initial = await Outbound.AudioGeneratorFactory.create(
         isProd,
         this._audioDir,
         this._logger,
-        resourcesPath
-      ))
+        this._dataPath,
+        initialSpeechConfig
+      )
+      const proxy = new Outbound.ConfigurableTtsProxy(initial)
+      this._tts = proxy
+
+      if (speechAdapter == null) {
+        const localSherpaDir = isProd ? null : path.join(process.cwd(), 'resources', 'sherpa')
+        const installer = new Outbound.SherpaModelInstaller(
+          this._logger,
+          this._dataPath,
+          new Outbound.IpcModelDownloadProgressReporter(),
+          localSherpaDir
+        )
+        speechAdapter = new Outbound.ElectronSpeechEngineAdapter(
+          this._logger,
+          isProd,
+          this._audioDir,
+          this._dataPath,
+          proxy,
+          installer
+        )
+      }
+    }
+
+    const speechEngineService = new Hexagon.SpeechEngineService(
+      speechAdapter ?? new NoopSpeechEngineAdapter(),
+      userSettingsRepository,
+      this._logger
+    )
 
     this._cuePackRepository =
       this._dependencies.cuePackRepository ??
@@ -102,11 +140,6 @@ export class CompositionRoot {
     const editCueInPackUseCase = new Hexagon.EditCueInPackUseCase(
       this._tts,
       this._cuePackRepository
-    )
-
-    const userSettingsRepository = await Outbound.UserSettingsRepositoryFactory.create(
-      isProd,
-      this._dataPath
     )
 
     const cueProcessor = new Hexagon.CueProcessor(
@@ -148,7 +181,8 @@ export class CompositionRoot {
       eventBus,
       cuePackService,
       userSettingsRepository,
-      regenerateAudioUseCase
+      regenerateAudioUseCase,
+      speechEngineService
     )
     this._created = true
     return appController
@@ -172,6 +206,37 @@ export class CompositionRoot {
       locale: app.getSystemLocale(),
       using: Object.values(this._dependencies).map((x) => x.constructor.name)
     }
+  }
+}
+
+/**
+ * Used when a test overrides `tts` directly and doesn't care about runtime switching.
+ * All speech-engine management calls become no-ops / unsupported.
+ */
+class NoopSpeechEngineAdapter implements Hexagon.ISpeechEngineAdapter {
+  public encryptApiKey(): string {
+    throw new Error('Speech engine management is disabled in this context.')
+  }
+  public decryptApiKey(): string {
+    throw new Error('Speech engine management is disabled in this context.')
+  }
+  public maskApiKey(): string {
+    return '••••••••'
+  }
+  public isLocalInstalled(): boolean {
+    return true
+  }
+  public async installLocal(): Promise<Result<void, Error>> {
+    return Result.err(new Error('Speech engine management is disabled in this context.'))
+  }
+  public async buildGenerator(): Promise<Hexagon.ITextToSpeechGenerator> {
+    throw new Error('Speech engine management is disabled in this context.')
+  }
+  public reconfigureTts(): void {
+    // no-op
+  }
+  public async testOpenAI(): Promise<Result<void, Error>> {
+    return Result.err(new Error('Speech engine management is disabled in this context.'))
   }
 }
 
